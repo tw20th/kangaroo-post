@@ -80,3 +80,12 @@ inv_*.json
 .env*
 firebase/functions/secrets/*
 firebase/functions/gsc_sa.json
+
+# --- A8 / ジョブ実行の作業キャッシュや投入元ファイル（公開不要なら） ---
+firebase/functions/.a8-sync-state.json
+firebase/functions/ingest/**
+
+# --- Turborepo / ビルドキャッシュ系（使っている場合）---
+.turbo/
+apps/**/.turbo/
+apps/**/.next/cache/

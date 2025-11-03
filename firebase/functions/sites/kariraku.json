@@ -2,24 +2,33 @@
   "siteId": "kariraku",
   "displayName": "Kariraku（カリラク）",
   "domain": "www.kariraku.com",
+
+  "gsc": { "propertyUrl": "https://www.kariraku.com" },
+
+  "keywordPools": {
+    "comparison": ["冷蔵庫 レンタル 一人暮らし", "洗濯機 レンタル 料金 比較"],
+    "guide": ["家電 レンタル おすすめ", "家電 レンタル 初期費用 なし"]
+  },
+
   "brand": {
     "primary": "#10B981",
     "accent": "#F59E0B",
     "logoUrl": "/logos/kariraku.svg",
     "theme": "light"
   },
-  "analytics": {
-    "ga4MeasurementId": "G-XXXXXXXX"
-  },
-  "categoryPreset": ["rental", "subscription", "home-appliance"],
+  "analytics": { "ga4MeasurementId": "G-XXXXXXXX" },
+  "categoryPreset": ["appliance-rental"],
   "features": {
+    "offers": true,
+    "products": false,
     "blogs": true,
-    "ranking": true,
-    "dataSource": "a8"
+    "ranking": true
   },
   "homeCopy": {
     "title": "借りて、暮らしをラクにする。",
     "subtitle": "冷蔵庫・洗濯機・家電のレンタル・サブスクで“買わない暮らし”を提案。",
+    "featuredTitle": "家電レンタル特集",
+    "blogsTitle": "新着ブログ",
     "dataSourceLabel": "A8.net",
     "note": "本ページは広告を含みます。提携先サービスの一部を紹介しています。"
   },

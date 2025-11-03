@@ -1,21 +1,16 @@
-// 外部依存なしのユーティリティ
+// 外部依存なしユーティリティ
 
-/** Firestore の docPath / URL に安全な文字へ */
 function safe(input: string): string {
-  return (
-    (input || "")
-      .toLowerCase()
-      // 日本語は残しつつ、その他をハイフン化
-      .replace(
-        /[^a-z0-9\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\-_.~]+/giu,
-        "-"
-      )
-      .replace(/-+/g, "-")
-      .replace(/(^-|-$)/g, "")
-  );
+  return (input || "")
+    .toLowerCase()
+    .replace(
+      /[^a-z0-9\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\-_.~]+/giu,
+      "-"
+    )
+    .replace(/-+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
-/** yyyyMMdd 文字列を返す（JSTでもUTCでも差は実運用で問題なし） */
 function formatYmd(ts?: number): string {
   const d = ts ? new Date(ts) : new Date();
   const y = d.getFullYear();
@@ -24,7 +19,15 @@ function formatYmd(ts?: number): string {
   return `${y}${m}${day}`;
 }
 
-/** A8系ブログ用の一意slug: a8-<siteId>-<offerId>-<YYYYMMDD>[-title40] */
+/** 短い一意ID（djb2ベース8桁hex） */
+function hash8(s: string): string {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
+  // >>> 0 でunsigned化、toString(16) でhex、padStartで8固定
+  return (h >>> 0).toString(16).padStart(8, "0");
+}
+
+/** A8系ブログ用の一意slug: a8-<siteId>-<h8>-<YYYYMMDD>[-title40] */
 export function a8BlogSlug(
   siteId: string,
   offerId: string,
@@ -32,7 +35,8 @@ export function a8BlogSlug(
   ts?: number
 ) {
   const ymd = formatYmd(ts);
-  const base = `a8-${safe(siteId)}-${safe(offerId)}-${ymd}`;
+  const h8 = hash8(`${siteId}:${offerId}`);
+  const base = `a8-${safe(siteId)}-${h8}-${ymd}`;
   if (title) {
     const tail = safe(title).slice(0, 40);
     if (tail) return `${base}-${tail}`;

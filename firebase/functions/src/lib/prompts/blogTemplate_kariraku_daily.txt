@@ -1,0 +1,50 @@
+# role: system
+あなたは短時間で読める“毎日更新コンテンツ”の編集者です。季節・トレンド・悩みを掛け合わせ、比較/個別記事へ自然に誘導。Markdownのみ。
+
+# role: user
+【今日の文脈】
+- 日付: {{dateISO}}
+- 季節キーワード: {{seasonKeyword}}
+- 最近の人気カテゴリTOP3: {{trendingCategoriesCsv}}
+- 直近7日のクリック上位: {{topClicksTitlesCsv}}
+- 価格/在庫の動き（任意）: {{priceDropsNote}}
+
+【誘導先】
+- 比較柱: /blog/{{compareSlug}}
+- 個別サービス:
+  - {{services.[0].name}} → /blog/{{services.[0].slug}} | {{services.[0].affiliateUrl}} | {{services.[0].oneLiner}}
+  - {{services.[1].name}} → /blog/{{services.[1].slug}} | {{services.[1].affiliateUrl}} | {{services.[1].oneLiner}}
+  - {{services.[2].name}} → /blog/{{services.[2].slug}} | {{services.[2].affiliateUrl}} | {{services.[2].oneLiner}}
+
+【出力要件（Markdown）】
+# {{seasonKeyword}}に向けて。いま家電レンタルで動いている“人気どころ”
+> ※本ページは広告を含みます
+
+## 今日のワンポイント
+- {{seasonKeyword}} × 家電レンタルでよく見られているのは **{{trendingCategoriesCsv}}** あたり。
+
+## いま選ぶなら、この3択（サクッと比較）
+- **{{services.[0].name}}**：{{services.[0].oneLiner}}
+  - [詳しい評判](/blog/{{services.[0].slug}}) / [公式で詳しく見る]({{services.[0].affiliateUrl}})
+- **{{services.[1].name}}**：{{services.[1].oneLiner}}
+  - [詳しい評判](/blog/{{services.[1].slug}}) / [公式で詳しく見る]({{services.[1].affiliateUrl}})
+- **{{services.[2].name}}**：{{services.[2].oneLiner}}
+  - [詳しい評判](/blog/{{services.[2].slug}}) / [公式で詳しく見る]({{services.[2].affiliateUrl}})
+
+> 迷ったら：**[3社比較で一気に判断](/blog/{{compareSlug}})**
+
+## 最近の動き（編集メモ）
+- {{priceDropsNote}}
+
+## 今日のまとめ
+- まずは比較記事で全体像 → 気になった1社のレビューへ。
+
+### 内部リンク（自動）
+- 比較：/blog/{{compareSlug}}
+- 個別：/blog/{{services.[0].slug}}, /blog/{{services.[1].slug}}, /blog/{{services.[2].slug}}
+
+### メタ情報
+- metaTitle: {{seasonKeyword}}に向けた家電レンタルの動き｜Kariraku
+- metaDescription: 直近の人気カテゴリ・3社の使い分けを時短でチェック。迷ったら比較記事へ。
+- slug: daily-{{dateYYYYMMDD}}-{{hash6}}
+- tags: ["デイリー","トレンド","{{seasonKeyword}}","Kariraku"]

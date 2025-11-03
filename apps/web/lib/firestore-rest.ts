@@ -228,9 +228,13 @@ export async function fsGet(params: {
   const apiKey = params.apiKey ?? base.apiKey;
 
   const parent = `projects/${projectId}/databases/(default)/documents`;
-  const url = `https://firestore.googleapis.com/v1/${parent}/${encodeURI(
-    params.path
-  )}?key=${encodeURIComponent(apiKey)}`;
+  const safePath = params.path
+    .split("/")
+    .map((seg) => encodeURIComponent(seg))
+    .join("/");
+  const url = `https://firestore.googleapis.com/v1/${parent}/${safePath}?key=${encodeURIComponent(
+    apiKey
+  )}`;
 
   const res = await fetch(url, { cache: "no-store" });
   if (res.status === 404) return null;
@@ -299,9 +303,7 @@ export async function fetchCollection<T>(
         orderBy = [
           {
             field: f,
-            direction: (d ?? "desc").toUpperCase() as
-              | "ASCENDING"
-              | "DESCENDING",
+            direction: d === "asc" ? "ASCENDING" : "DESCENDING",
           },
         ];
       } else {
@@ -312,7 +314,7 @@ export async function fetchCollection<T>(
             const d = (pair[1] as "asc" | "desc" | undefined) ?? "desc";
             return {
               field: f,
-              direction: d.toUpperCase() as "ASCENDING" | "DESCENDING",
+              direction: (d ?? "desc") === "asc" ? "ASCENDING" : "DESCENDING",
             };
           }
         );

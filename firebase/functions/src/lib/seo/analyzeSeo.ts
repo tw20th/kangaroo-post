@@ -1,5 +1,5 @@
 export type SeoScore = {
-  total: number; // 0-100
+  total: number;
   checks: Record<string, boolean | number>;
 };
 
@@ -59,3 +59,6 @@ export function analyzeMarkdown(md: string): SeoScore {
   score = Math.max(0, Math.min(100, score));
   return { total: score, checks };
 }
+
+export const analyzeSeo = analyzeMarkdown;
+export default analyzeMarkdown;

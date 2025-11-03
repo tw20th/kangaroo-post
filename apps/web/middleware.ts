@@ -3,8 +3,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const COOKIE_SITE_ID = "siteId";
-const DEFAULT_SITE_ID = "chairscope";
-const ALLOWED = new Set(["chairscope", "powerscope", "powerbank-scope"]);
+const DEFAULT_SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || "kariraku";
+const ALLOWED = new Set([
+  "chairscope",
+  "powerscope",
+  "powerbank-scope",
+  "kariraku",
+]);
 
 const HOST_TO_SITE: Record<string, string> = {
   "www.chairscope.com": "chairscope",

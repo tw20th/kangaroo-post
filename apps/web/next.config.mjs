@@ -10,6 +10,8 @@ const nextConfig = {
       { protocol: "https", hostname: "shop.r10s.jp" },
       // ▼ 追加：Unsplash
       { protocol: "https", hostname: "images.unsplash.com" },
+      // A8（サーバが www27/28 など可変なのでワイルドカードで）
+      { protocol: "https", hostname: "**.a8.net" },
     ],
     formats: ["image/avif", "image/webp"],
   },

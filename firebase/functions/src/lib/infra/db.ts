@@ -1,18 +1,31 @@
 import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore, Firestore } from "firebase-admin/firestore";
+import { getFirestore, Firestore, Settings } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 
-// アプリは一度だけ初期化
+const PROJECT_ID = process.env.GCLOUD_PROJECT || "a8-affiliate-a2489";
+const BUCKET =
+  process.env.STORAGE_BUCKET || "a8-affiliate-a2489.firebasestorage.app";
+
 if (getApps().length === 0) {
-  initializeApp();
+  initializeApp({
+    projectId: PROJECT_ID,
+    storageBucket: BUCKET,
+  });
 }
 
-// Firestore のシングルトンを安全に共有（再バンドルでも重複しない）
+// Firestore シングルトン
 declare global {
   // eslint-disable-next-line no-var
-  var __AFFISCOPE_DB__: Firestore | undefined;
+  var __A8AFFILIATE_DB__: Firestore | undefined;
 }
 
 export const db: Firestore =
-  globalThis.__AFFISCOPE_DB__ ?? (globalThis.__AFFISCOPE_DB__ = getFirestore());
+  globalThis.__A8AFFILIATE_DB__ ??
+  (globalThis.__A8AFFILIATE_DB__ = getFirestore());
 
-// ※ settings() は呼ばない（呼ぶなら「最初に一回だけ＆他の操作より前」である保証が必要）
+// ここで一度だけ設定（他所で settings() を呼ばない）
+const settings: Settings = { ignoreUndefinedProperties: true };
+db.settings(settings);
+
+// Storage（必要なところから import して使う）
+export const bucket = () => getStorage().bucket();

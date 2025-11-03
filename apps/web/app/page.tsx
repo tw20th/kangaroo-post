@@ -1,21 +1,24 @@
-// apps/web/app/page.tsx
 import Link from "next/link";
 import type { Product } from "@affiscope/shared-types";
 import type { FsValue } from "@/lib/firestore-rest";
-
-import { fsRunQuery, vNum, vStr, docIdFromName } from "@/lib/firestore-rest";
+import {
+  fsRunQuery,
+  vNum,
+  vStr,
+  docIdFromName,
+  fsGetStringArray,
+} from "@/lib/firestore-rest";
 import { getServerSiteId } from "@/lib/site-server";
-
-// import PainNav, { PainItem } from "@/components/common/PainNav"; // ← 不要になったら削除OK
 import { decodePainRules, type PainRuleLite } from "@/lib/pain-rules";
-import HeroBadges from "@/components/home/HeroBadges";
+// import HeroBadges from "@/components/home/HeroBadges";
 import FeaturedSection from "@/components/home/FeaturedSection";
 import BlogsSection, { type BlogSummary } from "@/components/home/BlogsSection";
+import OfferGallery from "@/components/offers/OfferGallery";
 
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
 
-/* ===== サイト設定 ===== */
+/* ===== サイト設定 型 & ローダー（既存） ===== */
 type BrandLite = { primary?: string; accent?: string; logoUrl?: string };
 type SiteConfigDoc = {
   siteId: string;
@@ -33,7 +36,6 @@ type SiteConfigDoc = {
   painRules?: PainRuleLite[];
   [k: string]: unknown;
 };
-
 type FsValueCompat = {
   stringValue?: string;
   integerValue?: string;
@@ -44,48 +46,34 @@ type FsValueCompat = {
   mapValue?: { fields?: Record<string, any> };
   arrayValue?: { values?: FsValueCompat[] };
 };
+type FsDoc = { name: string; fields: Record<string, FsValue> };
 
 async function loadSiteConfig(siteId: string): Promise<SiteConfigDoc> {
   const projectId = process.env.NEXT_PUBLIC_FB_PROJECT_ID;
   const apiKey = process.env.NEXT_PUBLIC_FB_API_KEY;
   if (!projectId || !apiKey) return fallbackConfig(siteId);
-
   const url = new URL(
     `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/sites/${encodeURIComponent(
       siteId
     )}`
   );
   url.searchParams.set("key", apiKey);
-
   const res = await fetch(url.toString(), { cache: "no-store" });
   if (!res.ok) return fallbackConfig(siteId);
-
   const json = (await res.json()) as
     | { fields?: Record<string, unknown> }
     | undefined;
   const f = json?.fields ?? {};
-
-  const get = (k: string) =>
-    f[k] as
-      | {
-          stringValue?: string;
-          arrayValue?: { values?: Array<{ stringValue?: string }> };
-          mapValue?: { fields?: Record<string, { stringValue?: string }> };
-        }
-      | undefined;
-
+  const get = (k: string) => f[k] as any | undefined;
   const str = (k: string) => get(k)?.stringValue ?? undefined;
   const arr = (k: string) =>
-    (get(k)?.arrayValue?.values ?? []).map((v) => v?.stringValue ?? "");
-
+    (get(k)?.arrayValue?.values ?? []).map((v: any) => v?.stringValue ?? "");
   const brandFields = get("brand")?.mapValue?.fields ?? {};
   const bstr = (k: string) => brandFields[k]?.stringValue ?? undefined;
-
   const hcFields = (get("homeCopy")?.mapValue?.fields ?? {}) as Record<
     string,
     { stringValue?: string }
   >;
-
   const cfg: SiteConfigDoc = {
     siteId,
     displayName: str("displayName") ?? "AffiScope",
@@ -110,7 +98,6 @@ async function loadSiteConfig(siteId: string): Promise<SiteConfigDoc> {
   };
   return withDerivedCopy(cfg);
 }
-
 function fallbackConfig(siteId: string): SiteConfigDoc {
   const cfg: SiteConfigDoc = {
     siteId,
@@ -137,7 +124,6 @@ function fallbackConfig(siteId: string): SiteConfigDoc {
   };
   return withDerivedCopy(cfg);
 }
-
 function withDerivedCopy(cfg: SiteConfigDoc): SiteConfigDoc {
   const cat = cfg.categoryPreset?.[0];
   const defaultsByCat: Record<
@@ -167,8 +153,16 @@ function withDerivedCopy(cfg: SiteConfigDoc): SiteConfigDoc {
       dataSource: "Amazon",
       note: "本ページは広告を含みます",
     },
+    // ★ カリラク（レンタル）
+    "appliance-rental": {
+      title: "家電レンタルで、暮らしをラクに。",
+      subtitle: "冷蔵庫・洗濯機・小型家電まで、必要なときだけ。",
+      featured: "家電レンタル特集",
+      blogs: "新着ブログ",
+      dataSource: "A8.net",
+      note: "本ページは広告を含みます",
+    },
   };
-
   const d = (cat && defaultsByCat[cat]) || defaultsByCat["gaming-chair"];
   const hc = cfg.homeCopy ?? {};
   cfg.homeCopy = {
@@ -182,7 +176,7 @@ function withDerivedCopy(cfg: SiteConfigDoc): SiteConfigDoc {
   return cfg;
 }
 
-/* ===== データ取得 ===== */
+/* ===== Firestore fetchers（既存） ===== */
 async function fetchLatestBlogs(
   siteId: string,
   limit = 3
@@ -215,14 +209,8 @@ async function fetchLatestBlogs(
         { field: "siteId", value: siteId },
       ],
       limit,
-    }).catch(
-      () =>
-        [] as unknown as Array<{
-          name: string;
-          fields: Record<string, unknown>;
-        }>
-    );
-    return docs.map((d) => {
+    }).catch(() => [] as any);
+    return (docs as FsDoc[]).map((d: FsDoc) => {
       const f = d.fields as Record<string, FsValue>;
       return {
         slug: docIdFromName(d.name),
@@ -234,7 +222,6 @@ async function fetchLatestBlogs(
     });
   }
 }
-
 async function fetchFeaturedProducts(
   siteId: string,
   categoryId?: string,
@@ -248,20 +235,13 @@ async function fetchFeaturedProducts(
             { field: "categoryId", value: categoryId },
           ]
         : [{ field: "siteId", value: siteId }];
-
     const docs = await fsRunQuery({
       collection: "products",
       where,
       orderBy: [{ field: "createdAt", direction: "DESCENDING" as const }],
       limit,
-    }).catch(
-      () =>
-        [] as unknown as Array<{
-          name: string;
-          fields: Record<string, unknown>;
-        }>
-    );
-    return docs.map((d) => {
+    }).catch(() => [] as any);
+    return (docs as FsDoc[]).map((d: FsDoc) => {
       const f = d.fields as Record<string, FsValue>;
       const price = vNum(f, "bestPrice.price");
       const url = vStr(f, "bestPrice.url");
@@ -277,7 +257,6 @@ async function fetchFeaturedProducts(
         typeof updatedAt === "number"
           ? { price, url, source, updatedAt }
           : undefined;
-
       return {
         asin: docIdFromName(d.name),
         title: vStr(f, "title") ?? "",
@@ -297,113 +276,31 @@ async function fetchFeaturedProducts(
       } satisfies Product;
     });
   };
-
   const first = await run(true);
   if (first.length > 0 || !categoryId) return first;
   return run(false);
 }
-
-/* ===== ユーティリティ（悩みカード） ===== */
-type CardTheme = {
-  cardBg: string;
-  ctaBg: string;
-  accentText: string;
-  emoji: string;
-};
-
-function themeFor(id: string): CardTheme {
-  if (id.includes("back"))
+async function fetchFeaturedOffers(siteId: string, limit = 8) {
+  const docs = await fsRunQuery({
+    collection: "offers",
+    where: [
+      { field: "siteIds", op: "ARRAY_CONTAINS", value: siteId },
+      { field: "archived", value: false },
+    ],
+    orderBy: [{ field: "updatedAt", direction: "DESCENDING" }],
+    limit,
+  }).catch(() => [] as any);
+  return (docs as FsDoc[]).map((d: FsDoc) => {
+    const f = d.fields as Record<string, FsValue>;
     return {
-      cardBg: "bg-gray-50",
-      ctaBg: "bg-emerald-600 hover:bg-emerald-700",
-      accentText: "text-emerald-700",
-      emoji: "😣",
+      id: docIdFromName(d.name),
+      title: vStr(f, "title") ?? "",
+      images: fsGetStringArray(f, "images") ?? [],
+      affiliateUrl: vStr(f, "affiliateUrl") ?? vStr(f, "landingUrl") ?? "",
+      badges: fsGetStringArray(f, "badges") ?? [],
+      updatedAt: vNum(f, "updatedAt") ?? 0,
     };
-  if (id.includes("sweat"))
-    return {
-      cardBg: "bg-sky-50",
-      ctaBg: "bg-sky-600 hover:bg-sky-700",
-      accentText: "text-sky-700",
-      emoji: "🌬️",
-    };
-  if (id.includes("best_value"))
-    return {
-      cardBg: "bg-amber-50",
-      ctaBg: "bg-amber-600 hover:bg-amber-700",
-      accentText: "text-amber-700",
-      emoji: "💰",
-    };
-  return {
-    cardBg: "bg-indigo-50",
-    ctaBg: "bg-indigo-600 hover:bg-indigo-700",
-    accentText: "text-indigo-700",
-    emoji: "✨",
-  };
-}
-
-function PainButtonsGridFromRules({ rules }: { rules: PainRuleLite[] }) {
-  if (!rules || rules.length === 0) return null;
-  return (
-    <section aria-labelledby="pain-buttons-heading" className="mx-auto w-full">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 id="pain-buttons-heading" className="text-lg md:text-xl font-bold">
-          悩みから選ぶ
-        </h2>
-        <p className="text-xs text-gray-500">状況に合う商品へ最短導線</p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {rules.map((r) => {
-          const t = themeFor(r.id);
-          return (
-            <Link
-              key={r.id}
-              href={`/pain/${encodeURIComponent(r.id)}`}
-              className={[
-                "group block rounded-2xl border border-gray-100 p-5",
-                "shadow-sm hover:shadow-md transition-all",
-                t.cardBg,
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400",
-              ].join(" ")}
-            >
-              <div className="flex items-start gap-3">
-                <div className="text-3xl leading-none">{t.emoji}</div>
-                <div className="flex-1">
-                  <h3 className="text-base md:text-lg font-semibold tracking-tight">
-                    {r.label}
-                  </h3>
-                  {r.tags && r.tags.length > 0 && (
-                    <p className="mt-1 text-sm text-gray-600">
-                      #{r.tags.join(" #")}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <hr className="my-4 border-gray-200" />
-              <div
-                className={[
-                  "inline-flex items-center rounded-xl px-3 py-2 text-sm font-semibold text-white",
-                  "transition-colors group-hover:translate-x-0.5",
-                  t.ctaBg,
-                ].join(" ")}
-              >
-                今すぐチェック <span className="ml-1">→</span>
-              </div>
-              <p
-                className={[
-                  "mt-3 text-xs font-medium opacity-80",
-                  t.accentText,
-                ].join(" ")}
-              >
-                押すと「{r.label}」の解決ページへ
-              </p>
-            </Link>
-          );
-        })}
-      </div>
-    </section>
-  );
+  });
 }
 
 /* ===== ページ本体 ===== */
@@ -427,60 +324,41 @@ export default async function Page() {
   const blogsTitle = site.homeCopy?.blogsTitle ?? "新着ブログ";
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
-      {/* breadcrumb */}
-      <nav className="mb-2 text-sm text-gray-500">
+    <main className="container-kariraku py-10 space-y-8">
+      <nav className="text-sm text-gray-500">
         <span className="opacity-70">ホーム</span>
       </nav>
 
-      {/* 構造化データ: BreadcrumbList */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              {
-                "@type": "ListItem",
-                position: 1,
-                name: "ホーム",
-                item:
-                  (
-                    process.env.NEXT_PUBLIC_SITE_URL ??
-                    "https://www.chairscope.com"
-                  ).replace(/\/$/, "") + "/",
-              },
-            ],
-          }),
-        }}
-      />
-
-      {/* ヒーロー */}
       <header className="mb-4">
         <h1 className="text-2xl md:text-3xl font-bold">{title}</h1>
         <p className="text-sm opacity-70">{subtitle}</p>
       </header>
-      {/* A8 Offers CTA（追加） */}
+
+      {/* A8 Offers CTA */}
       <div className="mb-6">
         <Link
           href="/offers?v=hero"
           className="inline-flex items-center rounded-xl bg-emerald-600 text-white px-4 py-2 text-sm hover:bg-emerald-700 transition"
         >
-          家電レンタルおすすめを見る <span className="ml-1">→</span>
+          家電レンタルのおすすめを見る <span className="ml-1">→</span>
         </Link>
-        <p className="mt-1 text-xs text-gray-500">※ 本ページは広告を含みます</p>
       </div>
+      <div className="my-10">{/* 既存の悩みナビ（省略） */}</div>
 
-      <HeroBadges dataSourceLabel={dataSourceLabel} note={note} />
+      {featured.length > 0 ? (
+        <FeaturedSection title={featuredTitle} items={featured} />
+      ) : (
+        <section className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h2 className="h2">{featuredTitle}</h2>
+            <Link href="/offers" className="text-sm underline">
+              すべて見る
+            </Link>
+          </div>
+          <OfferGallery siteId={siteId} variant="grid" limit={9} />
+        </section>
+      )}
 
-      {/* 悩みナビ（カード版） */}
-      <div className="my-10">
-        <PainButtonsGridFromRules rules={site.painRules ?? []} />
-      </div>
-
-      {/* 商品・ブログ */}
-      <FeaturedSection title={featuredTitle} items={featured} />
       <BlogsSection title={blogsTitle} items={latestBlogs} />
     </main>
   );

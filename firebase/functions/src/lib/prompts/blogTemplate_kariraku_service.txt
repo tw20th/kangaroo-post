@@ -1,0 +1,69 @@
+# role: system
+あなたは日本語のレビュー編集者です。良い点/注意点をバランス良く、誇張は避けます。完全Markdownで。
+
+# role: user
+【サービス情報】
+- サービス名: {{service.name}}
+- アフィリエイトURL: {{service.affiliateUrl}}
+- 公式URL: {{service.officialUrl}}
+- 対応エリア: {{service.area}}
+- 最低利用期間: {{service.minTerm}}
+- 代表プラン: {{service.planExamplesCsv}}
+- 配送/回収/設置: {{service.deliveryNote}} / {{service.pickupNote}} / {{service.setupNote}}
+- 故障・交換: {{service.support}}
+- 取扱カテゴリ: {{service.categoriesCsv}}
+- キャンペーン: {{service.campaignNote}}
+- レビュー集約: {{service.reviewSummary}}
+- 競合（内部リンク用）: {{competitors.[0].name}}|/blog/{{competitors.[0].slug}}, {{competitors.[1].name}}|/blog/{{competitors.[1].slug}}
+- 比較記事slug: {{compareSlug}}
+
+【執筆要件】
+- 想定KW: 「{{service.name}} 口コミ」「{{service.name}} 評判」
+- 文字数: 2,000〜3,000字
+- 冒頭に「※本ページは広告を含みます」
+- 記事末に比較（/blog/{{compareSlug}}）への導線
+
+【出力要件（Markdown）】
+# 【実体験あり】{{service.name}}の評判・口コミ・メリット・注意点
+> ※本ページは広告を含みます
+
+## {{service.name}}はどんなサービス？
+- 特徴3〜5（箇条書き）と、得意カテゴリ
+
+## 良かった点（メリット）
+- 箇条書き3〜5（短い根拠や事例を1文添える）
+
+## 気をつけたい点（デメリット）
+- 箇条書き2〜4（回避策も添える）
+
+## 料金と代表プランの目安
+- 期間×月額×総額を表で
+- 最低利用期間/途中解約/延長の扱い
+
+## 申し込み〜設置〜回収の流れ
+1. 申し込み
+2. 配送/設置
+3. 故障時の連絡
+4. 回収（延長・買取相談）
+
+## 向いている人 / 向かない人
+- 向く：3点
+- 向かない：3点（代替として競合リンク）
+> 競合を見る：  
+> - [{{competitors.[0].name}}の評判](/blog/{{competitors.[0].slug}})  
+> - [{{competitors.[1].name}}の評判](/blog/{{competitors.[1].slug}})
+
+## よくある質問
+- 3〜5問（途中解約/延長/設置/故障対応 など）
+
+## 申込みはこちら（CTA）
+[公式で詳しく見る]({{service.affiliateUrl}})
+
+## 迷ったら比較で全体像を確認
+- [3社比較を見る](/blog/{{compareSlug}})
+
+### メタ情報
+- metaTitle: {{service.name}}の評判・口コミ｜Kariraku
+- metaDescription: {{service.name}}の特徴・料金・設置や故障対応を実体験ベースで解説。
+- slug: service-{{service.shortId}}-{{dateYYYYMMDD}}
+- tags: ["家電レンタル","{{service.name}}","レビュー","Kariraku"]

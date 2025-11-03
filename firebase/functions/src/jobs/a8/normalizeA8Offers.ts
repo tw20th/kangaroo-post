@@ -1,51 +1,75 @@
-import { onRequest } from "firebase-functions/v2/https";
 import { getFirestore } from "firebase-admin/firestore";
 
-function decideSites(title: string): string[] {
-  const t = title.toLowerCase();
+type Options = {
+  siteId?: string; // ← 追加：HTTP側から受ける
+};
+
+function decideSitesByTitle(title: string): string[] {
+  const t = (title || "").toLowerCase();
   const sites: string[] = [];
-  if (
-    t.includes("冷蔵") ||
-    t.includes("洗濯") ||
-    t.includes("レンタル") ||
-    t.includes("サブスク")
-  ) {
-    sites.push("homeease");
-  }
-  // ここに chairscope / powerbank-scope 等の割当ルールを追加可能
+  if (/(冷蔵|洗濯|レンタル|サブスク)/.test(t)) sites.push("homeease");
   return sites.length ? sites : ["homeease"];
 }
 
-export const normalizeA8Offers = onRequest(async (_req, res) => {
+export async function normalizeA8Offers(opts: Options = {}) {
   const db = getFirestore();
   const snap = await db.collection("offers").get();
 
   let updated = 0;
-  const batch = db.batch();
+  let scanned = 0;
+
+  let batch = db.batch();
 
   for (const doc of snap.docs) {
-    const o = doc.data() as { title?: string; dedupeKey?: string };
-    const siteIds = decideSites(o.title ?? "");
-    const tags: string[] = [];
+    scanned++;
+    const o = doc.data() as {
+      title?: string;
+      siteIds?: string[];
+      creatives?: Array<
+        | { type: "text"; href: string }
+        | { type: "banner"; href: string; imgSrc?: string }
+      >;
+      affiliateUrl?: string;
+      archived?: boolean;
+      updatedAt?: number;
+    };
 
-    if (o.title?.includes("初回")) tags.push("first-offer");
+    // --- siteIds 決定 ---
+    const siteIds = new Set<string>(Array.isArray(o.siteIds) ? o.siteIds : []);
+    if (opts.siteId) {
+      siteIds.add(opts.siteId); // 明示指定を最優先
+    } else {
+      for (const s of decideSitesByTitle(o.title ?? "")) siteIds.add(s);
+    }
 
-    batch.set(
-      doc.ref,
-      {
-        siteIds,
-        tags,
-      },
-      { merge: true }
-    );
+    // --- affiliateUrl フォールバック（text → banner の順） ---
+    let affiliateUrl = o.affiliateUrl || "";
+    if (!affiliateUrl && Array.isArray(o.creatives)) {
+      const text = o.creatives.find((c: any) => c?.type === "text") as
+        | { href: string }
+        | undefined;
+      const banner = o.creatives.find((c: any) => c?.type === "banner") as
+        | { href: string }
+        | undefined;
+      affiliateUrl = text?.href || banner?.href || "";
+    }
+
+    const patch = {
+      siteIds: Array.from(siteIds),
+      affiliateUrl: affiliateUrl || null,
+      archived: o.archived ?? false,
+      updatedAt: o.updatedAt ?? Date.now(),
+    };
+
+    batch.set(doc.ref, patch, { merge: true });
     updated++;
 
-    // バッチサイズが大きくなりすぎないよう適宜コミット
     if (updated % 400 === 0) {
       await batch.commit();
+      batch = db.batch();
     }
   }
 
   await batch.commit();
-  res.status(200).send({ ok: true, normalized: updated });
-});
+  return { scanned, updated };
+}

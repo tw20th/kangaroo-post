@@ -1,15 +1,14 @@
+// apps/web/app/offers/page.tsx
+import { getServerSiteId, getSiteEntry } from "@/lib/site-server";
+import { notFound } from "next/navigation";
 import OfferGallery from "@/components/offers/OfferGallery";
-import { getServerSiteId } from "@/lib/site-server";
 
-export default function Page({
-  searchParams,
-}: {
-  searchParams?: { v?: string; limit?: string };
-}) {
+export const revalidate = 60;
+export const dynamic = "force-dynamic";
+
+export default async function OffersPage() {
   const siteId = getServerSiteId();
-  const variant =
-    (searchParams?.v as "grid" | "list" | "hero" | undefined) ?? "grid";
-  const limit = Number(searchParams?.limit ?? 24) || 24;
-
-  return <OfferGallery siteId={siteId} variant={variant} limit={limit} />;
+  const s = getSiteEntry();
+  if (s.features?.offers === false) notFound(); // or redirect("/products")
+  return <OfferGallery siteId={siteId} variant="hero" limit={24} />;
 }

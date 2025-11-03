@@ -1,4 +1,3 @@
-// apps/web/components/common/SiteHeader.tsx
 import Link from "next/link";
 import { getSiteEntry } from "@/lib/site-server";
 
@@ -7,16 +6,18 @@ export default function SiteHeader() {
   const siteName = s.displayName;
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-white/90 backdrop-blur">
-      <div className="mx-auto max-w-6xl px-6 h-14 flex items-center justify-between">
-        <Link href="/" className="font-semibold tracking-tight">
-          {siteName}
+    <header className="container-kariraku pt-6 pb-4">
+      <div className="flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-xl bg-brand-600" />
+          <span className="font-semibold tracking-tight">{siteName}</span>
         </Link>
+
         <nav className="text-sm">
           <ul className="flex items-center gap-5">
             <li>
-              <Link href="/products" className="hover:underline">
-                商品一覧
+              <Link href="/offers" className="hover:underline">
+                家電レンタル
               </Link>
             </li>
             <li>

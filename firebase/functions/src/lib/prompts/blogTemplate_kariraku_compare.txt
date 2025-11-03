@@ -1,0 +1,88 @@
+# role: system
+あなたはSEOに強い日本語のWeb編集者です。E-E-A-Tを意識し、事実ベース・誇張なし・比較表で可視化。完全なMarkdownで出力し、メタ発言は禁止。
+
+# role: user
+【サイト情報】
+- siteId: {{site.id}}
+- サイト名: {{site.displayName}}（Kariraku）
+- ドメイン: {{site.domain}}
+- 免責: 「※本ページは広告を含みます」を本文冒頭に入れる
+
+【比較対象サービス（3社）】
+{{#each services}}
+- サービス名: {{name}}
+  - 公式URL: {{officialUrl}}
+  - アフィリエイトURL: {{affiliateUrl}}
+  - 取扱カテゴリ: {{categoriesCsv}}
+  - 対応エリア: {{area}}
+  - 最低利用期間: {{minTerm}}
+  - 配送/設置: {{deliveryNote}}
+  - 故障・交換: {{support}}
+  - 特徴（3〜5）: {{highlightsCsv}}
+  - 注意点（2〜4）: {{cautionsCsv}}
+  - 代表プラン: {{planExamplesCsv}}
+  - レビュー要約: {{reviewSummary}}
+  - 内部リンクslug: {{internalSlug}}
+{{/each}}
+
+【執筆要件】
+- 想定KW: 「家電レンタル 比較」「家電 レンタル おすすめ」「{{seasonKeyword}} 家電 レンタル」
+- 文字数: 3,000〜4,000字
+- 比較軸: 料金/最低期間/配送・設置/故障対応/対応エリア/取扱カテゴリ/キャンペーン
+- 内部リンク: 各社の個別記事（/blog/{{internalSlug}}）を本文に3回以上
+- CTA: 各社に「公式で詳しく見る」（affiliateUrl）
+- 体験要素: 編集部（仮想）利用の気づきを1セクション（事実整合の範囲）
+
+【出力要件（Markdown）】
+# 家電レンタル3社を徹底比較！【{{services.[0].name}}・{{services.[1].name}}・{{services.[2].name}}】
+> ※本ページは広告を含みます
+
+## 結論（まず指針）
+- 価格重視なら：{{services.[?].name}} / すぐ使いたいなら：{{services.[?].name}} / 長期サポート重視なら：{{services.[?].name}}
+- 今月の編集部おすすめ：1社と理由（1〜2文）
+
+## 家電レンタルの選び方（失敗回避チェック）
+- 3〜5項目のチェックリスト
+
+## 3社の比較表（要約）
+| 項目 | {{services.[0].name}} | {{services.[1].name}} | {{services.[2].name}} |
+|---|---|---|---|
+| 料金の分かりやすさ | {{services.[0].feeClarity}} | {{services.[1].feeClarity}} | {{services.[2].feeClarity}} |
+| 最低利用期間 | {{services.[0].minTerm}} | {{services.[1].minTerm}} | {{services.[2].minTerm}} |
+| 配送/設置 | {{services.[0].deliveryNote}} | {{services.[1].deliveryNote}} | {{services.[2].deliveryNote}} |
+| 故障・交換 | {{services.[0].support}} | {{services.[1].support}} | {{services.[2].support}} |
+| 対応エリア | {{services.[0].area}} | {{services.[1].area}} | {{services.[2].area}} |
+| 取扱カテゴリ | {{services.[0].categoriesCsv}} | {{services.[1].categoriesCsv}} | {{services.[2].categoriesCsv}} |
+
+> 詳しい解説：  
+> - [{{services.[0].name}}の評判・メリット](/blog/{{services.[0].internalSlug}})  
+> - [{{services.[1].name}}の評判・メリット](/blog/{{services.[1].internalSlug}})  
+> - [{{services.[2].name}}の評判・メリット](/blog/{{services.[2].internalSlug}})
+
+## サービス別の向き・不向き
+### {{services.[0].name}}
+- 向いている人 / 向いていない人（各3）
+- 代表プラン例と総コスト目安  
+【CTA】[公式で詳しく見る]({{services.[0].affiliateUrl}})
+
+### {{services.[1].name}}
+（同様）
+
+### {{services.[2].name}}
+（同様）
+
+## 編集部の一言レビュー
+- 設置・回収の流れ/故障時対応/注意点の実例
+
+## よくある質問
+- 途中解約/延長/設置日数/支払方法 など3〜5問
+
+## まとめ
+- 比較の要点を3行で総括
+- 迷ったら：おすすめ1社＋比較記事上部への戻りリンク
+
+### メタ情報（そのまま出力）
+- metaTitle: 家電レンタル3社を徹底比較｜{{site.displayName}}
+- metaDescription: 料金・配送・故障対応まで徹底比較。あなたに合う1社が分かる。
+- slug: compare-{{dateYYYYMM}}-{{hash8}}
+- tags: ["家電レンタル","比較","{{seasonKeyword}}","Kariraku"]

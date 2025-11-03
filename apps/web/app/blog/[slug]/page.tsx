@@ -1,3 +1,4 @@
+// apps/web/app/blog/[slug]/page.tsx
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerSiteId } from "@/lib/site-server";
@@ -6,6 +7,9 @@ import Image from "next/image";
 
 import PainRail from "@/components/pain/PainRail";
 import { loadPainRules } from "@/lib/pain-helpers";
+import BlogBody from "@/components/blog/BlogBody";
+import { normalizeBlogMarkdown, extractToc, isA8Url } from "@/utils/markdown";
+import RelatedByTags from "@/components/blog/RelatedByTags";
 
 export const revalidate = 3600;
 export const dynamic = "force-dynamic";
@@ -39,107 +43,6 @@ function makeSummaryFromContent(md: string, max = 120) {
   return plain.length > max ? plain.slice(0, max) + "…" : plain;
 }
 
-function mdToHtml(md: string) {
-  const esc = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const fences: string[] = [];
-  md = md.replace(/```([\s\S]*?)```/g, (_, code) => {
-    fences.push(
-      `<pre class="not-prose overflow-x-auto"><code>${esc(
-        code.trim()
-      )}</code></pre>`
-    );
-    return `[[[FENCE_${fences.length - 1}]]]`;
-  });
-
-  const lines = md.split(/\r?\n/);
-  const out: string[] = [];
-  let ulOpen = false;
-
-  const slugify = (s: string) =>
-    s
-      .toLowerCase()
-      .replace(/[^\w\u3000-\u9fff-]+/g, " ")
-      .trim()
-      .replace(/\s+/g, "-");
-
-  for (const raw of lines) {
-    const line = raw.trimEnd();
-    const m = line.match(/^(#{1,6})\s+(.*)$/);
-    if (m) {
-      if (ulOpen) {
-        out.push("</ul>");
-        ulOpen = false;
-      }
-      const level = m[1].length;
-      const text = m[2].trim();
-      const id = slugify(text);
-      out.push(`<h${level} id="${id}">${text}</h${level}>`);
-      continue;
-    }
-    if (/^[-*]\s+/.test(line)) {
-      const item = line.replace(/^[-*]\s+/, "");
-      if (!ulOpen) {
-        out.push('<ul class="list-disc pl-6">');
-        ulOpen = true;
-      }
-      out.push(`<li>${item}</li>`);
-      continue;
-    } else if (ulOpen && line === "") {
-      out.push("</ul>");
-      ulOpen = false;
-    }
-    if (line === "") {
-      out.push("");
-      continue;
-    }
-    let html = line
-      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.+?)\*/g, "<em>$1</em>")
-      .replace(/`([^`]+?)`/g, "<code>$1</code>")
-      .replace(
-        /\[([^\]]+?)\]\((https?:\/\/[^\s)]+)\)/g,
-        '<a href="$2" target="_blank" rel="noopener nofollow sponsored" class="underline">$1</a>'
-      );
-    out.push(`<p>${html}</p>`);
-  }
-  if (ulOpen) out.push("</ul>");
-  let html = out.join("\n");
-  html = html.replace(
-    /\[\[\[FENCE_(\d+)]]]/g,
-    (_, i) => fences[Number(i)] || ""
-  );
-  return html;
-}
-
-function extractToc(md: string) {
-  const lines = md.split(/\r?\n/);
-  const items: { level: 2 | 3; text: string; id: string }[] = [];
-  const slugify = (s: string) =>
-    s
-      .toLowerCase()
-      .replace(/[^\w\u3000-\u9fff-]+/g, " ")
-      .trim()
-      .replace(/\s+/g, "-");
-  for (const l of lines) {
-    const m = l.match(/^(#{2,3})\s+(.*)$/);
-    if (m)
-      items.push({
-        level: m[1].length === 2 ? 2 : 3,
-        text: m[2].trim(),
-        id: slugify(m[2].trim()),
-      });
-  }
-  return items;
-}
-
-const outUrl = (asin: string, url?: string, src = "blog") =>
-  url
-    ? `/out/${encodeURIComponent(asin)}?to=${encodeURIComponent(
-        url
-      )}&src=${src}`
-    : undefined;
-
 // ---- SEO ----
 export async function generateMetadata({
   params,
@@ -160,7 +63,7 @@ export default async function BlogDetail({
   params: { slug: string };
 }) {
   const siteId = getServerSiteId();
-  const painRules = await loadPainRules(siteId);
+  await loadPainRules(siteId); // 現状使用箇所なしでも初期化だけ
 
   const blog = await fetchBlogBySlug(params.slug);
   if (!blog) notFound();
@@ -176,8 +79,10 @@ export default async function BlogDetail({
     }
   }
 
-  const toc = extractToc(blog.content);
-  const html = mdToHtml(blog.content);
+  // 本文を正規化 → 目次を抽出
+  const normalized = normalizeBlogMarkdown(blog.content);
+  const toc = extractToc(normalized);
+
   const bestPrice: BestPrice | null = blog.relatedAsin
     ? await fetchBestPrice(blog.relatedAsin)
     : null;
@@ -254,8 +159,8 @@ export default async function BlogDetail({
         )}
       </header>
 
-      {/* ★ 追加: ヒーロー画像＋Unsplash帰属（next/image 版） */}
-      {blog.imageUrl ? (
+      {/* ヒーロー画像 */}
+      {blog.imageUrl && !isA8Url(blog.imageUrl) ? (
         <figure className="mt-5 overflow-hidden rounded-2xl border bg-white">
           <div className="relative w-full aspect-[16/9]">
             <Image
@@ -267,8 +172,6 @@ export default async function BlogDetail({
               className="object-cover"
             />
           </div>
-
-          {/* Unsplash 帰属（あれば表示） */}
           {imageCredit && imageCreditLink ? (
             <figcaption className="px-4 py-2 text-xs text-gray-500">
               Photo by{" "}
@@ -294,7 +197,7 @@ export default async function BlogDetail({
         </figure>
       ) : null}
 
-      {/* 関連商品CTA（あれば） */}
+      {/* 関連商品CTA */}
       {bestPrice && blog.relatedAsin && (
         <div className="mt-4 rounded-xl border bg-white p-4 text-sm">
           <div className="mb-1">
@@ -309,13 +212,9 @@ export default async function BlogDetail({
             {fmt(bestPrice.updatedAt)}）
           </div>
           <a
-            href={
+            href={`/out/${encodeURIComponent(
               blog.relatedAsin
-                ? `/out/${encodeURIComponent(
-                    blog.relatedAsin
-                  )}?to=${encodeURIComponent(bestPrice.url)}&src=blog`
-                : undefined
-            }
+            )}?to=${encodeURIComponent(bestPrice.url)}&src=blog`}
             target="_blank"
             rel="noopener noreferrer sponsored"
             className="inline-block rounded-lg border px-4 py-2 font-medium hover:shadow-sm"
@@ -342,14 +241,23 @@ export default async function BlogDetail({
       )}
 
       {/* 本文 */}
-      <article className="prose prose-neutral mt-6 max-w-none">
-        <div dangerouslySetInnerHTML={{ __html: html }} />
+      <article className="mt-6">
+        <BlogBody content={normalized} />
       </article>
 
-      {/* 関連ガイド（悩みから選ぶ） */}
+      {/* 関連ガイド */}
       <div className="mt-8 rounded-2xl border bg-white p-5">
-        <div className="mb-2 text-sm text-gray-600">関連ガイド</div>
-        <PainRail className="my-10" />
+        {/* ★ タグ連動の関連記事 */}
+        <RelatedByTags
+          siteId={siteId}
+          tags={(blog as any).tags ?? []}
+          currentSlug={blog.slug}
+        />
+
+        {/* 既存の悩みから選ぶ（保険の回遊導線） */}
+        <div className="mt-6">
+          <PainRail className="my-6" />
+        </div>
       </div>
 
       {/* 次の一歩 */}

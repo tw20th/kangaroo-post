@@ -1,4 +1,3 @@
-// apps/web/app/layout.tsx
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
@@ -8,9 +7,7 @@ import { getSiteConfig } from "@/lib/site-config";
 import Analytics from "./Analytics";
 
 export const dynamic = "force-dynamic";
-
-// ✅ ここで viewport を定義（警告解消）
-export const viewport = { themeColor: "#ffffff" };
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = getSiteConfig();
@@ -27,7 +24,6 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [{ url: "/og-default.png" }],
     },
     twitter: { card: "summary_large_image" },
-    // ← ここからは themeColor を削除
   };
 }
 
@@ -54,7 +50,6 @@ export default function RootLayout({
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
-
                 try {
                   var usp = new URLSearchParams(window.location.search);
                   if (usp.get('ga_debug') === '1') {
@@ -67,7 +62,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className="min-h-dvh bg-gray-50 text-gray-900 antialiased">
+      <body className="min-h-dvh antialiased">
         <Analytics measurementId={GA_MEASUREMENT_ID} />
         <SiteHeader />
         {children}

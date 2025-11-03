@@ -57,7 +57,76 @@
         "singleItem": "13,200円（税込）",
         "subscriptionInit": "6,600円（税込）"
       },
-      "campaigns": ["2周年キャンペーン", "ご近所割"]
+      "campaigns": ["2周年キャンペーン", "ご近所割"],
+      "creatives": [
+        {
+          "materialId": "001",
+          "type": "text",
+          "label": "家電レンタルみんなのHappy",
+          "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G3W9J6+5MMG+5YJRM"
+        },
+        {
+          "materialId": "002",
+          "type": "text",
+          "label": "月1,870円から使える生活家電【家電レンタルみんなのHappy】",
+          "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G3W9J6+5MMG+5YRHE"
+        },
+        {
+          "materialId": "003",
+          "type": "text",
+          "label": "家電は買うより格安レンタル【家電レンタルみんなのHappy】",
+          "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G3W9J6+5MMG+5YZ76"
+        },
+        {
+          "materialId": "005",
+          "type": "banner",
+          "size": "300x250",
+          "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G3W9J6+5MMG+5ZEMP",
+          "imgSrc": "https://www24.a8.net/svt/bgt?aid=251027041974&wid=003&eno=01&mid=s00000026260001005000&mc=1"
+        },
+        {
+          "materialId": "006",
+          "type": "banner",
+          "size": "100x60",
+          "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G3W9J6+5MMG+5ZMCH",
+          "imgSrc": "https://www21.a8.net/svt/bgt?aid=251027041974&wid=003&eno=01&mid=s00000026260001006000&mc=1"
+        },
+        {
+          "materialId": "007",
+          "type": "banner",
+          "size": "120x60",
+          "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G3W9J6+5MMG+5ZU29",
+          "imgSrc": "https://www26.a8.net/svt/bgt?aid=251027041974&wid=003&eno=01&mid=s00000026260001007000&mc=1"
+        },
+        {
+          "materialId": "008",
+          "type": "banner",
+          "size": "300x250",
+          "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G3W9J6+5MMG+601S1",
+          "imgSrc": "https://www29.a8.net/svt/bgt?aid=251027041974&wid=003&eno=01&mid=s00000026260001008000&mc=1"
+        },
+        {
+          "materialId": "009",
+          "type": "banner",
+          "size": "300x250",
+          "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G3W9J6+5MMG+609HT",
+          "imgSrc": "https://www28.a8.net/svt/bgt?aid=251027041974&wid=003&eno=01&mid=s00000026260001009000&mc=1"
+        },
+        {
+          "materialId": "010",
+          "type": "banner",
+          "size": "120x60",
+          "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G3W9J6+5MMG+60H7L",
+          "imgSrc": "https://www24.a8.net/svt/bgt?aid=251027041974&wid=003&eno=01&mid=s00000026260001010000&mc=1"
+        },
+        {
+          "materialId": "019",
+          "type": "banner",
+          "size": "250x250",
+          "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G3W9J6+5MMG+62ENL",
+          "imgSrc": "https://www23.a8.net/svt/bgt?aid=251027041974&wid=003&eno=01&mid=s00000026260001019000&mc=1"
+        }
+      ]
     }
   }
 }

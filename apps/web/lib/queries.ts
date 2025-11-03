@@ -10,6 +10,62 @@ import {
   docIdFromName,
 } from "@/lib/firestore-rest";
 
+// 既存の import 群はそのまま。下を追加してください。
+export type BlogSummary = {
+  slug: string;
+  title: string;
+  summary?: string;
+  updatedAt?: number;
+  tags?: string[];
+};
+
+/** タグ連動の関連記事（ARRAY_CONTAINS をタグごとに回す版） */
+export async function fetchRelatedBlogsByTags(
+  siteId: string,
+  tags: readonly string[] = [],
+  excludeSlug: string,
+  limit = 3
+): Promise<BlogSummary[]> {
+  if (!tags.length) return [];
+
+  const seen = new Set<string>();
+  const picked: BlogSummary[] = [];
+
+  for (const tag of tags.slice(0, 10)) {
+    if (picked.length >= limit + 2) break;
+
+    const docs = await fsRunQuery({
+      collection: "blogs",
+      where: [
+        { field: "siteId", value: siteId },
+        { field: "visibility", value: "public" },
+        { field: "tags", op: "ARRAY_CONTAINS", value: tag }, // ★ ここがポイント
+      ],
+      orderBy: [{ field: "updatedAt", direction: "DESCENDING" as const }],
+      limit: limit + 2,
+    }).catch(() => [] as any[]);
+
+    for (const d of docs) {
+      const slug = docIdFromName(d.name);
+      if (!slug || slug === excludeSlug || seen.has(slug)) continue;
+
+      const f = d.fields;
+      picked.push({
+        slug,
+        title: vStr(f, "title") ?? "(no title)",
+        summary: vStr(f, "summary") ?? undefined,
+        updatedAt: vNum(f, "updatedAt") ?? undefined,
+        tags: vStrArr(f, "tags") ?? [],
+      });
+      seen.add(slug);
+
+      if (picked.length >= limit + 2) break;
+    }
+  }
+
+  return picked.slice(0, limit);
+}
+
 /* ===== products ===== */
 
 export async function fetchProductByAsin(
@@ -193,9 +249,7 @@ export async function fetchBlogs(
   return rows;
 }
 
-// そのままの定義をまるっと置き換え
 export async function fetchBlogBySlug(slug: string) {
-  // 入ってくる slug は 例) "chairscope_...%3A1000..." or "chairscope_...:1000..."
   const safeDecode = (s: string) => {
     try {
       return decodeURIComponent(s);
@@ -203,18 +257,10 @@ export async function fetchBlogBySlug(slug: string) {
       return s;
     }
   };
-
-  // 候補を用意：順に試す
-  const raw = slug; // 例) "...%3A1000..." をそのまま
-  const decoded = safeDecode(slug); // 例) "...:1000..."
-  const encoded = encodeURIComponent(decoded); // 例) "...%3A1000..."
-
-  // Firestore REST 呼び分け（fsGet 側は encodeURI なので、ここは文字列をそのまま渡す）
-  const tryPaths = [
-    `blogs/${raw}`, // ドキュメントIDが "%3A" で保存されているケース
-    `blogs/${encoded}`, // ドキュメントIDが ":" を含むケース（URL上は%3Aにする）
-    `blogs/${decoded}`, // 念のため（環境によっては ":" をそのまま解決できる）
-  ];
+  const raw = slug;
+  const decoded = safeDecode(slug);
+  const encoded = encodeURIComponent(decoded);
+  const tryPaths = [`blogs/${raw}`, `blogs/${encoded}`, `blogs/${decoded}`];
 
   let doc: any | null = null;
   for (const p of tryPaths) {
@@ -225,7 +271,7 @@ export async function fetchBlogBySlug(slug: string) {
 
   const f = (doc as any).fields;
   return {
-    slug, // ← 受け取った文字列をそのまま返す（呼び出し側が使いやすい）
+    slug,
     title: vStr(f, "title") ?? "(no title)",
     content: vStr(f, "content") ?? "",
     imageUrl: vStr(f, "imageUrl") ?? undefined,
@@ -236,6 +282,8 @@ export async function fetchBlogBySlug(slug: string) {
     relatedAsin: vStr(f, "relatedAsin") ?? null,
     imageCredit: vStr(f, "imageCredit") ?? null,
     imageCreditLink: vStr(f, "imageCreditLink") ?? null,
+    /** ★ 追加：関連記事抽出に使う */
+    tags: vStrArr(f, "tags") ?? [],
   };
 }
 

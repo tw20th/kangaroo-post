@@ -4,15 +4,72 @@
 
 :root {
   color-scheme: light;
+  --bg: #f7faf8; /* surface.soft */
+  --ink: #111827; /* gray-900 */
 }
 
+/* 背景にうっすらグラデで“やさしさ”を足す */
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background: radial-gradient(
+      1200px 600px at 10% -10%,
+      rgba(34, 197, 94, 0.1),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 90% -20%,
+      rgba(16, 185, 129, 0.1),
+      transparent 55%
+    ),
+    var(--bg);
+  color: var(--ink);
+}
+
+/* 共通レイアウト */
+.container-kariraku {
+  @apply mx-auto max-w-6xl px-6 md:px-8;
+}
+
+/* 見出し & リード */
+.h1 {
+  @apply text-2xl md:text-3xl font-bold tracking-tight;
+}
+.h2 {
+  @apply text-xl md:text-2xl font-semibold tracking-tight;
+}
+.lead {
+  @apply text-sm text-gray-600;
+}
+
+/* ボタン */
+.btn {
+  @apply inline-flex items-center rounded-2xl px-4 py-2 text-sm font-medium transition;
+}
+.btn-brand {
+  @apply bg-brand-600 text-white hover:bg-brand-700 shadow-soft hover:shadow-softHover;
+}
+.btn-ghost {
+  @apply text-brand-700 hover:text-brand-800 hover:bg-brand-50;
+}
+
+/* カード/画像 */
+.card {
+  @apply rounded-card border border-surface-line bg-surface shadow-soft hover:shadow-softHover transition;
+}
+.img-soft {
+  @apply rounded-2xl border border-surface-line;
+}
+
+/* リンク装飾（既存維持） */
 .prose a {
   text-decoration: underline;
 }
 
-/* apps/web/app/globals.css の末尾などに */
+/* アクセシビリティ */
 *:focus-visible {
-  outline: 2px solid rgba(16, 185, 129, 0.5); /* brand系の薄いアウトライン */
+  outline: 2px solid rgba(16, 185, 129, 0.5);
   outline-offset: 2px;
 }
 ::selection {

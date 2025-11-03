@@ -1,0 +1,172 @@
+{
+  "program": {
+    "programId": "s00000003161003",
+    "advertiser": "株式会社サークランド",
+    "category": ["家電", "家具", "レンタル"]
+  },
+  "offer": {
+    "id": "s00000003161003:kasite",
+    "title": "家電・家具のお届けレンタルサービス「かして！どっとこむ」",
+    "description": "業界トップクラスの実績を持つ家電・家具レンタルサービス。全国配送対応、設置・修理・交換までサポート。30日〜長期まで柔軟、翌日配送にも対応。新品・中古を選べ、引越し時の継続やサイズ変更、消耗品無料提供など手厚いサービスが特長。",
+    "planType": "subscription",
+    "landingUrl": "https://www.kasite.com/",
+    "affiliateUrl": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HV7V6",
+    "images": [],
+    "badges": [
+      "全国配送対応",
+      "30日からOK",
+      "設置・修理・交換サポート",
+      "新品・中古から選べる",
+      "翌日配送対応可",
+      "消耗品無料提供"
+    ],
+    "tags": [
+      "家電レンタル",
+      "家具レンタル",
+      "一人暮らし",
+      "単身赴任",
+      "ファミリー",
+      "短期レンタル",
+      "長期レンタル",
+      "全国対応"
+    ],
+    "siteIds": ["kariraku"],
+    "extras": {
+      "reward": "成約 2,000円",
+      "epc": 74.38,
+      "confirmRate": "92.86%",
+      "lookbackDays": 90,
+      "confirmEta": "約30日",
+      "listingPolicy": "一部OK（NG: 「かしてどっとこむ」「サークランド」等の指名・想起キーワード）",
+      "devices": ["PC", "スマホ"],
+      "notes": [
+        "広告表示の明示（ファーストビュー等）必須",
+        "掲載後は広告掲載URLの提出が必要"
+      ],
+      "payment": [
+        "代金引換（現金一括）",
+        "銀行前振込（法人のみ）",
+        "クレジットカード（一括）",
+        "JACCS分割（個人のみ）"
+      ]
+    },
+    "creatives": [
+      {
+        "materialId": "001",
+        "type": "text",
+        "label": "新生活の家具家電はレンタルがお得！他社を圧倒する安さ、品揃えをご確認ください。家具家電レンタルのかして！どっとこむ",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HV7V6"
+      },
+      {
+        "materialId": "002",
+        "type": "text",
+        "label": "家電・家具レンタル専門サイト「かして！どっとこむ」。新品/中古を幅広くラインナップ",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HVFKY"
+      },
+      {
+        "materialId": "003",
+        "type": "banner",
+        "size": "468x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HVNAP",
+        "imgSrc": "https://www28.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003003000&mc=1"
+      },
+      {
+        "materialId": "004",
+        "type": "banner",
+        "size": "120x90",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HVV0H",
+        "imgSrc": "https://www24.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003004000&mc=1"
+      },
+      {
+        "materialId": "005",
+        "type": "banner",
+        "size": "100x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HW2Q9",
+        "imgSrc": "https://www23.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003005000&mc=1"
+      },
+      {
+        "materialId": "006",
+        "type": "banner",
+        "size": "100x100",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HWAG1",
+        "imgSrc": "https://www25.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003006000&mc=1"
+      },
+      {
+        "materialId": "007",
+        "type": "banner",
+        "size": "234x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HWI5T",
+        "imgSrc": "https://www28.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003007000&mc=1"
+      },
+      {
+        "materialId": "008",
+        "type": "banner",
+        "size": "88x31",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HWPVL",
+        "imgSrc": "https://www27.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003008000&mc=1"
+      },
+      {
+        "materialId": "009",
+        "type": "banner",
+        "size": "224x33",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HWXLD",
+        "imgSrc": "https://www20.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003009000&mc=1"
+      },
+      {
+        "materialId": "010",
+        "type": "banner",
+        "size": "80x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HX5B5",
+        "imgSrc": "https://www24.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003010000&mc=1"
+      },
+      {
+        "materialId": "011",
+        "type": "banner",
+        "size": "125x125",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HXD0X",
+        "imgSrc": "https://www23.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003011000&mc=1"
+      },
+      {
+        "materialId": "012",
+        "type": "text",
+        "label": "家電・家具レンタル専門サイト「かして！どっとこむ」。新品・中古を幅広く取り揃え。",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HXKQR"
+      },
+      {
+        "materialId": "014",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HY069",
+        "imgSrc": "https://www21.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003014000&mc=1"
+      },
+      {
+        "materialId": "015",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HY7W1",
+        "imgSrc": "https://www23.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003015000&mc=1"
+      },
+      {
+        "materialId": "017",
+        "type": "banner",
+        "size": "448x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HYNBL",
+        "imgSrc": "https://www23.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003017000&mc=1"
+      },
+      {
+        "materialId": "018",
+        "type": "banner",
+        "size": "500x417",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HYV1D",
+        "imgSrc": "https://www28.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003018000&mc=1"
+      },
+      {
+        "materialId": "019",
+        "type": "banner",
+        "size": "120x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GDPD+G5OKCI+OE2+HZ2R5",
+        "imgSrc": "https://www20.a8.net/svt/bgt?aid=251027041977&wid=003&eno=01&mid=s00000003161003019000&mc=1"
+      }
+    ]
+  }
+}

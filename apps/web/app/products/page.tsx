@@ -11,9 +11,15 @@ import {
 } from "@/lib/firestore-rest";
 import { getSiteEntry } from "@/lib/site-server";
 import { getSiteConfig } from "@/lib/site-config";
+import { redirect } from "next/navigation";
 
 import PainRail from "@/components/pain/PainRail";
 import { loadPainRules } from "@/lib/pain-helpers";
+
+const s = getSiteEntry();
+if (s.features?.products === false) {
+  redirect("/offers"); // Kariraku など products を使わないサイト
+}
 
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
@@ -179,7 +185,10 @@ export default async function ProductsPage({
 }: {
   searchParams?: SP;
 }) {
-  const s = getSiteEntry(); // siteId / categoryPreset / domain
+  const s = getSiteEntry(); // ← 関数内で呼ぶ
+  if (s.features?.products === false) {
+    redirect("/offers");
+  }
   const cfg = getSiteConfig(); // urlOrigin など（構造化データ用）
   const painRules = await loadPainRules(s.siteId);
 

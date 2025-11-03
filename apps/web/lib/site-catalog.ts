@@ -23,11 +23,15 @@ export type SiteAnalytics = {
 export type SiteEntry = {
   siteId: string;
   displayName: string;
-  domain: string; // e.g. "www.chairscope.com"
+  domain: string;
   brand: Brand;
-  features: { blogs?: boolean; ranking?: boolean };
+  features: {
+    blogs?: boolean;
+    ranking?: boolean;
+    products?: boolean; // ★ 追加
+    offers?: boolean; // ★ 追加
+  };
   analytics?: SiteAnalytics;
-  /** sites/*.json の categoryPreset を反映 */
   categoryPreset?: string[];
 };
 
