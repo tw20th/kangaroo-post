@@ -5,23 +5,23 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
-// ★ 見出しをリンクにするプラグインはやめる
-// import rehypeAutolink from "rehype-autolink-headings";
 import rehypeExternalLinks from "rehype-external-links";
-import { normalizeBlogMarkdown } from "@/utils/markdown";
 
 function AffiliateCta({
   href,
   label = "公式サイトへ",
   className = "",
+  onClick,
 }: {
   href: string;
   label?: string;
   className?: string;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }) {
   return (
     <a
       href={href}
+      onClick={onClick}
       target="_blank"
       rel="nofollow sponsored noopener noreferrer"
       className={
@@ -34,7 +34,7 @@ function AffiliateCta({
   );
 }
 
-// 悩みボタン用（/pain/:id へ飛ばす）
+// 悩みボタン用（/pain/:id へ飛ばす）※既存のまま
 function PainLink({ tag, label }: { tag: string; label: string }) {
   const href = `/pain/${encodeURIComponent(tag)}`;
   return (
@@ -47,12 +47,52 @@ function PainLink({ tag, label }: { tag: string; label: string }) {
   );
 }
 
-type Props = { content: string };
+type Props = {
+  content: string;
+  siteId?: string | null;
+  painId?: string | null;
+  slug?: string;
+};
 
 const isA8 = (u?: string) => !!u && /(^|\/\/)px\.a8\.net/i.test(u);
 
-export default function BlogBody({ content }: Props) {
-  const md = React.useMemo(() => normalizeBlogMarkdown(content), [content]);
+export default function BlogBody({ content, siteId, painId, slug }: Props) {
+  // ★ normalizeBlogMarkdown はここでは呼ばず、
+  //   /blog/[slug]/page.tsx から渡ってきた文字列をそのまま使う
+  const md = React.useMemo(() => content ?? "", [content]);
+
+  const painTrackEndpoint =
+    process.env.NEXT_PUBLIC_PAIN_TRACK_URL || "/trackPainClick";
+
+  /** `/compare` クリック時に painId を送る */
+  const trackPainClick = React.useCallback(
+    (href?: string) => {
+      if (!painId || !siteId) return;
+      try {
+        const payload = JSON.stringify({
+          painId,
+          siteId,
+          slug,
+          href,
+        });
+
+        if (typeof navigator !== "undefined" && "sendBeacon" in navigator) {
+          const blob = new Blob([payload], { type: "application/json" });
+          (navigator as any).sendBeacon(painTrackEndpoint, blob);
+        } else {
+          fetch(painTrackEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: payload,
+            keepalive: true,
+          }).catch(() => {});
+        }
+      } catch {
+        // 計測なので失敗してもユーザーには黙っておく
+      }
+    },
+    [painId, siteId, slug, painTrackEndpoint]
+  );
 
   const components = {
     a({ href, children, ...rest }: any) {
@@ -60,10 +100,30 @@ export default function BlogBody({ content }: Props) {
       const isExternal = !!url && /^https?:\/\//i.test(url);
       const isA8Link = isA8(url);
 
+      // 比較ページへのリンクかどうか判定
+      const isCompareLink =
+        !!url &&
+        (url === "/compare" ||
+          url.startsWith("/compare?") ||
+          url.endsWith("/compare/kaden-rental"));
+
+      const handleClick:
+        | React.MouseEventHandler<HTMLAnchorElement>
+        | undefined = isCompareLink
+        ? (e) => {
+            // 既存 onClick があれば先に呼ぶ
+            if (typeof (rest as any).onClick === "function") {
+              (rest as any).onClick(e);
+            }
+            trackPainClick(url);
+          }
+        : (rest as any).onClick;
+
       return (
         <a
           {...rest}
           href={url}
+          onClick={handleClick}
           target={isExternal ? "_blank" : undefined}
           // A8 のときだけ sponsored を付ける
           rel={
@@ -129,9 +189,25 @@ export default function BlogBody({ content }: Props) {
       const line = txt.trim();
 
       // --- CTA ボタン ---
-      const mCta = /^:::cta\[(.+?)\]\((https?:\/\/[^\s)]+)\)$/.exec(line);
+      const mCta = /^:::cta\[(.+?)\]\((https?:\/\/[^\s)]+|\/[^\s)]+)\)$/.exec(
+        line
+      );
       if (mCta) {
-        return <AffiliateCta href={mCta[2]} label={mCta[1]} className="my-6" />;
+        const href = mCta[2];
+        const isCompare =
+          href === "/compare" ||
+          href.startsWith("/compare?") ||
+          href.endsWith("/compare/kaden-rental");
+        const onClick = isCompare ? () => trackPainClick(href) : undefined;
+
+        return (
+          <AffiliateCta
+            href={href}
+            label={mCta[1]}
+            className="my-6"
+            onClick={onClick}
+          />
+        );
       }
       if (/^:::+\s*cta/i.test(line)) return null; // 残骸は非表示
 
@@ -153,7 +229,6 @@ export default function BlogBody({ content }: Props) {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[
           rehypeSlug,
-          // ★ 見出し自動リンクはオフにして、クリックで飛ばないようにする
           [
             rehypeExternalLinks,
             { target: "_blank", rel: ["nofollow", "noopener", "noreferrer"] },

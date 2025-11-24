@@ -1,11 +1,13 @@
+// firebase/functions/src/utils/blogPrompt.ts
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-export type TemplateVars = Record<
-  string,
-  string | number | boolean | null | undefined
->;
+/**
+ * vars には配列・オブジェクトも渡すため、unknown を許容する
+ * （generateContentWithTemplate / resolveByPath が unknown 前提で動くため安全）
+ */
+export type TemplateVars = Record<string, unknown>;
 
 export type BuildPromptParams = {
   /** 例: "kariraku" */
@@ -56,12 +58,24 @@ function readTextSafe(p: string): string {
 /**
  * 超軽量テンプレ置換。
  * - {{key}} を vars[key] で単純置換
- * - ネスト/ #each など高度な構文は扱わない（必要なら generateContentWithTemplate を使用）
+ * - プリミティブ以外（オブジェクト/配列）は "" にして安全にスルー
  */
 function simpleInterpolate(tpl: string, vars: TemplateVars): string {
   return tpl.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (_m, key) => {
-    const v = vars[key];
-    return v === undefined || v === null ? "" : String(v);
+    const v = (vars as Record<string, unknown>)[key];
+
+    if (
+      v === null ||
+      v === undefined ||
+      typeof v === "string" ||
+      typeof v === "number" ||
+      typeof v === "boolean"
+    ) {
+      return v == null ? "" : String(v);
+    }
+
+    // オブジェクト・配列などはそのまま文字列化せずスキップ
+    return "";
   });
 }
 
@@ -78,12 +92,7 @@ function chooseTemplateFilename(params: BuildPromptParams): string {
   return "blogTemplate_a8.txt";
 }
 
-/**
- * プロンプト文字列を構築。
- * - kariraku: blogTemplate_kariraku_*.txt を読み込む
- * - それ以外: blogTemplate_a8.txt を既定で使用
- * - simpleInterpolate で {{key}} を差し替え（必要十分でなければ generateContentWithTemplate を利用推奨）
- */
+/** プロンプト文字列を構築 */
 export function buildPrompt(params: BuildPromptParams): string {
   const promptsDir = resolvePromptsDir();
   const filename = chooseTemplateFilename(params);

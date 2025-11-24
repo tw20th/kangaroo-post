@@ -56,3 +56,84 @@ pnpm -C firebase/functions run normalizeA8
 
 ーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
+関数の整理
+
+scheduledBlogDaily_Morningは悩み、季節の毎日記事を生成する関数
+
+
+このファイルはトレンド、キーワードをまとめて、blogに落とし込むファイル
+
+firebase/functions/src/lib/content/painTopics_kariraku.json
+
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+trackPainClickは、キーワードについている、idがあるんだけど、これをデータを集めるための関数
+
+データの種類は、記事をクリックした時と比較ボタンを教えたときに反応するようにしています。
+
+ーーーーーーーーーーーーーーーーーーーーーーーーー
+
+📰 ブログ生成・改善まわり
+scheduledKarirakuGuideDaily（悩み特化）とscheduledBlogDaily_Morning（季節特化）は悩み解決ブログをそれぞれ二つの関数を使用している
+scheduledBlogA8_Morningは企業紹介ブログ
+scheduledMonthlyCompareが比較ブログ
+scheduledAnalyzeBlogsNightは記事の分析を行う関数
+scheduledRewriteLowScoreBlogsは記事のリライトを行う関数
+runDailyNowはscheduledBlogDaily_Morning 相当を即時実行（テスト / 手動用）
+runA8DailyNowはscheduledBlogA8_Morning 相当を即時実行
+runKarirakuGuideNowはscheduledKarirakuGuideDaily 相当を即時実行
+a8_generateBlogFromOfferは特定の offerId を指定して商品紹介ブログを1本生成（管理用）
+runUpdateBlogSeoNowは既存ブログのSEO分析・更新を1回だけ走らせるテスト用
+🔍 GSC 連携まわり
+スケジュール系
+scheduledPullGscはGSC から検索クエリなどを定期取得
+
+generateFromGSC
+
+GSC から取ったデータを元にブログ（主にガイド系）を自動生成
+
+HTTP 手動トリガー
+
+runPullGscNow
+
+scheduledPullGsc 相当を手動実行
+
+runGenerateFromGscNow
+
+generateFromGSC 相当を手動実行
+
+🏢 A8オファー・サイト設定まわり
+
+a8_normalizeOffers（HTTP）
+
+A8オファーの整形・正規化（JSON → Firestore 変換など）
+
+a8_updateOfferPrice（HTTP）
+
+A8オファーの価格更新
+
+a8_syncFromFiles（HTTP）
+
+firebase/functions/ingest/a8/*.json から Firestore に同期
+
+sites_syncFromFiles（HTTP）
+
+sites/*.json から siteConfigs などに同期
+
+📈 トラッキング・ヘルスチェック
+
+trackClick（HTTP）
+
+一般的なクリック計測
+
+trackPainClick（HTTP）
+
+「どの悩みが押されたか」のトラッキング
+
+health（HTTP）
+
+「生きてる？」確認用のシンプルなヘルスチェック
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+

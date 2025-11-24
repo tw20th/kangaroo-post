@@ -1,4 +1,3 @@
-// firebase/functions/src/lib/prompts/blogPrompts.ts
 import { getFirestore } from "firebase-admin/firestore";
 
 const db = getFirestore();

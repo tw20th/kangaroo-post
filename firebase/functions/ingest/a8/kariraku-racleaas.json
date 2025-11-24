@@ -70,7 +70,7 @@
       "confirmEta": "約45日",
       "ui": {
         "priceLabel": "月額目安 ー",
-        "minTermLabel": "月額 12ヶ月〜",
+        "minTermLabel": "",
         "isPriceDynamic": true,
         "compareHighlight": "新品家電のサブスクが最安級"
       },

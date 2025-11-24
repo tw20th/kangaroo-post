@@ -1,0 +1,258 @@
+[
+  {
+    "id": "year-end-cooking",
+    "topic": "年末の料理がしんどい・共働きで時間がない",
+    "persona": "共働きで忙しい30代の人",
+    "pain": "年末の料理や家事が重なってしんどい。仕事もある中で、全部こなせない罪悪感や焦りを感じている。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "hitorigurashi-cost",
+    "topic": "一人暮らしの初期費用が高すぎる問題",
+    "persona": "これから一人暮らしを始める学生や社会人",
+    "pain": "家電や家具を一式そろえる初期費用が高く、何をどこまで買うべきか悩んでいる。失敗したくない気持ちが強い。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "refrigerator-broken",
+    "topic": "冷蔵庫が急に壊れてしまったときの対処",
+    "persona": "家族暮らし・共働き世帯",
+    "pain": "冷蔵庫が突然壊れ、すぐに必要だけれど高い買い物なので慌てて決めたくない。食材も無駄にしたくない。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "year-end-cleaning",
+    "topic": "年末の大掃除がしんどい・やる気が出ない",
+    "persona": "在宅ワークで家にいる時間が長い人",
+    "pain": "片付けたい気持ちはあるのに、やることが多すぎて腰が重い。完璧にやろうとして余計に動けなくなっている。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "guest-preparation",
+    "topic": "来客前に家を整えるのが大変",
+    "persona": "親族や友人を家に招く機会がある人",
+    "pain": "普段は気にならない生活感が、来客前になると急に気になり、片付けや準備に追われてしまう。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "cooking-exhaustion",
+    "topic": "平日の料理が毎日しんどい・作る気力がわかない",
+    "persona": "共働きで夕方にバタバタする30〜40代",
+    "pain": "毎日の料理に時間も気力も奪われ、帰宅後にキッチンに立つだけでしんどい。外食かテイクアウトに頼りがちで、自分を責めてしまう。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "laundry-overload",
+    "topic": "洗濯物が終わらない・たまりすぎてストレス",
+    "persona": "子育て中の家庭・共働き世帯",
+    "pain": "洗濯してもすぐに溜まり、干す・畳む・片付けるのサイクルが終わらない。家事の中で特にストレスが大きい。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "cleaning-fatigue",
+    "topic": "掃除がしんどい・やる気が出ない・時間がない",
+    "persona": "在宅ワーク・一人暮らし・共働き",
+    "pain": "掃除したい気持ちはあるのに、疲れて動けない。部屋が散らかると気分も落ち込む悪循環に悩んでいる。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "kids-toys-mess",
+    "topic": "子どものおもちゃの片付けが終わらない悩み",
+    "persona": "小さな子どもがいる家庭",
+    "pain": "片付けても片付けても散らかり、イライラしてしまう。自分の時間もなくなるし、家事が常に追われている感覚がある。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "shopping-burden",
+    "topic": "買い物が負担・重いものを運ぶのがつらい",
+    "persona": "車を使わない世帯・高齢者",
+    "pain": "買い物は毎回しんどく、特に重い飲料や調味料を運ぶのに体力を奪われる。買い忘れも多く、ストレスになっている。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "small-kitchen",
+    "topic": "キッチンが狭くて料理がしにくい・ストレス",
+    "persona": "一人暮らし・賃貸住まい",
+    "pain": "料理したい気持ちはあるのに、キッチンが狭くてやりにくい。収納も少なく、片付けが大変で挫折しがち。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "meal-prep-stress",
+    "topic": "毎日の献立を考えるのがしんどい問題",
+    "persona": "共働き・子育て世帯",
+    "pain": "何を作るか考えるだけで疲れてしまい、料理が余計に負担になっている。マンネリも気になっている。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "summer-heat-cooking",
+    "topic": "夏の料理が暑くてつらい・火を使いたくない",
+    "persona": "暑がりな人・エアコンが効きづらい環境の人",
+    "pain": "キッチンが暑すぎて料理が苦痛。火を使うとさらに汗だくになり、料理自体がイヤになってしまう。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "winter-laundry",
+    "topic": "冬の洗濯物が乾かない・部屋干しのストレス",
+    "persona": "賃貸住まい・日当たりが悪い家庭",
+    "pain": "冬は洗濯物が全然乾かず、部屋干し臭にも悩む。除湿器や乾燥機が欲しいが、スペースや費用がネック。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "fridge-too-small",
+    "topic": "冷蔵庫が小さくて買い物が不便・食材が入らない",
+    "persona": "一人暮らし・共働きでまとめ買いしたい人",
+    "pain": "まとめ買いしたいのに、冷蔵庫が小さくて食材が入らず不便。買い物頻度が増えて負担が大きい。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "childcare-fatigue",
+    "topic": "育児と家事の両立がしんどい",
+    "persona": "0〜3歳児を育てる家庭",
+    "pain": "子どもの相手をしながら家事をこなすのは限界がある。休む時間がなく、自分だけが頑張っているようでつらい。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "after-work-exhaustion",
+    "topic": "仕事終わりに家事をする気力が残っていない",
+    "persona": "フルタイム勤務の人",
+    "pain": "帰宅後は体力も気力も残っておらず、料理・洗濯・片付けができない日が多い。生活リズムが乱れがち。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "move-preparation",
+    "topic": "引越し準備が大変・家電を揃えるのが負担",
+    "persona": "新社会人・転勤族",
+    "pain": "引越し前後に必要な家電・家具を揃えるのが大変。費用も高く、一時的なため購入に迷っている。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "storage-problem",
+    "topic": "家が狭い・物が増えて収納が追いつかない",
+    "persona": "賃貸1K・1LDK住まいの人",
+    "pain": "収納が少なく、家電や家具の置き場所に困っている。物が散らかりやすく、生活がしづらいと感じている。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "cooking-beginner",
+    "topic": "料理が苦手でうまくできない・時間がかかる",
+    "persona": "料理初心者・新生活を始めた人",
+    "pain": "料理に時間がかかり、見栄えもイマイチで自信がない。簡単な方法で改善したい気持ちがある。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "food-waste",
+    "topic": "食材を使い切れず無駄にしてしまう悩み",
+    "persona": "一人暮らし・共働き",
+    "pain": "食材を買っても使い切れず捨ててしまうことが続き、罪悪感を感じる。計画的に料理するのが難しい。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "midnight-cooking",
+    "topic": "帰宅が遅く夜遅い時間に料理するのがしんどい",
+    "persona": "残業が多い会社員",
+    "pain": "帰宅時間が遅く、料理する気力がない。コンビニや外食が増え、健康面も気になっている。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "appliance-no-space",
+    "topic": "家電を置くスペースがない・置けなくて困っている",
+    "persona": "賃貸住まい・狭い家の人",
+    "pain": "欲しい家電があってもスペースがなくて置けない。便利家電を諦めてしまっている。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "heavy-cleaning",
+    "topic": "週末のまとめ掃除が負担・休めない問題",
+    "persona": "平日忙しい人",
+    "pain": "平日に掃除できず、週末に一気にやるため疲れがとれない。休むはずの休日が重労働になってしまっている。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "kitchen-smell",
+    "topic": "キッチンのニオイ問題に悩んでいる",
+    "persona": "料理頻度が高い家庭",
+    "pain": "生ゴミのニオイや排水口のニオイが気になり、家事がしんどくなる。換気や掃除も手間がかかってしまう。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "microwave-small",
+    "topic": "電子レンジが小さくて使いにくい・料理が制限される",
+    "persona": "一人暮らし・料理好き",
+    "pain": "大きな容器が入らず、温めムラも気になる。料理が不便でストレスが溜まる。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "dryer-want",
+    "topic": "乾燥機が欲しいけど買えない・置けない悩み",
+    "persona": "賃貸住まい・日当たりが悪い家庭",
+    "pain": "洗濯物が乾かずストレスなのに、乾燥機は高価で置き場所もないため諦めている。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "freezer-small",
+    "topic": "冷凍庫が小さくてまとめ買いできない",
+    "persona": "共働き・節約家",
+    "pain": "作り置きや冷凍食品を活用したいのに、冷凍庫が小さくて入らない。買い物が効率化できずストレスになっている.",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "appliance-compare",
+    "topic": "どの家電を選べばいいか分からない問題",
+    "persona": "家電初心者・比較が苦手な人",
+    "pain": "家電の種類が多く、スペック比較が難しい。失敗したくない気持ちから決めきれずに悩んでしまう。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "slow-cooking",
+    "topic": "料理に時間がかかりすぎる・効率化したい",
+    "persona": "料理初心者・忙しい人",
+    "pain": "一つひとつの工程に時間がかかり、疲れやすい。もっと時短でラクにしたいけれど、やり方がわからない。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "kitchen-organize",
+    "topic": "キッチン収納がごちゃついて料理がしづらい",
+    "persona": "一人暮らし・共働き家庭",
+    "pain": "調理器具や食器が散らかりやすく、料理がしづらい。収納不足で片付けに時間がかかってしまう。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  },
+  {
+    "id": "garbage-problem",
+    "topic": "ゴミ出しが面倒・量が多くて辛い",
+    "persona": "一人暮らし・子育て家庭",
+    "pain": "ゴミ出しの曜日が合わなかったり、すぐにいっぱいになってしまう。生ゴミの管理も大変でストレスが大きい。",
+    "compareUrl": "/kariraku/compare/kaden-rental",
+    "enabled": true
+  }
+]

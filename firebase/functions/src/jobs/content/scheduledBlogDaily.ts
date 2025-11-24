@@ -2,14 +2,21 @@
 import * as functions from "firebase-functions";
 import { getFirestore } from "firebase-admin/firestore";
 import { getBlogEnabledSiteIds } from "../../lib/sites/sites.js";
-import { generateBlogFromOffer } from "./generateBlogFromOffer.js";
+import { generateDailyPost, DailyService } from "./generateDailyBlog.js";
+import { getSeasonalContext } from "../../utils/seasonalContext.js";
 
-const REGION = "asia-northeast1";
+const REGION = process.env.FUNCTIONS_REGION || "asia-northeast1";
 const TZ = "Asia/Tokyo";
 const db = getFirestore();
 
-/** offers から siteId 向けの候補を1つ拾う */
-async function pickOfferForSite(siteId: string): Promise<string | null> {
+/**
+ * デイリー記事内で軽く触れる「サービス候補」をピックアップ
+ * → あくまで“悩み解決の中で紹介する脇役”として使う想定
+ */
+async function pickDailyServices(
+  siteId: string,
+  limit = 3
+): Promise<DailyService[]> {
   const snap = await db
     .collection("offers")
     .where("siteIds", "array-contains", siteId)
@@ -17,54 +24,86 @@ async function pickOfferForSite(siteId: string): Promise<string | null> {
     .orderBy("updatedAt", "desc")
     .limit(20)
     .get();
-  if (snap.empty) return null;
-  const docs = snap.docs;
-  const idx = Math.floor(Math.random() * docs.length);
-  return docs[idx].id;
+
+  const items: DailyService[] = snap.docs.slice(0, limit).map((d) => {
+    const title = String(d.get("title") ?? "サービス");
+    const offerId = d.id; // 例: s00000023591001:geo-arekore
+    const slug = `${siteId}-${offerId}`; // 将来ブログ用に使うかもなので一応保持
+    const affiliateUrl = String(d.get("affiliateUrl") ?? "");
+
+    return {
+      name: title,
+      slug,
+      affiliateUrl,
+      offerId,
+      oneLiner: `${title.slice(0, 18)}を気軽に試せるレンタル`,
+    };
+  });
+
+  return items;
 }
 
-/** 正午 12:00 … A8オファーから1本（公開） */
-export const scheduledBlogNoon = functions
+async function createSeasonalDailyPost(siteId: string) {
+  const seasonal = getSeasonalContext(); // ← 年末/新生活/梅雨…など
+  const services = await pickDailyServices(siteId);
+
+  const out = await generateDailyPost({
+    siteId,
+    seasonKeyword: seasonal.keyword,
+    trendingCategoriesCsv: "", // 必要ならあとでGSCなどから埋める
+    topClicksTitlesCsv: "",
+    priceDropsNote: "",
+    compareSlug: "compare-latest",
+    services,
+    publish: false, // デイリーは一旦 draft 運用にしておく（必要なら true に変更）
+  });
+
+  functions.logger.info("createSeasonalDailyPost", {
+    siteId,
+    slug: out.slug,
+    season: seasonal.keyword,
+  });
+
+  return {
+    siteId,
+    slug: out.slug,
+    seasonKeyword: seasonal.keyword,
+    seasonLabel: seasonal.label,
+  };
+}
+
+/**
+ * 毎日 06:05 … 「季節 × 悩み解決」デイリー記事を 1本ずつ生成
+ */
+export const scheduledBlogDaily_Morning = functions
   .region(REGION)
-  .runWith({ secrets: ["OPENAI_API_KEY"] })
-  .pubsub.schedule("0 12 * * *")
+  .runWith({ secrets: ["OPENAI_API_KEY", "UNSPLASH_ACCESS_KEY"] })
+  .pubsub.schedule("5 6 * * *")
   .timeZone(TZ)
   .onRun(async () => {
     const siteIds = await getBlogEnabledSiteIds(db);
-    const results: Array<{ siteId: string; slug?: string | null }> = [];
-
+    const results = [];
     for (const siteId of siteIds) {
-      const offerId = await pickOfferForSite(siteId);
-      if (!offerId) {
-        results.push({ siteId, slug: null });
-        continue;
-      }
-
-      // 直近7日以内に同一 offerId を作っていたらスキップ
-      const recentSince = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      const existSnap = await db
-        .collection("blogs")
-        .where("offerId", "==", offerId)
-        .where("siteId", "==", siteId)
-        .limit(5)
-        .get();
-
-      const recentExists = existSnap.docs.some(
-        (d) => Number(d.get("createdAt") || 0) > recentSince
-      );
-      if (recentExists) {
-        results.push({ siteId, slug: existSnap.docs[0]?.id ?? null });
-        continue;
-      }
-
-      const out = await generateBlogFromOffer({
-        offerId,
-        siteId,
-        publish: true,
-        dryRun: false,
-      });
-      results.push({ siteId, slug: out.slug });
+      results.push(await createSeasonalDailyPost(siteId));
     }
-
     return { results };
+  });
+
+/**
+ * 手動テスト用 HTTP エンドポイント
+ */
+export const runDailyNow = functions
+  .region(REGION)
+  .runWith({ secrets: ["OPENAI_API_KEY", "UNSPLASH_ACCESS_KEY"] })
+  .https.onRequest(async (_req, res) => {
+    try {
+      const siteIds = await getBlogEnabledSiteIds(db);
+      const results = [];
+      for (const siteId of siteIds) {
+        results.push(await createSeasonalDailyPost(siteId));
+      }
+      res.json({ ok: true, results });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: String(e) });
+    }
   });

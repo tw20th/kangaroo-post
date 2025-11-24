@@ -331,6 +331,8 @@ export type BlogRow = {
   publishedAt?: number;
   updatedAt?: number;
   views?: number;
+  // ★ 追加：Firestore の type フィールド
+  type?: string | null;
 };
 
 export async function fetchBlogs(
@@ -358,6 +360,8 @@ export async function fetchBlogs(
     publishedAt: vNum(d.fields, "publishedAt") ?? undefined,
     updatedAt: vNum(d.fields, "updatedAt") ?? undefined,
     views: vNum(d.fields, "views") ?? 0,
+    // ★ 追加
+    type: vStr(d.fields, "type") ?? null,
   }));
 
   return rows;
@@ -396,6 +400,7 @@ export async function fetchBlogBySlug(slug: string) {
     relatedAsin: vStr(f, "relatedAsin") ?? null,
     imageCredit: vStr(f, "imageCredit") ?? null,
     imageCreditLink: vStr(f, "imageCreditLink") ?? null,
+    painId: vStr(f, "painId") ?? undefined, // ← ⭐ 追加（悩みトピックID）
     tags: vStrArr(f, "tags") ?? [],
   };
 }

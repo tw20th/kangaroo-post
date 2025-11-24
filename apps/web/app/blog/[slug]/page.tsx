@@ -12,8 +12,6 @@ import { normalizeBlogMarkdown, extractToc, isA8Url } from "@/utils/markdown";
 import RelatedByTags from "@/components/blog/RelatedByTags";
 import TrackBlog from "@/components/analytics/TrackBlog";
 import CtaLink from "@/components/analytics/CtaLink";
-import { fetchRelatedBlogsByTags } from "@/lib/queries";
-import TrackLink from "@/components/common/TrackLink";
 
 export const revalidate = 3600;
 export const dynamic = "force-dynamic";
@@ -25,7 +23,6 @@ type BestPrice = {
   updatedAt: number;
 };
 
-// ---- utils ----
 const fmt = (ts?: number) =>
   ts
     ? new Date(ts).toLocaleString("ja-JP", {
@@ -47,7 +44,6 @@ function makeSummaryFromContent(md: string, max = 120) {
   return plain.length > max ? plain.slice(0, max) + "…" : plain;
 }
 
-// ---- SEO ----
 export async function generateMetadata({
   params,
 }: {
@@ -60,30 +56,26 @@ export async function generateMetadata({
   return { title, description };
 }
 
-// ---- page ----
 export default async function BlogDetail({
   params,
 }: {
   params: { slug: string };
 }) {
   const siteId = getServerSiteId();
-  await loadPainRules(siteId); // 現状使用箇所なしでも初期化だけ
+  await loadPainRules(siteId);
 
   const blog = await fetchBlogBySlug(params.slug);
   if (!blog) notFound();
   if (siteId && blog.siteId !== siteId) {
-    if (process.env.NODE_ENV === "production") {
-      notFound();
-    } else {
+    if (process.env.NODE_ENV === "production") notFound();
+    else
       console.warn("[BlogDetail] siteId mismatch", {
         siteId,
         blogSiteId: blog.siteId,
         slug: blog.slug,
       });
-    }
   }
 
-  // 本文を正規化 → 目次を抽出
   const normalized = normalizeBlogMarkdown(blog.content);
   const toc = extractToc(normalized);
 
@@ -94,32 +86,20 @@ export default async function BlogDetail({
   const siteUrl = (
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.chairscope.com"
   ).replace(/\/$/, "");
-  const canonical = `${siteUrl}/blog/${blog.slug}`;
 
+  const canonical = `${siteUrl}/blog/${blog.slug}`;
   const imageCredit = (blog as any).imageCredit ?? null;
   const imageCreditLink = (blog as any).imageCreditLink ?? null;
 
-  function sendBlogEvent(slug: string, type: "view" | "cta") {
-    try {
-      const endpoint = process.env.NEXT_PUBLIC_TRACK_URL || "/trackClick";
-      const payload = JSON.stringify({ slug, type });
-      if ("sendBeacon" in navigator) {
-        const blob = new Blob([payload], { type: "application/json" });
-        (navigator as any).sendBeacon(endpoint, blob);
-      } else {
-        fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: payload,
-          keepalive: true,
-        });
-      }
-    } catch {}
-  }
+  // ★ CTR デバッグ用の URL（.env.local に設定したときだけ有効）
+  const blogCtrUrl = process.env.NEXT_PUBLIC_BLOG_CTR_URL || null;
+  const showCtrDebug = process.env.NODE_ENV !== "production" && !!blogCtrUrl;
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
-      <TrackBlog slug={blog.slug} />
+      {/* ★ view トラッキング（siteId を渡す） */}
+      <TrackBlog slug={blog.slug} siteId={siteId} />
+
       {/* breadcrumb */}
       <nav className="text-sm text-gray-500">
         <Link href="/" className="underline">
@@ -133,7 +113,7 @@ export default async function BlogDetail({
         <span className="opacity-70">{blog.title}</span>
       </nav>
 
-      {/* 構造化データ: BreadcrumbList */}
+      {/* structured data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -164,6 +144,7 @@ export default async function BlogDetail({
         }}
       />
 
+      {/* header */}
       <header className="mt-3">
         <h1 className="text-2xl font-bold">{blog.title}</h1>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
@@ -182,7 +163,7 @@ export default async function BlogDetail({
         )}
       </header>
 
-      {/* ヒーロー画像 */}
+      {/* hero image */}
       {blog.imageUrl && !isA8Url(blog.imageUrl) ? (
         <figure className="mt-5 overflow-hidden rounded-2xl border bg-white">
           <div className="relative w-full aspect-[16/9]">
@@ -220,7 +201,7 @@ export default async function BlogDetail({
         </figure>
       ) : null}
 
-      {/* 関連商品CTA */}
+      {/* related product CTA */}
       {bestPrice && blog.relatedAsin && (
         <div className="mt-4 rounded-xl border bg-white p-4 text-sm">
           <div className="mb-1">
@@ -236,6 +217,8 @@ export default async function BlogDetail({
           </div>
           <CtaLink
             slug={blog.slug}
+            siteId={siteId}
+            whereKey="cta_bestPrice_top"
             href={`/out/${encodeURIComponent(
               blog.relatedAsin
             )}?to=${encodeURIComponent(bestPrice.url)}&src=blog`}
@@ -248,7 +231,7 @@ export default async function BlogDetail({
         </div>
       )}
 
-      {/* 目次 */}
+      {/* table of contents */}
       {toc.length > 0 && (
         <aside className="mt-6 rounded-xl border bg-white p-4 text-sm">
           <div className="mb-2 font-medium">目次</div>
@@ -264,27 +247,26 @@ export default async function BlogDetail({
         </aside>
       )}
 
-      {/* 本文 */}
+      {/* ---- 本文（⭐ painId と siteId を渡す） ---- */}
       <article className="mt-6">
-        <BlogBody content={normalized} />
+        <BlogBody
+          content={normalized}
+          siteId={siteId}
+          painId={(blog as any).painId ?? null}
+          slug={blog.slug}
+        />
       </article>
 
-      {/* 関連ガイド */}
-      <div className="mt-8 rounded-2xl border bg-white p-5">
-        {/* ★ タグ連動の関連記事 */}
+      {/* 関連ガイド（関連記事だけ） */}
+      <section className="mt-8 rounded-2xl border bg-white p-5">
         <RelatedByTags
           siteId={siteId}
           tags={(blog as any).tags ?? []}
           currentSlug={blog.slug}
         />
+      </section>
 
-        {/* 既存の悩みから選ぶ（保険の回遊導線） */}
-        <div className="mt-6">
-          <PainRail className="my-6" />
-        </div>
-      </div>
-
-      {/* 次の一歩 */}
+      {/* next actions */}
       <div className="mt-8 rounded-2xl border bg-white p-5">
         <div className="font-semibold">次の一歩</div>
         <ul className="mt-2 list-disc pl-6 text-sm">
@@ -297,6 +279,8 @@ export default async function BlogDetail({
             <li>
               <CtaLink
                 slug={blog.slug}
+                siteId={siteId}
+                whereKey="cta_bestPrice_bottom"
                 href={`/out/${encodeURIComponent(
                   blog.relatedAsin
                 )}?to=${encodeURIComponent(bestPrice.url)}&src=blog_bottom`}
@@ -314,6 +298,22 @@ export default async function BlogDetail({
               他の値下げ・比較記事を見る
             </Link>
           </li>
+
+          {/* ★ CTR デバッグボタン（開発環境だけ表示） */}
+          {showCtrDebug && blogCtrUrl && (
+            <li>
+              <a
+                href={`${blogCtrUrl}?siteId=${encodeURIComponent(
+                  siteId
+                )}&slug=${encodeURIComponent(blog.slug)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-xs text-gray-500"
+              >
+                クリック率を取得（デバッグ）
+              </a>
+            </li>
+          )}
         </ul>
       </div>
 

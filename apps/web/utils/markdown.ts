@@ -3,22 +3,27 @@
 /**
  * 記事テキストのクイック整形
  * - 先頭/末尾の ```markdown フェンスを剥がす
+ * - 先頭の "markdown " という接頭辞を削除
  * - A8の入れ子バナー [![広告バナー](img)](url "…") を CTA に変換
  * - [広告バナー](url "…") も CTA に
  * - A8系の画像(![](...))を全面除去
  * - ・ を Markdown 箇条書きに / 全角番号リスト→半角に
- * - 壊れたテーブル区切り行を削除
  * - [[pain tag="..." text="..."]] を :::pain[...] に変換
+ * - 「メタ情報（そのまま出力）」セクションを本文から削除
  * - 連続空行圧縮 など
  */
 export function normalizeBlogMarkdown(src: string): string {
   let s = src ?? "";
 
-  // ```markdown ～ ``` で全体を囲っている場合は中身だけ取り出す
-  s = s.replace(
-    /^```(?:\s*markdown)?\s*\r?\n([\s\S]*?)\r?\n```$/i,
-    (_m, inner: string) => inner
-  );
+  // 1) 先頭に "markdown " って付いてきた場合は削る
+  s = s.replace(/^markdown\s+/i, "");
+
+  // 2) ```markdown ～ ``` で全体を囲っている場合は中身だけ取り出す
+  //    （言語指定なしの ``` ～ ``` も含めて剥がす）
+  const fenced = s.match(/^```[^\n]*\n([\s\S]*?)\n```$/i);
+  if (fenced && fenced[1]) {
+    s = fenced[1];
+  }
 
   // A8入れ子バナー [![広告バナー](img)](URL "title")
   s = s.replace(
@@ -49,15 +54,18 @@ export function normalizeBlogMarkdown(src: string): string {
     return half;
   });
 
-  // 壊れたテーブルの区切り行だけが残っているケースを削除
-  // 例: |---|---:|---:|---|---|
-  s = s.replace(/^\|(?:\s*:?-{3,}:?\s*\|)+\s*$/gm, "");
+  // ★ ここまでは既存どおり。テーブル区切り行を消していた処理は削除！
+  // （本物のMarkdown表も壊れるので）
 
   // [[pain tag="腰痛" text="腰の負担を減らす椅子を探す"]] → :::pain[腰の負担を減らす椅子を探す](腰痛)
   s = s.replace(
     /\[\[\s*pain\s+tag="([^"]+)"\s+text="([^"]+)"\s*\]\]/gi,
     (_m, tag: string, text: string) => `\n\n:::pain[${text}](${tag})\n\n`
   );
+
+  // 「メタ情報（そのまま出力）」セクションは本文から丸ごと削る
+  // compare 記事専用想定
+  s = s.replace(/#{2,3}\s*メタ情報（そのまま出力）[\s\S]*$/m, "");
 
   // 余分な空行を圧縮
   s = s.replace(/\n{3,}/g, "\n\n");

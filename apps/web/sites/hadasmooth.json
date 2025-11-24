@@ -1,0 +1,17 @@
+{
+  "siteId": "hadasmooth",
+  "displayName": "HadaSmooth（ハダスムース）",
+  "domain": "localhost",
+  "brand": {
+    "primary": "#EC4899",
+    "accent": "#22C55E",
+    "logoUrl": ""
+  },
+  "features": {
+    "blogs": true,
+    "ranking": true,
+    "offers": true,
+    "products": false
+  },
+  "categoryPreset": ["hadasmooth"]
+}

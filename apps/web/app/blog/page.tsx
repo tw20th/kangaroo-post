@@ -1,17 +1,17 @@
+// apps/web/app/blog/page.tsx
 import Link from "next/link";
 import BlogCard from "@/components/blog/BlogCard";
 import { getServerSiteId } from "@/lib/site-server";
 import { fetchBlogs, type BlogRow } from "@/lib/queries";
 
 import PainRail from "@/components/pain/PainRail";
-import { loadPainRules } from "@/lib/pain-helpers";
 
 export const revalidate = 1800;
 export const dynamic = "force-dynamic";
 
-type SortKey = "recent" | "popular";
-type BlogType = "all" | "pricedrop" | "review" | "comparison";
-type SP = { sort?: SortKey; type?: BlogType };
+// Firestore の type と対応させた記事タイプ
+type BlogType = "all" | "compare" | "daily" | "guide" | "service";
+type SP = { type?: BlogType };
 
 function formatJp(ts?: number) {
   if (!ts) return "";
@@ -24,11 +24,23 @@ function formatJp(ts?: number) {
   });
 }
 
-function classify(b: BlogRow): "pricedrop" | "review" | "comparison" {
-  const t = (b.title ?? "").toLowerCase();
-  if (t.includes("値下げ")) return "pricedrop";
-  if (t.includes("レビュー")) return "review";
-  return "comparison";
+const BLOG_TYPES: BlogType[] = ["all", "compare", "daily", "guide", "service"];
+
+function labelForType(t: BlogType): string {
+  switch (t) {
+    case "all":
+      return "すべて";
+    case "compare":
+      return "比較記事";
+    case "daily":
+      return "暮らしのアイデア";
+    case "guide":
+      return "お悩みガイド";
+    case "service":
+      return "サービス紹介";
+    default:
+      return t;
+  }
 }
 
 export async function generateMetadata({
@@ -36,9 +48,11 @@ export async function generateMetadata({
 }: {
   searchParams?: SP;
 }) {
-  const sort = (searchParams?.sort as SortKey) ?? "recent";
-  const type = (searchParams?.type as BlogType) ?? "all";
-  const indexable = sort === "recent" && type === "all";
+  const rawType = searchParams?.type as BlogType | undefined;
+  const type: BlogType = BLOG_TYPES.includes(rawType ?? "all")
+    ? rawType ?? "all"
+    : "all";
+  const indexable = type === "all";
 
   const base = (
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.kariraku.com"
@@ -63,34 +77,40 @@ export default async function BlogIndex({
   searchParams?: SP;
 }) {
   const siteId = getServerSiteId();
-  const painRules = await loadPainRules(siteId);
 
-  const sort: SortKey = (searchParams?.sort as SortKey) ?? "recent";
-  const type: BlogType = (searchParams?.type as BlogType) ?? "all";
+  const rawType = searchParams?.type as BlogType | undefined;
+  const type: BlogType = BLOG_TYPES.includes(rawType ?? "all")
+    ? rawType ?? "all"
+    : "all";
 
-  const orderBy =
-    sort === "popular"
-      ? [{ field: "views", direction: "DESCENDING" as const }]
-      : [{ field: "publishedAt", direction: "DESCENDING" as const }];
+  // 並び順は一律「更新日の新しい順」
+  const orderBy = [{ field: "updatedAt", direction: "DESCENDING" as const }];
   const blogs = await fetchBlogs(siteId, orderBy, 40);
 
-  const filtered =
-    type === "all" ? blogs : blogs.filter((b) => classify(b) === type);
+  // Firestore の type フィールドで絞り込み
+  const filtered: BlogRow[] =
+    type === "all"
+      ? blogs
+      : blogs.filter((b) => (b.type as BlogType | null) === type);
 
   const lastPub = filtered.reduce<number>(
     (max, b) => Math.max(max, b.publishedAt ?? b.updatedAt ?? 0),
     0
   );
 
+  // type だけクエリに反映
   const href = (next: Partial<SP>) => {
+    const nextType = (next.type ?? type) as BlogType;
     const params = new URLSearchParams();
-    params.set("sort", (next.sort ?? sort) as string);
-    params.set("type", (next.type ?? type) as string);
-    return `/blog?${params.toString()}`;
+    if (nextType !== "all") {
+      params.set("type", nextType);
+    }
+    const qs = params.toString();
+    return qs ? `/blog?${qs}` : "/blog";
   };
 
   const siteUrl = (
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.chairscope.com"
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.kariraku.com"
   ).replace(/\/$/, "");
 
   return (
@@ -131,50 +151,22 @@ export default async function BlogIndex({
 
       <h1 className="mt-3 text-2xl font-bold">ブログ</h1>
 
-      {/* コントロール */}
+      {/* コントロール（記事タイプ + 件数） */}
       <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border bg-white px-4 py-2 text-sm">
         <div className="flex items-center gap-2">
-          <span className="opacity-70">表示順:</span>
-          <Link
-            href={href({ sort: "recent" })}
-            aria-current={sort === "recent" ? "page" : undefined}
-            className={`rounded px-2 py-1 ${
-              sort === "recent" ? "bg-gray-100 font-medium" : "hover:underline"
-            }`}
-          >
-            公開日が新しい順
-          </Link>
-          <Link
-            href={href({ sort: "popular" })}
-            aria-current={sort === "popular" ? "page" : undefined}
-            className={`rounded px-2 py-1 ${
-              sort === "popular" ? "bg-gray-100 font-medium" : "hover:underline"
-            }`}
-          >
-            人気順
-          </Link>
-        </div>
-
-        <div className="mx-2 h-4 w-px bg-gray-200" />
-
-        <div className="flex items-center gap-2">
           <span className="opacity-70">記事タイプ:</span>
-          {(["all", "pricedrop", "review", "comparison"] as const).map((t) => (
+          {BLOG_TYPES.map((t) => (
             <Link
               key={t}
               href={href({ type: t })}
               aria-current={type === t ? "page" : undefined}
               className={`rounded px-2 py-1 ${
-                type === t ? "bg-gray-100 font-medium" : "hover:underline"
+                type === t
+                  ? "bg-green-50 border border-green-300 font-medium"
+                  : "hover:underline"
               }`}
             >
-              {t === "all"
-                ? "すべて"
-                : t === "pricedrop"
-                ? "値下げ"
-                : t === "review"
-                ? "レビュー"
-                : "比較/ガイド"}
+              {labelForType(t)}
             </Link>
           ))}
         </div>
@@ -197,7 +189,6 @@ export default async function BlogIndex({
           {filtered.map((b) => (
             <BlogCard
               key={b.slug}
-              // ← ここはそのまま slug を渡す
               slug={b.slug}
               title={b.title}
               summary={b.summary}

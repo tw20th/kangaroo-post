@@ -2,7 +2,7 @@
 import * as functions from "firebase-functions";
 import { getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/v2";
-import { generateContentWithTemplate } from "../../utils/generateBlogContent.js";
+import { generateBlogContent } from "../../utils/generateBlogContent.js";
 
 const REGION = "asia-northeast1";
 const TZ = "Asia/Tokyo";
@@ -26,32 +26,57 @@ export const scheduledMonthlyCompare = functions
     }
 
     const now = new Date();
-    const md = await generateContentWithTemplate(
-      "blogTemplate_kariraku_compare.txt",
-      {
-        site: { id: SITE_ID, displayName: "Kariraku", domain: "kariraku.com" },
-        services,
-        seasonKeyword: seasonKeywordByMonth(now),
-        seasonTag: seasonKeywordByMonth(now),
-        dateYYYYMM: yyyymm(now),
-        hash8: Math.random().toString(36).slice(2, 10),
-      }
-    );
+    const seasonKeyword = seasonKeywordByMonth(now);
+    const dateStr = yyyymm(now);
+    const hash8 = Math.random().toString(36).slice(2, 10);
 
-    const slug = `compare-${yyyymm(now)}`;
-    const title = extractTitle(md);
-    const summary = extractSummary(md);
+    // 🔹 ここで generateBlogContent を使う（世界観ベース + JSONスキーマ）
+    const { title, excerpt, tags, content } = await generateBlogContent({
+      siteId: SITE_ID,
+      siteName: "Kariraku（カリラク）",
+      product: {
+        name: "家電レンタル3社比較",
+        asin: `compare-${dateStr}`,
+        tags: ["家電レンタル", "比較"],
+      },
+      persona: "家電レンタルサービスを比較して、自分に合う1社を見つけたい人",
+      pain: "どの家電レンタルサービスを選べば良いか分からない・料金やサポートの違いが不安",
+      templateName: "blogTemplate_kariraku_compare.txt",
+      vars: {
+        site: {
+          id: SITE_ID,
+          displayName: "Kariraku（カリラク）",
+          domain: "kariraku.com",
+        },
+        services,
+        seasonKeyword,
+        seasonTag: seasonKeyword,
+        dateYYYYMM: dateStr,
+        hash8,
+      },
+    });
+
+    const md = content;
+    const slug = `compare-${dateStr}`;
+    const finalTitle =
+      title && title.trim() ? title.trim() : "家電レンタル3社を徹底比較";
+    const summary =
+      excerpt && excerpt.trim() ? excerpt.trim() : extractSummary(md);
 
     const doc = {
       slug,
       siteId: SITE_ID,
-      title,
+      title: finalTitle,
       summary,
       content: md,
       status: "published" as const,
       visibility: "public" as const,
       type: "compare" as const,
-      tags: sanitizeTags(["家電レンタル", "比較", SITE_ID]),
+      // テンプレ側の slugKeys を優先しつつ、なければ従来タグを使う
+      tags:
+        Array.isArray(tags) && tags.length
+          ? tags
+          : sanitizeTags(["家電レンタル", "比較", seasonKeyword, SITE_ID]),
       createdAt: Date.now(),
       updatedAt: Date.now(),
       publishedAt: Date.now(),
@@ -59,7 +84,7 @@ export const scheduledMonthlyCompare = functions
     };
 
     await db.collection("blogs").doc(slug).set(doc, { merge: true });
-    logger.info("[monthlyCompare] upserted", { slug, title });
+    logger.info("[monthlyCompare] upserted", { slug, title: finalTitle });
   });
 
 function seasonKeywordByMonth(d: Date): string {
@@ -73,10 +98,6 @@ function seasonKeywordByMonth(d: Date): string {
 }
 function yyyymm(d: Date): string {
   return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
-function extractTitle(md: string): string {
-  const m = md.match(/^#\s+(.+)$/m);
-  return m ? m[1].trim() : "家電レンタル3社を徹底比較";
 }
 function extractSummary(md: string): string {
   const text = md

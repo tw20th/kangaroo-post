@@ -1,0 +1,304 @@
+{
+  "program": {
+    "advertiserInfo": {
+      "companyName": "パナソニック株式会社",
+      "officialName": "パナソニック株式会社（Panasonic Corporation）",
+      "founded": "1918年3月7日",
+      "headquarters": "大阪府門真市大字門真1006番地（本店）／東京都港区東新橋1-5-1 パナソニック東京汐留ビル",
+      "capital": "2,593億円（連結ベース）",
+      "employees": "約90,000名（単体・グループ全体では20万人超）",
+      "businessAreas": [
+        "家電（調理家電・生活家電・美容家電など）の開発・製造・販売",
+        "空質空調・コールドチェーン機器",
+        "食品流通向けソリューション",
+        "電気設備・デバイス事業",
+        "サブスクリプション型D2Cサービス（foodable など）"
+      ],
+      "strengths": [
+        "創業100年以上の歴史とグローバルブランド力",
+        "キッチン家電のハイエンドライン「Bistro」をはじめとした高性能家電の開発力",
+        "家電とデジタルサービス（アプリ・AIアシスタント）を組み合わせた体験設計",
+        "長期利用前提のサブスク設計（最低利用期間後は買取・継続などの選択肢）",
+        "全国規模のサポート・サービスネットワーク"
+      ],
+      "officialUrls": {
+        "company": "https://www.panasonic.com/jp/",
+        "service": "https://foodable.jpn.panasonic.com/",
+        "bistroCourse": "https://foodable.jpn.panasonic.com/course/oven/",
+        "bistroAssist": "https://bistro-assist.foodable.jpn.panasonic.com/",
+        "ir": "https://holdings.panasonic/jp/corporate/phd/ir.html",
+        "recruit": "https://www.panasonic.com/jp/corporate/jobs.html"
+      },
+      "socials": {
+        "x": "https://x.com/panasonic_corp",
+        "instagram": "https://www.instagram.com/panasonicjp/",
+        "youtube": "https://www.youtube.com/@PanasonicJapan",
+        "cookingInstagram": "https://www.instagram.com/panasonic_cooking/"
+      }
+    },
+    "programId": "s00000025109003",
+    "advertiser": "パナソニック株式会社",
+    "category": ["家電", "サブスク", "キッチン家電"]
+  },
+  "offer": {
+    "id": "s00000025109003:foodable-bistro-assist",
+    "title": "【パナソニック公式】最新オーブンレンジBistroとAI料理パートナーの定期購入サービス(23-1020)",
+    "description": "スチームオーブンレンジ ビストロ最上位モデル NE-UBS10D を新品レンタルでき、AI料理パートナー「Bistroアシスタント」とセットで使える月額制サービス。高額な本体を購入する前に、月額3,980円でじっくり試せます（最低利用期間36ヶ月・送料込）。",
+    "planType": "subscription",
+    "landingUrl": "https://bistro-assist.foodable.jpn.panasonic.com/UBS10D/",
+    "affiliateUrl": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HVNAP",
+    "images": [],
+    "badges": [
+      "新品ビストロ最上位モデル",
+      "AI料理パートナー付き",
+      "月額3,980円（税込・送料込）",
+      "最低利用期間36ヶ月",
+      "利用後は買取または返却を選択",
+      "LINEでレシピ相談OK",
+      "高機能スチームオーブンレンジ",
+      "共働き・子育て世帯に人気"
+    ],
+    "tags": [
+      "サブスク",
+      "家電サブスク",
+      "キッチン家電",
+      "スチームオーブンレンジ",
+      "ビストロ",
+      "NE-UBS10D",
+      "AIアシスタント",
+      "時短料理",
+      "共働き",
+      "子育て家庭"
+    ],
+    "siteIds": ["kariraku"],
+    "extras": {
+      "service": {
+        "name": "foodable（フーダブル） オーブンレンジビストロ＋Bistroアシスタントコース",
+        "overview": "パナソニックの最新スチームオーブンレンジBistro NE-UBS10Dを新品でレンタルしながら、AI料理パートナー「Bistroアシスタント」がLINEでレシピ提案や使い方をサポートしてくれるサブスク。家電本体は月額制で利用し、最低利用期間終了後は継続・買取・返却から選べます。",
+        "targetUsers": [
+          "共働き・子育て世帯で調理の手間を減らしたい人",
+          "高性能オーブンレンジを購入前にじっくり試したい人",
+          "自宅の冷蔵庫の中身から献立提案をしてほしい人",
+          "レンジの機能を使いこなしたいが操作に不安がある人"
+        ],
+        "mainFeatures": [
+          "最新モデル NE-UBS10D を新品でレンタル",
+          "おまかせグリル・凍ったままワンボウル・おまかせ熱風フライなどの時短機能",
+          "BistroアシスタントがLINEでレシピ提案・使い方サポート・献立相談に対応",
+          "利用期間終了後は買取か返却を選択可能"
+        ]
+      },
+      "pricing": {
+        "plan": "monthly",
+        "monthlyPriceFrom": 3980,
+        "currency": "JPY",
+        "taxIncluded": true,
+        "shippingIncluded": true,
+        "deviceListPrice": 158400,
+        "minTermMonths": 36,
+        "earlyCancelFee": 7960,
+        "buyoutFeeAfterMinTerm": 19250,
+        "notes": [
+          "最低利用期間36ヶ月。期間内解約時は中途解約手数料が発生。",
+          "最低利用期間終了後は、継続利用・返却・買取のいずれかを選択可能。"
+        ]
+      },
+      "minTerm": {
+        "monthlyMonths": 36
+      },
+      "ui": {
+        "priceLabel": "月額 3,980円（税込・送料込）",
+        "minTermLabel": "最低利用期間36ヶ月（その後は買取 or 返却）",
+        "compareHighlight": "定価約15.8万円の最上位ビストロを、スマホ感覚の月額払いで試せる",
+        "isPriceDynamic": false
+      },
+      "rentalPolicy": {
+        "type": "subscription-monthly",
+        "minTermMonths": 36,
+        "renewal": "最低利用期間終了後は1ヶ月単位で自動更新（継続・解約・買取を選択可能）",
+        "cancelRule": "最低利用期間内の解約には中途解約手数料が発生。解約手続き後、指定期日までに本体を返却。",
+        "endOfTermOptions": [
+          "そのまま月額で継続利用（長期割引適用コースの場合あり）",
+          "買取（所定の買取手数料を支払い、そのまま所有）",
+          "解約して返却"
+        ]
+      },
+      "payment": {
+        "methods": ["クレジットカード"],
+        "notes": [
+          "支払い方法は原則クレジットカード（デビット・プリペイドは不可の場合あり）。",
+          "利用料金は月額制で、毎月決済日または更新日に請求。"
+        ]
+      },
+      "shipping": {
+        "carrier": "宅配便（ヤマト運輸など）",
+        "shippingIncluded": true,
+        "returnRequired": true,
+        "notes": [
+          "月額料金は送料込み。",
+          "解約・返却時は案内に従って本体を返送。"
+        ]
+      },
+      "warranty": {
+        "normalWearFree": true,
+        "notes": [
+          "foodableあんしんサポートの範囲内で、通常使用による故障はサポート対象。",
+          "詳細な補償内容・回数制限などは公式サイトの利用規約を確認。"
+        ]
+      },
+      "policies": {
+        "disclosureRequired": true,
+        "prLabelRequired": true,
+        "listingAdsNG": true,
+        "peopleImageNG": true,
+        "resultConditionsSummary": "成果条件：対象サービスを初めて申し込むユーザーが、WEB申込後に2回目の課金まで完了した場合に成果発生。",
+        "denyConditionsSummary": "否認条件：同一世帯による複数申込、商品の受取拒否・未入金・返品、虚偽・いたずら申込、リスティング違反などは成果対象外。"
+      },
+      "faqHints": [
+        "最低利用期間は36ヶ月。期間内解約の場合は中途解約料がかかる点を必ず事前に確認しておく。",
+        "利用終了時は『継続・返却・買取』のいずれかを選べるため、購入前のお試しとしても利用しやすい。",
+        "BistroアシスタントはLINE上で動作し、冷蔵庫の残り食材からのレシピ提案や、機能の使い方相談ができる。"
+      ]
+    },
+    "creatives": [
+      {
+        "materialId": "030",
+        "type": "banner",
+        "size": "250x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+I1FMP",
+        "imgSrc": "https://www28.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003030000&mc=1"
+      },
+      {
+        "materialId": "003",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HVNAP",
+        "imgSrc": "https://www27.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003003000&mc=1"
+      },
+      {
+        "materialId": "002",
+        "type": "text",
+        "label": "【パナソニック公式】オーブンレンジBistroと厳選食材の定期購入サービス",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HVFKY"
+      },
+      {
+        "materialId": "010",
+        "type": "banner",
+        "size": "728x90",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HX5B5",
+        "imgSrc": "https://www20.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003010000&mc=1"
+      },
+      {
+        "materialId": "015",
+        "type": "banner",
+        "size": "336x280",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HY7W1",
+        "imgSrc": "https://www28.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003015000&mc=1"
+      },
+      {
+        "materialId": "016",
+        "type": "banner",
+        "size": "320x50",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HYFLT",
+        "imgSrc": "https://www29.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003016000&mc=1"
+      },
+      {
+        "materialId": "001",
+        "type": "text",
+        "label": "【パナソニック公式】",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HV7V6"
+      },
+      {
+        "materialId": "004",
+        "type": "banner",
+        "size": "468x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HVV0H",
+        "imgSrc": "https://www20.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003004000&mc=1"
+      },
+      {
+        "materialId": "005",
+        "type": "banner",
+        "size": "320x50",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HW2Q9",
+        "imgSrc": "https://www27.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003005000&mc=1"
+      },
+      {
+        "materialId": "006",
+        "type": "banner",
+        "size": "234x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HWAG1",
+        "imgSrc": "https://www29.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003006000&mc=1"
+      },
+      {
+        "materialId": "007",
+        "type": "banner",
+        "size": "120x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HWI5T",
+        "imgSrc": "https://www23.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003007000&mc=1"
+      },
+      {
+        "materialId": "008",
+        "type": "banner",
+        "size": "100x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HWPVL",
+        "imgSrc": "https://www22.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003008000&mc=1"
+      },
+      {
+        "materialId": "009",
+        "type": "banner",
+        "size": "120x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HWXLD",
+        "imgSrc": "https://www24.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003009000&mc=1"
+      },
+      {
+        "materialId": "011",
+        "type": "banner",
+        "size": "468x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HXD0X",
+        "imgSrc": "https://www26.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003011000&mc=1"
+      },
+      {
+        "materialId": "012",
+        "type": "banner",
+        "size": "350x80",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HXKQP",
+        "imgSrc": "https://www29.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003012000&mc=1"
+      },
+      {
+        "materialId": "013",
+        "type": "banner",
+        "size": "350x160",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HXSGH",
+        "imgSrc": "https://www25.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003013000&mc=1"
+      },
+      {
+        "materialId": "014",
+        "type": "banner",
+        "size": "350x240",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HY069",
+        "imgSrc": "https://www20.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003014000&mc=1"
+      },
+      {
+        "materialId": "017",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HYNBL",
+        "imgSrc": "https://www21.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003017000&mc=1"
+      },
+      {
+        "materialId": "018",
+        "type": "banner",
+        "size": "250x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HYV1D",
+        "imgSrc": "https://www25.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003018000&mc=1"
+      },
+      {
+        "materialId": "019",
+        "type": "banner",
+        "size": "234x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45GEHB+BDMAIQ+5DQQ+HZ2R5",
+        "imgSrc": "https://www28.a8.net/svt/bgt?aid=251028047688&wid=003&eno=01&mid=s00000025109003019000&mc=1"
+      }
+    ]
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "siteId": "hadasmooth",
+  "displayName": "HadaSmooth（ハダスムース）",
+  "domain": "www.hadasmooth.com",
+
+  "gsc": { "propertyUrl": "sc-domain:hadasmooth.com" },
+
+  "keywordPools": {
+    "comparison": [
+      "全身脱毛 サロン 比較",
+      "医療脱毛 クリニック 料金 比較",
+      "VIO脱毛 痛み 少ない サロン",
+      "顔脱毛 どこがいい",
+      "家庭用 脱毛器 サロン 比較"
+    ],
+    "guide": [
+      "初めての脱毛サロン 選び方",
+      "医療脱毛とサロン脱毛の違い",
+      "VIO脱毛 恥ずかしい 不安",
+      "家庭用脱毛器 効果 いつから"
+    ]
+  },
+
+  "contentPlan": {
+    "weekly": { "pillarIntent": "脱毛の始め方・選び方の柱記事を増やす" }
+  },
+
+  "images": {
+    "preferUnsplashHero": true
+  },
+
+  "brand": {
+    "primary": "#EC4899",
+    "accent": "#22C55E",
+    "logoUrl": "/logos/hadasmooth.svg",
+    "theme": "light"
+  },
+
+  "analytics": { "ga4MeasurementId": "G-XXXXXXXX" },
+
+  "categoryPreset": ["hadasmooth"],
+
+  "features": {
+    "offers": true,
+    "products": false,
+    "blogs": true,
+    "ranking": true
+  },
+
+  "homeCopy": {
+    "title": "ムダ毛ケアを、もっとやさしく。",
+    "subtitle": "脱毛サロン・医療脱毛・家庭用脱毛器を比較して、“自分に合うペースで続けられる脱毛”を一緒に探します。",
+    "featuredTitle": "脱毛サービス特集",
+    "blogsTitle": "脱毛の始め方ガイド",
+    "dataSourceLabel": "A8.net",
+    "note": "本ページは広告を含みます。提携先サービスの一部を紹介しています。"
+  },
+
+  "seo": {
+    "metaTitle": "HadaSmooth（ハダスムース）｜脱毛サロン・医療脱毛・家庭用脱毛器の比較ガイド",
+    "metaDescription": "HadaSmooth（ハダスムース）は、脱毛サロン・医療脱毛・家庭用脱毛器をわかりやすく比較するメディアです。料金・痛み・通いやすさなど、“続けやすい脱毛”選びをサポートします。",
+    "ogImage": "/og/hadasmooth_og.png",
+    "keywords": [
+      "脱毛サロン",
+      "医療脱毛",
+      "家庭用脱毛器",
+      "全身脱毛",
+      "VIO脱毛",
+      "HadaSmooth"
+    ]
+  }
+}

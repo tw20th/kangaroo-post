@@ -9,9 +9,14 @@ export type OfferLite = {
   priceMonthly?: number | null;
   minTermMonths?: number | null;
   notes?: string[];
-  ui?: { priceLabel?: string; minTermLabel?: string };
+  ui?: {
+    priceLabel?: string;
+    minTermLabel?: string;
+    compareHighlight?: string;
+    isPriceDynamic?: boolean;
+  };
+  /** 一覧や比較で先頭を「おすすめ」扱いしたいとき用 */
   isRecommended?: boolean;
-  compareHighlight?: string; // ← 追加
 };
 
 const isExternal = (url: string) => /^https?:\/\//i.test(url);
@@ -33,9 +38,9 @@ export default function OfferCompareTable({
         )}
         <thead className="bg-gray-50">
           <tr className="text-left">
-            <th className="p-3 font-semibold w-[38%]">サービス</th>
-            <th className="p-3 font-semibold w-[16%]">月額目安</th>
-            <th className="p-3 font-semibold w-[20%]">最低利用期間</th>
+            <th className="p-3 font-semibold">サービス</th>
+            <th className="p-3 font-semibold">月額目安</th>
+            <th className="p-3 font-semibold">最低利用期間</th>
             <th className="p-3 font-semibold">特徴</th>
             <th className="p-3"></th>
           </tr>
@@ -60,46 +65,38 @@ export default function OfferCompareTable({
 
             return (
               <tr key={o.id} className="border-t">
-                {/* サービス名＋強みラベル＋おすすめバッジ */}
-                <td className="p-3">
-                  <div className="flex items-center gap-3">
+                {/* サービス名 + 比較ハイライト + おすすめバッジ */}
+                <td className="p-3 align-top">
+                  <div className="flex items-start gap-3">
                     {o.isRecommended && (
-                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-xs font-semibold text-white">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-semibold text-white">
                         おすすめ
-                      </span>
+                      </div>
                     )}
                     <div>
-                      <div>{priceCell}</div>
-                      <div className="text-xs text-gray-500">{termCell}</div>
-                      {o.compareHighlight && (
-                        <div className="mt-1 text-xs font-medium text-emerald-700">
-                          {o.compareHighlight}
+                      <div className="font-semibold">{o.title}</div>
+                      {o.ui?.compareHighlight && (
+                        <div className="mt-1 text-xs text-gray-500">
+                          {o.ui.compareHighlight}
                         </div>
                       )}
                     </div>
                   </div>
                 </td>
 
-                {/* 月額 */}
-                <td className="p-3 align-top">
-                  <div className="space-y-1">
-                    <div>{priceCell}</div>
-                    {typeof o.priceMonthly === "number" && (
-                      <div className="text-[11px] text-gray-400">※税込目安</div>
-                    )}
-                  </div>
-                </td>
+                {/* 月額目安 */}
+                <td className="p-3 align-top whitespace-nowrap">{priceCell}</td>
 
-                {/* 最低期間 */}
-                <td className="p-3 align-top">{termCell}</td>
+                {/* 最低利用期間 */}
+                <td className="p-3 align-top whitespace-nowrap">{termCell}</td>
 
                 {/* 特徴バッジ */}
                 <td className="p-3 align-top">
                   <div className="flex flex-wrap gap-2">
-                    {o.badges?.slice(0, 3).map((b) => (
+                    {o.badges?.slice(0, 4).map((b) => (
                       <span
                         key={b}
-                        className="inline-block rounded-full border px-2 py-0.5 text-xs text-gray-700"
+                        className="inline-block rounded-full border px-2 py-0.5 text-xs"
                       >
                         {b}
                       </span>
@@ -107,7 +104,7 @@ export default function OfferCompareTable({
                     {o.notes?.slice(0, 2).map((n, i) => (
                       <span
                         key={i}
-                        className="inline-block rounded-full border px-2 py-0.5 text-xs text-gray-700"
+                        className="inline-block rounded-full border px-2 py-0.5 text-xs"
                       >
                         {n}
                       </span>
@@ -116,20 +113,20 @@ export default function OfferCompareTable({
                 </td>
 
                 {/* CTA */}
-                <td className="p-3 align-top text-right">
+                <td className="p-3 text-right align-top">
                   {external ? (
                     <a
                       href={href}
                       target="_blank"
                       rel="nofollow sponsored"
-                      className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                      className="inline-flex items-center rounded-lg bg-emerald-600 text-white px-3 py-2 hover:bg-emerald-700"
                     >
                       公式へ →
                     </a>
                   ) : (
                     <Link
                       href={href}
-                      className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                      className="inline-flex items-center rounded-lg bg-emerald-600 text-white px-3 py-2 hover:bg-emerald-700"
                     >
                       公式へ →
                     </Link>

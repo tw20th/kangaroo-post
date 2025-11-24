@@ -53,5 +53,51 @@
     "metaDescription": "Kariraku（カリラク）は、冷蔵庫・洗濯機・掃除機などのレンタル・サブスクを毎日自動更新で紹介するメディアです。買わずに使う、新しい暮らし方を提案します。",
     "ogImage": "/og/kariraku_og.png",
     "keywords": ["家電レンタル", "サブスク", "暮らし", "Kariraku", "カリラク"]
-  }
+  },
+  "painRules": [
+    {
+      "id": "move-preparation",
+      "label": "引っ越し準備の負担を軽くしたい",
+      "keywords": ["引っ越し 準備", "家電 レンタル 引越し", "初期費用 抑える"],
+      "personas": ["一人暮らし", "共働き"]
+    },
+    {
+      "id": "hitorigurashi-cost",
+      "label": "一人暮らしの初期費用が高すぎる",
+      "keywords": [
+        "一人暮らし 初期費用",
+        "冷蔵庫 洗濯機 セット",
+        "家電 レンタル 新生活"
+      ],
+      "personas": ["学生", "新社会人"]
+    },
+    {
+      "id": "refrigerator-broken",
+      "label": "家電が急に壊れて困っている",
+      "keywords": [
+        "冷蔵庫 壊れた すぐ必要",
+        "洗濯機 壊れた レンタル",
+        "急ぎ 家電 レンタル"
+      ],
+      "personas": ["ファミリー", "共働き"]
+    },
+    {
+      "id": "short-term-need",
+      "label": "短期間だけ家電を使いたい",
+      "keywords": ["短期 レンタル", "仮住まい 家電", "単身赴任 家電 セット"],
+      "personas": ["単身赴任", "一時的な利用"]
+    },
+    {
+      "id": "year-end-cooking",
+      "label": "年末の料理や家事がしんどい",
+      "keywords": ["料理 時短", "家事 負担 減らす", "年末 準備 しんどい"],
+      "personas": ["共働き", "育児中"]
+    },
+    {
+      "id": "guest-preparation",
+      "label": "来客前に家を整えるのが大変",
+      "keywords": ["掃除 時短", "片付け やる気出ない", "来客 準備 家電"],
+      "personas": ["ファミリー"]
+    }
+  ]
 }
