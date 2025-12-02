@@ -1,3 +1,5 @@
+// packages/shared-types/src/index.ts
+
 export type OfferSource = "amazon" | "rakuten";
 
 export interface Offer {
@@ -5,6 +7,9 @@ export interface Offer {
   price: number;
   url: string;
   lastSeenAt: number; // ms
+
+  // A8 オファーと企業マスタを紐付けるための任意フィールド
+  companyId?: string | null;
 }
 
 export interface PricePoint {
@@ -55,11 +60,12 @@ export interface Product {
 
 export type BlogStatus = "draft" | "published";
 
-/** ★ ここを差し替え */
+/** ブログ記事 */
 export interface Blog {
   slug: string; // = docId
   title: string;
   imageUrl?: string | null;
+
   /** Unsplash 帰属（あれば表示） */
   imageCredit?: string | null;
   imageCreditLink?: string | null;

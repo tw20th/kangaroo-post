@@ -1,4 +1,3 @@
-// apps/web/components/offers/OfferDetailSections.tsx
 /* eslint-disable @next/next/no-img-element */
 type UiBlock = {
   priceLabel?: string;
@@ -16,7 +15,7 @@ export default function OfferDetailSections({ ui }: { ui?: UiBlock }) {
   return (
     <section className="space-y-6">
       {(ui.priceLabel || ui.minTermLabel) && (
-        <div className="rounded-xl border p-4 text-sm bg-white">
+        <div className="card bg-white p-4 text-sm">
           {ui.priceLabel && (
             <div className="mb-1">
               <span className="font-medium">{ui.priceLabel}</span>
@@ -34,8 +33,8 @@ export default function OfferDetailSections({ ui }: { ui?: UiBlock }) {
       )}
 
       {ui.shippingNote && (
-        <div className="rounded-xl border p-4">
-          <h3 className="font-semibold mb-2">配送・返送</h3>
+        <div className="card bg-white p-4">
+          <h3 className="mb-2 text-sm font-semibold">配送・返送</h3>
           <p className="text-sm text-gray-700 whitespace-pre-wrap">
             {ui.shippingNote}
           </p>
@@ -43,8 +42,8 @@ export default function OfferDetailSections({ ui }: { ui?: UiBlock }) {
       )}
 
       {ui.paymentNote && (
-        <div className="rounded-xl border p-4">
-          <h3 className="font-semibold mb-2">支払い方法</h3>
+        <div className="card bg-white p-4">
+          <h3 className="mb-2 text-sm font-semibold">支払い方法</h3>
           <p className="text-sm text-gray-700 whitespace-pre-wrap">
             {ui.paymentNote}
           </p>
@@ -52,8 +51,8 @@ export default function OfferDetailSections({ ui }: { ui?: UiBlock }) {
       )}
 
       {ui.warrantyNote && (
-        <div className="rounded-xl border p-4">
-          <h3 className="font-semibold mb-2">保証について</h3>
+        <div className="card bg-white p-4">
+          <h3 className="mb-2 text-sm font-semibold">保証について</h3>
           <p className="text-sm text-gray-700 whitespace-pre-wrap">
             {ui.warrantyNote}
           </p>
@@ -61,8 +60,8 @@ export default function OfferDetailSections({ ui }: { ui?: UiBlock }) {
       )}
 
       {ui.faqBullets?.length ? (
-        <div className="rounded-xl border p-4">
-          <h3 className="font-semibold mb-2">よくある質問</h3>
+        <div className="card bg-white p-4">
+          <h3 className="mb-2 text-sm font-semibold">よくある質問</h3>
           <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
             {ui.faqBullets.map((q, i) => (
               <li key={i}>{q}</li>

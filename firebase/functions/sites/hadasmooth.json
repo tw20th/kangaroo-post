@@ -2,71 +2,142 @@
   "siteId": "hadasmooth",
   "displayName": "HadaSmooth（ハダスムース）",
   "domain": "www.hadasmooth.com",
+  "profile": {
+    "theme": "肌と生活リズムのゆらぎを、無理のないケアで整える",
+    "reader": "肌の調子やスキンケアに迷っていて、情報が多すぎて少し疲れている人",
+    "tone": "やわらかい, ゆっくり, やさしい, ていねい",
+    "topic": "肌の揺らぎの背景を生活習慣といっしょに見つめ直し、できることを静かに整理する"
+  },
+  "blogTemplates": {
+    "discover": "discover_default",
+    "guide": "hadasmooth_guide"
+  },
 
   "gsc": { "propertyUrl": "sc-domain:hadasmooth.com" },
 
   "keywordPools": {
     "comparison": [
-      "全身脱毛 サロン 比較",
-      "医療脱毛 クリニック 料金 比較",
-      "VIO脱毛 痛み 少ない サロン",
-      "顔脱毛 どこがいい",
-      "家庭用 脱毛器 サロン 比較"
+      "医療脱毛 料金 比較",
+      "全身脱毛 サロン 医療 違い",
+      "顔 脱毛 クリニック 比較",
+      "VIO 脱毛 どこがいい",
+      "脱毛サロン 学割 比較"
     ],
     "guide": [
-      "初めての脱毛サロン 選び方",
-      "医療脱毛とサロン脱毛の違い",
-      "VIO脱毛 恥ずかしい 不安",
-      "家庭用脱毛器 効果 いつから"
+      "脱毛 初心者 不安",
+      "医療脱毛 痛み 少ない クリニック",
+      "脱毛 何回で つるつる",
+      "自己処理 やめたい 方法",
+      "敏感肌 脱毛 気をつけること"
+    ],
+    "service": [
+      "医療脱毛 おすすめ 2025",
+      "全身脱毛 月額 安い",
+      "都度払い 脱毛 クリニック",
+      "乗り換え割 脱毛",
+      "部分 脱毛 安い サロン"
+    ],
+    "discover": [
+      "肌がゆらぎやすい季節の過ごし方",
+      "敏感肌の日のシンプルケア",
+      "スキンケアを続けやすくする工夫",
+      "忙しい日の時短スキンケア",
+      "乾燥しやすい日の保湿のコツ",
+      "スキンケア迷子から抜け出す考え方",
+      "コスメを増やしすぎない暮らし方"
     ]
   },
-
   "contentPlan": {
-    "weekly": { "pillarIntent": "脱毛の始め方・選び方の柱記事を増やす" }
+    "weekly": { "pillarIntent": "脱毛の選び方・比較の柱記事を増やす" }
   },
-
   "images": {
     "preferUnsplashHero": true
   },
 
   "brand": {
-    "primary": "#EC4899",
-    "accent": "#22C55E",
+    "primary": "#F9739A",
+    "accent": "#FBBF24",
     "logoUrl": "/logos/hadasmooth.svg",
     "theme": "light"
   },
-
   "analytics": { "ga4MeasurementId": "G-XXXXXXXX" },
-
-  "categoryPreset": ["hadasmooth"],
-
+  "categoryPreset": ["beauty-hairremoval"],
   "features": {
-    "offers": true,
+    "offers": false,
     "products": false,
     "blogs": true,
-    "ranking": true
+    "ranking": false
   },
-
   "homeCopy": {
-    "title": "ムダ毛ケアを、もっとやさしく。",
-    "subtitle": "脱毛サロン・医療脱毛・家庭用脱毛器を比較して、“自分に合うペースで続けられる脱毛”を一緒に探します。",
-    "featuredTitle": "脱毛サービス特集",
-    "blogsTitle": "脱毛の始め方ガイド",
-    "dataSourceLabel": "A8.net",
-    "note": "本ページは広告を含みます。提携先サービスの一部を紹介しています。"
+    "title": "ムダ毛悩みを、そっと軽くする。",
+    "subtitle": "医療脱毛・サロン脱毛・セルフケアの違いをやさしく解説。あなたに合う脱毛の選び方をナビします。",
+    "featuredTitle": "脱毛ガイド・比較記事",
+    "blogsTitle": "新着コラム",
+    "dataSourceLabel": "※将来的に提携サービスを紹介予定です",
+    "note": "本サイトは情報提供を目的としたメディアです。広告を含むコンテンツを掲載する場合があります。"
   },
-
   "seo": {
-    "metaTitle": "HadaSmooth（ハダスムース）｜脱毛サロン・医療脱毛・家庭用脱毛器の比較ガイド",
-    "metaDescription": "HadaSmooth（ハダスムース）は、脱毛サロン・医療脱毛・家庭用脱毛器をわかりやすく比較するメディアです。料金・痛み・通いやすさなど、“続けやすい脱毛”選びをサポートします。",
+    "metaTitle": "HadaSmooth（ハダスムース）｜医療脱毛・サロン脱毛の“ちゃんと知りたい”をやさしく解説",
+    "metaDescription": "HadaSmooth（ハダスムース）は、医療脱毛・サロン脱毛・自己処理の違いや選び方をやさしく解説するメディアです。痛み・回数・料金の不安をほどきながら、自分に合う脱毛の始め方を一緒に考えます。",
     "ogImage": "/og/hadasmooth_og.png",
-    "keywords": [
-      "脱毛サロン",
-      "医療脱毛",
-      "家庭用脱毛器",
-      "全身脱毛",
-      "VIO脱毛",
-      "HadaSmooth"
-    ]
-  }
+    "keywords": ["医療脱毛", "脱毛サロン", "全身脱毛", "VIO脱毛", "ムダ毛ケア"]
+  },
+  "painRules": [
+    {
+      "id": "razor-burn",
+      "label": "自己処理で肌荒れしてしまう",
+      "keywords": [
+        "カミソリ 肌荒れ",
+        "ムダ毛 処理 赤くなる",
+        "自己処理 やめたい"
+      ],
+      "personas": ["学生", "社会人女性"]
+    },
+    {
+      "id": "hair-growth-anxiety",
+      "label": "ムダ毛が濃くて、人前で気になる",
+      "keywords": [
+        "ムダ毛 濃い 悩み",
+        "腕毛 濃い 隠したい",
+        "脚 ムダ毛 恥ずかしい"
+      ],
+      "personas": ["学生", "20代女性"]
+    },
+    {
+      "id": "clinic-vs-salon",
+      "label": "医療脱毛とサロン脱毛の違いがわからない",
+      "keywords": [
+        "医療脱毛 サロン 違い",
+        "脱毛 どっち がいい",
+        "永久脱毛 できる のは"
+      ],
+      "personas": ["初めての脱毛"]
+    },
+    {
+      "id": "pain-fear",
+      "label": "脱毛の痛みが怖くて一歩踏み出せない",
+      "keywords": ["医療脱毛 痛い", "脱毛 痛み 少ない", "麻酔 あり 脱毛"],
+      "personas": ["痛みに弱い人"]
+    },
+    {
+      "id": "budget-worry",
+      "label": "お金がかかりそうで不安",
+      "keywords": [
+        "脱毛 いくら かかる",
+        "全身脱毛 料金 高い",
+        "月額 制 脱毛 不安"
+      ],
+      "personas": ["学生", "新社会人"]
+    },
+    {
+      "id": "sensitive-skin",
+      "label": "敏感肌で、どんな脱毛なら安心か知りたい",
+      "keywords": [
+        "敏感肌 脱毛 できる",
+        "アトピー 脱毛 注意",
+        "肌 弱い 脱毛 方法"
+      ],
+      "personas": ["敏感肌", "アレルギー体質"]
+    }
+  ]
 }

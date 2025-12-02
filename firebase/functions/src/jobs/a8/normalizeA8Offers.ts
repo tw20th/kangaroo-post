@@ -50,6 +50,23 @@ function buildMinTermLabel(o: any): string | null {
   return a.join(" / ") || null;
 }
 
+/** 比較ハイライト → highlightLabel 派生 */
+function buildHighlightLabel(o: any): string | null {
+  // すでに highlightLabel があればそれを優先
+  const direct = o?.highlightLabel ?? o?.ui?.highlightLabel;
+  if (typeof direct === "string" && direct.trim()) {
+    return direct.trim();
+  }
+
+  // ingest JSON の extras.ui.compareHighlight から生成
+  const fromExtras = o?.extras?.ui?.compareHighlight;
+  if (typeof fromExtras === "string" && fromExtras.trim()) {
+    return fromExtras.trim();
+  }
+
+  return null;
+}
+
 export async function normalizeA8Offers(opts: Options = {}) {
   const db = getFirestore();
   const snap = await db.collection("offers").get();
@@ -73,6 +90,7 @@ export async function normalizeA8Offers(opts: Options = {}) {
       updatedAt?: number;
       extras?: any; // ここに pricing / shipping / payment / warranty などが入る
       ui?: any;
+      highlightLabel?: string | null;
     };
 
     /* --- siteIds --- */
@@ -106,17 +124,24 @@ export async function normalizeA8Offers(opts: Options = {}) {
     const priceLabel = buildPriceLabel(o);
     const minTermLabel = buildMinTermLabel(o);
     const isPriceDynamic = !!o?.extras?.pricing?.priceIsDynamic;
+    const highlightLabel = buildHighlightLabel(o);
 
     const patch = {
       siteIds: Array.from(siteIds),
       affiliateUrl: affiliateUrl || null,
       archived: o.archived ?? false,
       updatedAt: Date.now(),
+
+      // ルートにも持たせておくとクエリしやすいので追加
+      highlightLabel: highlightLabel ?? null,
+
       ui: {
         ...(o.ui || {}),
         priceLabel: priceLabel ?? null,
         minTermLabel: minTermLabel ?? null,
         isPriceDynamic,
+        // UI 用にも重ねて保存
+        highlightLabel: highlightLabel ?? null,
       },
     };
 

@@ -3,17 +3,23 @@ import Link from "next/link";
 import BlogCard from "@/components/blog/BlogCard";
 import { getServerSiteId } from "@/lib/site-server";
 import { fetchBlogs, type BlogRow } from "@/lib/queries";
-
-import PainRail from "@/components/pain/PainRail";
+import FeaturedDiscoverList from "@/components/blog/FeaturedDiscoverList";
 
 export const revalidate = 1800;
 export const dynamic = "force-dynamic";
 
 // Firestore の type と対応させた記事タイプ
-type BlogType = "all" | "compare" | "daily" | "guide" | "service";
-type SP = { type?: BlogType };
+type BlogType = "all" | "compare" | "daily" | "guide" | "service" | "discover";
 
-function formatJp(ts?: number) {
+// 並び替えモード
+type SortMode = "new" | "popular";
+
+type SP = {
+  type?: BlogType;
+  sort?: SortMode;
+};
+
+function formatJp(ts?: number | null) {
   if (!ts) return "";
   return new Date(ts).toLocaleString("ja-JP", {
     year: "numeric",
@@ -24,12 +30,22 @@ function formatJp(ts?: number) {
   });
 }
 
-const BLOG_TYPES: BlogType[] = ["all", "compare", "daily", "guide", "service"];
+// 一覧に出すタブ順
+const BLOG_TYPES: BlogType[] = [
+  "all",
+  "compare",
+  "daily",
+  "guide",
+  "service",
+  "discover",
+];
+
+const SORT_MODES: SortMode[] = ["popular", "new"]; // 表示順：人気順 → 新着順
 
 function labelForType(t: BlogType): string {
   switch (t) {
     case "all":
-      return "すべて";
+      return "通常記事（すべて）";
     case "compare":
       return "比較記事";
     case "daily":
@@ -38,9 +54,22 @@ function labelForType(t: BlogType): string {
       return "お悩みガイド";
     case "service":
       return "サービス紹介";
+    case "discover":
+      return "おすすめ・読みもの";
     default:
       return t;
   }
+}
+
+// 人気順用のスコア（views と latestScore をミックス）
+function calcPopularityScore(b: BlogRow): number {
+  const views = Number((b as { views?: number }).views ?? 0);
+  const latestScore = Number((b as { latestScore?: number }).latestScore ?? 0);
+
+  const viewsWeight = Math.log10(views + 1) * 30;
+  const scoreWeight = latestScore;
+
+  return viewsWeight + scoreWeight;
 }
 
 export async function generateMetadata({
@@ -52,6 +81,7 @@ export async function generateMetadata({
   const type: BlogType = BLOG_TYPES.includes(rawType ?? "all")
     ? rawType ?? "all"
     : "all";
+
   const indexable = type === "all";
 
   const base = (
@@ -61,7 +91,7 @@ export async function generateMetadata({
   return {
     title: "ブログ｜値下げ情報・レビューまとめ",
     description:
-      "最新の値下げ情報やレビュー記事を公開日順で表示。価格ソースと公開日時を明記しています。",
+      "くらしのモヤモヤを少し軽くする Discover 記事と、家電レンタルサービスの比較・ガイド記事をまとめています。",
     alternates: { canonical: `${base}/blog` },
     robots: {
       index: indexable,
@@ -83,28 +113,74 @@ export default async function BlogIndex({
     ? rawType ?? "all"
     : "all";
 
-  // 並び順は一律「更新日の新しい順」
+  const rawSort = searchParams?.sort as SortMode | undefined;
+  const sortMode: SortMode = SORT_MODES.includes(rawSort ?? "popular")
+    ? rawSort ?? "popular"
+    : "popular";
+
+  // Firestore からは updatedAt 降順で 40 件取得（Discover もまとめて取る）
   const orderBy = [{ field: "updatedAt", direction: "DESCENDING" as const }];
   const blogs = await fetchBlogs(siteId, orderBy, 40);
 
-  // Firestore の type フィールドで絞り込み
-  const filtered: BlogRow[] =
-    type === "all"
-      ? blogs
-      : blogs.filter((b) => (b.type as BlogType | null) === type);
+  // ★ 今読まれている Discover 用（おすすめエリア）
+  const featuredDiscover = blogs
+    .filter((b) => (b.type as string | null) === "discover")
+    .sort((a, b) => {
+      const aTime = a.publishedAt ?? a.updatedAt ?? 0;
+      const bTime = b.publishedAt ?? b.updatedAt ?? 0;
+      return bTime - aTime; // 新しい順
+    })
+    .slice(0, 3)
+    .map((b) => ({
+      slug: b.slug,
+      title: b.title,
+      summary: b.summary ?? null,
+    }));
 
-  const lastPub = filtered.reduce<number>(
+  const isDiscover = (b: BlogRow): boolean =>
+    (b.type as string | null) === "discover";
+
+  // Firestore の type フィールドで絞り込み
+  const filtered: BlogRow[] = (() => {
+    if (type === "discover") {
+      return blogs.filter((b) => isDiscover(b));
+    }
+
+    const nonDiscover = blogs.filter((b) => !isDiscover(b));
+
+    if (type === "all") {
+      return nonDiscover;
+    }
+
+    return nonDiscover.filter((b) => (b.type as BlogType | null) === type);
+  })();
+
+  // 人気順 / 新着順の並び替え
+  const sorted: BlogRow[] = [...filtered];
+  if (sortMode === "popular") {
+    sorted.sort((a, b) => calcPopularityScore(b) - calcPopularityScore(a));
+  } else {
+    sorted.sort((a, b) => {
+      const aTime = a.updatedAt ?? a.publishedAt ?? 0;
+      const bTime = b.updatedAt ?? b.publishedAt ?? 0;
+      return bTime - aTime;
+    });
+  }
+
+  const lastPub = sorted.reduce<number>(
     (max, b) => Math.max(max, b.publishedAt ?? b.updatedAt ?? 0),
     0
   );
 
-  // type だけクエリに反映
+  // type / sort をクエリに反映
   const href = (next: Partial<SP>) => {
     const nextType = (next.type ?? type) as BlogType;
+    const nextSort = (next.sort ?? sortMode) as SortMode;
+
     const params = new URLSearchParams();
-    if (nextType !== "all") {
-      params.set("type", nextType);
-    }
+    if (nextType !== "all") params.set("type", nextType);
+    if (nextSort !== "popular") params.set("sort", nextSort);
+
     const qs = params.toString();
     return qs ? `/blog?${qs}` : "/blog";
   };
@@ -114,7 +190,7 @@ export default async function BlogIndex({
   ).replace(/\/$/, "");
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
+    <main className="container-kariraku py-10">
       {/* breadcrumb */}
       <nav className="text-sm text-gray-500">
         <Link href="/" className="underline">
@@ -149,53 +225,90 @@ export default async function BlogIndex({
         }}
       />
 
-      <h1 className="mt-3 text-2xl font-bold">ブログ</h1>
+      <header className="mt-3 mb-4">
+        <h1 className="text-2xl font-bold tracking-tight">ブログ</h1>
+        <p className="mt-1 text-sm text-gray-600">
+          くらしのモヤモヤを少し軽くする Discover
+          記事と、家電レンタルサービスの比較・ガイド記事をまとめています。
+        </p>
+      </header>
 
-      {/* コントロール（記事タイプ + 件数） */}
-      <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border bg-white px-4 py-2 text-sm">
-        <div className="flex items-center gap-2">
-          <span className="opacity-70">記事タイプ:</span>
-          {BLOG_TYPES.map((t) => (
-            <Link
-              key={t}
-              href={href({ type: t })}
-              aria-current={type === t ? "page" : undefined}
-              className={`rounded px-2 py-1 ${
-                type === t
-                  ? "bg-green-50 border border-green-300 font-medium"
-                  : "hover:underline"
-              }`}
-            >
-              {labelForType(t)}
-            </Link>
-          ))}
+      {/* ★ 今読まれている Discover（おすすめエリア） */}
+      <FeaturedDiscoverList blogs={featuredDiscover} />
+
+      {/* コントロール（並び替え + 記事タイプ + 件数） */}
+      <div className="mt-4 rounded-2xl bg-surface-featured px-4 py-3 text-sm shadow-soft">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          {/* 並び替え：左側 */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="opacity-70">並び替え:</span>
+            <div className="inline-flex rounded-full bg-gray-100 p-1">
+              {SORT_MODES.map((m) => (
+                <Link
+                  key={m}
+                  href={href({ sort: m })}
+                  aria-current={sortMode === m ? "page" : undefined}
+                  className={`rounded-full px-3 py-1 text-xs md:text-sm ${
+                    sortMode === m
+                      ? "bg-white font-medium text-emerald-800 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  {m === "popular" ? "人気順" : "新着順"}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* 記事タイプ：右側（横スクロール可） */}
+          <div className="flex flex-col gap-2 md:items-end">
+            <span className="opacity-70 text-xs md:text-sm">記事タイプ:</span>
+            <div className="flex max-w-full gap-2 overflow-x-auto pb-1">
+              {BLOG_TYPES.map((t) => (
+                <Link
+                  key={t}
+                  href={href({ type: t })}
+                  aria-current={type === t ? "page" : undefined}
+                  className={`whitespace-nowrap rounded-full px-3 py-1 text-xs md:text-sm ${
+                    type === t
+                      ? "bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium"
+                      : "bg-white/80 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {labelForType(t)}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="mx-2 h-4 w-px bg-gray-200" />
-        <div className="opacity-80">記事数: {filtered.length}件</div>
-        <div className="mx-2 h-4 w-px bg-gray-200" />
-        <div className="opacity-80">最終公開: {formatJp(lastPub)}</div>
+        {/* 件数 & 最終公開 */}
+        <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-2 text-[11px] text-gray-600 md:text-xs">
+          <div>記事数: {sorted.length}件</div>
+          <span className="hidden h-3 w-px bg-gray-200 md:inline-block" />
+          <div>最終公開: {formatJp(lastPub)}</div>
+        </div>
       </div>
 
-      {/* サブ導線：悩みから探す */}
-      <PainRail className="my-10" />
-
-      {filtered.length === 0 ? (
-        <p className="mt-4 text-sm text-gray-600">
+      {/* 記事一覧 */}
+      {sorted.length === 0 ? (
+        <p className="mt-6 text-sm text-gray-600">
           公開済みの記事がまだありません。
         </p>
       ) : (
-        <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {filtered.map((b) => (
+        <ul className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+          {sorted.map((b) => (
             <BlogCard
               key={b.slug}
               slug={b.slug}
               title={b.title}
               summary={b.summary}
-              content={(b as any).content ?? undefined}
+              content={(b as { content?: string }).content ?? undefined}
               imageUrl={b.imageUrl}
-              imageCredit={(b as any).imageCredit ?? null}
-              imageCreditLink={(b as any).imageCreditLink ?? null}
+              imageCredit={(b as { imageCredit?: string | null }).imageCredit}
+              imageCreditLink={
+                (b as { imageCreditLink?: string | null }).imageCreditLink
+              }
               publishedAt={b.publishedAt}
               updatedAt={b.updatedAt}
             />
@@ -203,11 +316,13 @@ export default async function BlogIndex({
         </ul>
       )}
 
-      <div className="mt-8 text-sm text-gray-600">
-        <Link href="/offers" className="underline">
-          家電レンタル特集
-        </Link>{" "}
-        もどうぞ。値下げやキャンペーンはブログでお知らせします。
+      <div className="mt-8 space-y-1 text-sm text-gray-600">
+        <div>
+          <Link href="/offers" className="underline">
+            家電レンタル特集
+          </Link>{" "}
+          もどうぞ。値下げやキャンペーンはブログでお知らせします。
+        </div>
       </div>
     </main>
   );

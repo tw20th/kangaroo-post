@@ -9,6 +9,15 @@ import { fileURLToPath } from "url";
  */
 export type TemplateVars = Record<string, unknown>;
 
+/**
+ * intent:
+ *  - "service"  : 企業・サービス紹介（companyIntro）
+ *  - "compare"  : 比較記事（compare）
+ *  - "guide"    : 悩みガイド（painGuide）
+ *  - "discover" : Discover 記事
+ */
+export type BlogIntent = "service" | "compare" | "guide" | "discover";
+
 export type BuildPromptParams = {
   /** 例: "kariraku" */
   siteId: string;
@@ -22,14 +31,43 @@ export type BuildPromptParams = {
   pain?: string;
 
   /**
+   * 記事の意図（新ルール）
+   *  - "service"  : 企業・サービス紹介
+   *  - "compare"  : 比較記事
+   *  - "guide"    : 悩みガイド
+   *  - "discover" : Discover 記事
+   *
+   * ※ 既存コードからはまだ渡されていないかもしれないので optional。
+   */
+  intent?: BlogIntent;
+
+  /**
    * 使用するテンプレファイル名（任意）。
    * 例:
+   *  - "blogTemplate_companyIntro.txt"
+   *  - "blogTemplate_painGuide.txt"
+   *  - "blogTemplate_compare.txt"
+   *  - "blogTemplate_discover.txt"
+   *
+   * 旧来の:
    *  - "blogTemplate_kariraku_daily.txt"
    *  - "blogTemplate_kariraku_service.txt"
    *  - "blogTemplate_kariraku_compare.txt"
-   * 未指定ならサイトに応じて自動選択（kariraku 以外は a8 汎用）
+   * などもそのまま渡せば優先して使われる。
    */
   templateName?: string;
+
+  /**
+   * 旧ロジックで使っていた「記事タイプ」互換用。
+   * intent が無い場合のフォールバックにのみ利用する。
+   * 例:
+   *  - "company"  : 企業・サービス紹介
+   *  - "compare"  : 比較記事
+   *  - "guide"    : 悩みガイド
+   *  - "daily"    : 日次ガイド（= guide 扱い）
+   *  - "discover" : Discover 記事
+   */
+  legacyType?: "company" | "compare" | "guide" | "daily" | "discover";
 
   /**
    * テンプレへ流し込む追加変数（任意）。
@@ -55,41 +93,114 @@ function readTextSafe(p: string): string {
   }
 }
 
-/**
- * 超軽量テンプレ置換。
- * - {{key}} を vars[key] で単純置換
- * - プリミティブ以外（オブジェクト/配列）は "" にして安全にスルー
- */
-function simpleInterpolate(tpl: string, vars: TemplateVars): string {
-  return tpl.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (_m, key) => {
-    const v = (vars as Record<string, unknown>)[key];
-
-    if (
-      v === null ||
-      v === undefined ||
-      typeof v === "string" ||
-      typeof v === "number" ||
-      typeof v === "boolean"
-    ) {
-      return v == null ? "" : String(v);
-    }
-
-    // オブジェクト・配列などはそのまま文字列化せずスキップ
-    return "";
-  });
+/** プリミティブなら文字列に、それ以外は "" にする */
+function toPrimitiveString(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  if (
+    typeof v === "string" ||
+    typeof v === "number" ||
+    typeof v === "boolean"
+  ) {
+    return String(v);
+  }
+  return "";
 }
 
-/** サイトIDと指定からテンプレファイル名を決める（後方互換あり） */
-function chooseTemplateFilename(params: BuildPromptParams): string {
-  if (params.templateName) return params.templateName;
+/**
+ * ドット/インデックスでオブジェクトを辿る resolver
+ * 例:
+ *  - key: "service.name"  → vars.service.name
+ *  - key: "competitors.0.name" → vars.competitors[0].name
+ *  - key: "subKeywords.[0]" → vars.subKeywords[0]
+ */
+function resolveByPath(vars: TemplateVars, key: string): unknown {
+  // "subKeywords.[0]" → "subKeywords.0" に正規化
+  const norm = key.replace(/\[(\d+)\]/g, ".$1");
+  const parts = norm.split(".").filter(Boolean);
 
-  // kariraku 固有テンプレ（デフォルトは daily）
-  if (params.siteId === "kariraku") {
-    return "blogTemplate_kariraku_daily.txt";
+  let cur: unknown = vars;
+  for (const p of parts) {
+    if (Array.isArray(cur)) {
+      const idx = Number(p);
+      if (Number.isNaN(idx) || idx < 0 || idx >= cur.length) return "";
+      cur = cur[idx];
+      continue;
+    }
+
+    if (typeof cur === "object" && cur !== null) {
+      const rec = cur as Record<string, unknown>;
+      cur = rec[p];
+      continue;
+    }
+
+    return "";
+  }
+  return cur ?? "";
+}
+
+/**
+ * テンプレ置換。
+ * - {{key}} を vars から取得
+ * - まずは「完全一致キー」を見る（後方互換）
+ * - 見つからなければ resolveByPath で辿る
+ * - オブジェクト/配列は文字列化せず "" でスキップ
+ */
+function simpleInterpolate(tpl: string, vars: TemplateVars): string {
+  return tpl.replace(
+    /\{\{\s*([a-zA-Z0-9_.\[\]-]+)\s*\}\}/g,
+    (_m, key: string) => {
+      const dict = vars as Record<string, unknown>;
+
+      // 1) そのままのキーで見る（"service.name" など）
+      if (Object.prototype.hasOwnProperty.call(dict, key)) {
+        return toPrimitiveString(dict[key]);
+      }
+
+      // 2) ドット/インデックスで辿る
+      const resolved = resolveByPath(vars, key);
+      return toPrimitiveString(resolved);
+    }
+  );
+}
+
+/** サイトIDと指定からテンプレファイル名を決める */
+function chooseTemplateFilename(params: BuildPromptParams): string {
+  const { templateName, intent, legacyType } = params;
+
+  // 1. 明示指定があればそれを最優先（拡張子 .txt がついていればそのまま）
+  if (templateName && templateName.endsWith(".txt")) {
+    return templateName;
   }
 
-  // 既存 a8 汎用にフォールバック
-  return "blogTemplate_a8.txt";
+  // 2. intent ベースの汎用テンプレマッピング
+  if (intent === "service") {
+    return "blogTemplate_companyIntro.txt";
+  }
+  if (intent === "compare") {
+    return "blogTemplate_compare.txt";
+  }
+  if (intent === "guide") {
+    return "blogTemplate_painGuide.txt";
+  }
+  if (intent === "discover") {
+    return "blogTemplate_discover.txt";
+  }
+
+  // 3. intent が無い場合は legacyType から推論（旧コード互換）
+  switch (legacyType) {
+    case "company":
+      return "blogTemplate_companyIntro.txt";
+    case "compare":
+      return "blogTemplate_compare.txt";
+    case "guide":
+    case "daily":
+      return "blogTemplate_painGuide.txt";
+    case "discover":
+      return "blogTemplate_discover.txt";
+    default:
+      // 4. 最後の砦：従来どおり「悩みガイド」をデフォルトに
+      return "blogTemplate_painGuide.txt";
+  }
 }
 
 /** プロンプト文字列を構築 */

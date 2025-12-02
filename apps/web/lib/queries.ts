@@ -11,6 +11,116 @@ import {
   docIdFromName,
 } from "@/lib/firestore-rest";
 
+// ★ ここはもう使わないので削除
+// import type { Blog } from "@/types/blog";
+
+/**
+ * Discover関連記事用の最小データ型
+ * - UI側で必要なフィールドだけを持つ
+ */
+export type RelatedDiscoverBlog = {
+  slug: string;
+  title: string;
+  summary?: string | null;
+  metaDescription?: string | null;
+  imageUrl?: string | null;
+};
+
+/**
+ * Discover 記事用：タグベースで関連記事を取得するヘルパー
+ *
+ * MEMO:
+ * - いまは stub 実装（空配列）
+ * - 後で Firestore クエリ実装に差し替える
+ */
+export async function getRelatedDiscoverBlogsByTags(params: {
+  siteId: string;
+  currentSlug: string;
+  tags: string[];
+  limit?: number;
+}): Promise<RelatedDiscoverBlog[]> {
+  const { siteId, currentSlug, tags, limit = 3 } = params;
+
+  if (!tags || tags.length === 0) {
+    return [];
+  }
+
+  // 既存のタグ関連記事ロジックを流用
+  const relatedItems = await fetchRelatedBlogsByTags(
+    siteId,
+    tags,
+    currentSlug,
+    limit
+  );
+
+  // Discover関連記事用の薄い型にマッピング
+  const blogs: RelatedDiscoverBlog[] = relatedItems
+    .map((item) => {
+      const slug = item.slug ?? item.id;
+      if (!slug) return null;
+
+      return {
+        slug,
+        title: item.title,
+        summary: item.summary ?? null,
+        // metaDescription は今の blogs ドキュメントにはほぼ無いので空でOK
+        metaDescription: null,
+        imageUrl: item.img ?? null,
+      } as RelatedDiscoverBlog;
+    })
+    .filter((b): b is RelatedDiscoverBlog => b !== null);
+
+  return blogs.slice(0, limit);
+}
+
+// Discover 一覧などで使うシンプルなブログ型
+export type SimpleBlog = {
+  slug: string;
+  title: string;
+  summary?: string | null;
+  type?: string | null;
+};
+
+/**
+ * 最新の Discover 記事を取得
+ * - type === "discover"
+ * - status === "published"
+ * - publishedAt の新しい順
+ */
+export async function fetchLatestDiscoverBlogs(
+  siteId: string,
+  limit = 3
+): Promise<SimpleBlog[]> {
+  const docs = await fsRunQuery({
+    collection: "blogs",
+    where: [
+      { field: "siteId", value: siteId },
+      { field: "status", value: "published" },
+      { field: "type", value: "discover" },
+    ],
+    orderBy: [{ field: "publishedAt", direction: "DESCENDING" as const }],
+    limit,
+  }).catch(() => [] as any[]); // ← 既存の関数と同じノリで any[] にする
+
+  const items: SimpleBlog[] = [];
+
+  for (const d of docs as any[]) {
+    const slug = docIdFromName(d.name);
+    if (!slug) continue;
+
+    const f = d.fields;
+
+    items.push({
+      slug,
+      title: vStr(f, "title") ?? "(no title)",
+      summary: vStr(f, "summary") ?? null,
+      type: vStr(f, "type") ?? null,
+    });
+  }
+
+  return items;
+}
+
 /* =========================
  * 共通で使う最小データ型
  * ========================= */

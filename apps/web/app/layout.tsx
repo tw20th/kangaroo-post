@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = getSiteConfig();
   const title = { default: site.title, template: `%s | ${site.title}` };
   const description = site.description;
+
   return {
     metadataBase: new URL(site.urlOrigin),
     title,
@@ -62,11 +63,18 @@ export default function RootLayout({
           </>
         )}
       </head>
+
       <body className="min-h-dvh antialiased">
         <Analytics measurementId={GA_MEASUREMENT_ID} />
-        <SiteHeader />
-        {children}
-        <SiteFooter />
+
+        {/* 全ページ共通の枠組み */}
+        <div className="flex min-h-dvh flex-col">
+          <SiteHeader />
+
+          <main className="flex-1">{children}</main>
+
+          <SiteFooter />
+        </div>
       </body>
     </html>
   );

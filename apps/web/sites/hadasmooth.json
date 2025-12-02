@@ -1,7 +1,7 @@
 {
   "siteId": "hadasmooth",
   "displayName": "HadaSmooth（ハダスムース）",
-  "domain": "localhost",
+  "domain": "hadasmooth.com",
   "brand": {
     "primary": "#EC4899",
     "accent": "#22C55E",

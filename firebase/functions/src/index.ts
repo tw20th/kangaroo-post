@@ -72,6 +72,11 @@ export {
  */
 export { scheduledMonthlyCompare } from "./jobs/content/scheduledMonthlyCompare.js";
 
+export {
+  scheduledDiscoverDaily,
+  runDiscoverDailyNow,
+} from "./jobs/content/scheduledDiscoverDaily.js";
+
 /* ========== A8 price updates ========== */
 export { a8_updateOfferPrice } from "./jobs/a8/updateOfferPrice.js";
 
@@ -94,3 +99,6 @@ export {
   runGenerateFromGscNow,
 } from "./jobs/seo/generateFromGSC.js";
 export { runUpdateBlogSeoNow } from "./jobs/seo/updateBlogSeoFromGSC.js";
+
+/* ========== スコア最適化アルゴリズム ========== */
+export { scheduledAggregateKeywordScores } from "./jobs/analytics/aggregateKeywordScores.js";

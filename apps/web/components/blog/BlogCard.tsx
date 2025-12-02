@@ -1,109 +1,102 @@
-"use client";
-
+// apps/web/components/blog/BlogCard.tsx
 import Link from "next/link";
-import { summaryFromContent } from "@/utils/text";
+import Image from "next/image";
 
-function sendBlogEvent(slug: string, type: "view" | "cta") {
-  try {
-    const endpoint = process.env.NEXT_PUBLIC_TRACK_URL || "/trackClick";
-    const payload = JSON.stringify({ slug, type });
-    if ("sendBeacon" in navigator) {
-      const blob = new Blob([payload], { type: "application/json" });
-      (navigator as any).sendBeacon(endpoint, blob);
-    } else {
-      fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: payload,
-        keepalive: true,
-      });
-    }
-  } catch {}
-}
-
-export type BlogCardProps = {
+type BlogCardProps = {
   slug: string;
   title: string;
   summary?: string | null;
-  content?: string | null; // フォールバック用（任意）
+  content?: string;
   imageUrl?: string | null;
   imageCredit?: string | null;
   imageCreditLink?: string | null;
   publishedAt?: number | null;
   updatedAt?: number | null;
+  // 他の場所から意図せず渡される props を潰さないための保険
+  [key: string]: unknown;
 };
 
-export default function BlogCard({
-  slug,
-  title,
-  summary,
-  content,
-  imageUrl,
-  imageCredit,
-  imageCreditLink,
-  publishedAt,
-  updatedAt,
-}: BlogCardProps) {
-  const fallback =
-    !summary || summary.trim().length === 0
-      ? summaryFromContent(content ?? "")
-      : summary;
+function formatDate(ts?: number | null): string {
+  if (!ts) return "";
+  return new Date(ts).toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
 
-  const pub = publishedAt ?? updatedAt ?? null;
-  const upd = updatedAt ?? null;
+function makeQuickSummary(summary?: string | null, content?: string): string {
+  if (summary && summary.trim().length > 0) return summary.trim();
 
-  const fmt = (ts: number) =>
-    new Date(ts).toLocaleString("ja-JP", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  if (!content) return "";
+  const plain = content
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+    .replace(/[*_`>~-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-  const hrefSlug = /%[0-9A-Fa-f]{2}/.test(slug)
-    ? slug
-    : encodeURIComponent(slug);
+  return plain.length > 80 ? `${plain.slice(0, 80)}…` : plain;
+}
+
+export default function BlogCard(props: BlogCardProps) {
+  const { slug, title, summary, content, imageUrl, publishedAt, updatedAt } =
+    props;
+
+  const displaySummary = makeQuickSummary(summary ?? undefined, content);
+  const published = publishedAt ?? updatedAt ?? null;
 
   return (
-    <li className="flex gap-4 rounded-2xl border p-4">
-      {imageUrl ? (
-        <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-xl bg-gray-50">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imageUrl} alt="" className="h-full w-full object-cover" />
-          {imageCredit && imageCreditLink ? (
-            <a
-              href={imageCreditLink}
-              target="_blank"
-              rel="noopener nofollow"
-              className="absolute bottom-1 right-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white"
-              title={`Photo by ${imageCredit} on Unsplash`}
-            >
-              Unsplash
-            </a>
-          ) : null}
-        </div>
-      ) : null}
+    <li>
+      <article className="group flex h-full flex-col overflow-hidden rounded-card border border-black/5 bg-surface-featured shadow-soft transition hover:shadow-softHover">
+        <Link href={`/blog/${slug}`} className="flex h-full flex-col">
+          {/* 画像エリア：比率固定 & 少しだけ動き */}
+          <div className="relative w-full overflow-hidden bg-surface-soft">
+            <div className="relative aspect-[16/9] w-full">
+              {imageUrl ? (
+                <Image
+                  src={imageUrl}
+                  alt={title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                  画像なしの記事
+                </div>
+              )}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/5" />
+            </div>
+          </div>
 
-      <div className="min-w-0">
-        <h2 className="text-lg font-semibold">
-          <Link
-            href={`/blog/${hrefSlug}`}
-            onClick={() => sendBlogEvent(slug, "cta")}
-          >
-            {title}
-          </Link>
-        </h2>
+          {/* テキストエリア */}
+          <div className="flex flex-1 flex-col px-4 py-3">
+            <div className="mb-1 text-[11px] font-medium text-emerald-700">
+              ブログ記事
+            </div>
+            <h2 className="line-clamp-2 text-sm font-semibold tracking-tight text-gray-900">
+              {title}
+            </h2>
 
-        {fallback ? (
-          <p className="mt-1 line-clamp-2 text-sm text-gray-600">{fallback}</p>
-        ) : null}
+            {displaySummary && (
+              <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-gray-600">
+                {displaySummary}
+              </p>
+            )}
 
-        <div className="mt-1 text-xs text-gray-500">
-          {pub ? <>公開: {fmt(pub)}</> : null}
-          {upd && pub && upd > pub ? <>（更新: {fmt(upd)}）</> : null}
-        </div>
-      </div>
+            <div className="mt-3 flex items-center justify-between text-[11px] text-gray-500">
+              <span>
+                {published ? `公開: ${formatDate(published)}` : "公開日: -"}
+              </span>
+              <span className="inline-flex items-center gap-1 text-emerald-700 group-hover:text-emerald-800">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span>詳しく読む</span>
+              </span>
+            </div>
+          </div>
+        </Link>
+      </article>
     </li>
   );
 }

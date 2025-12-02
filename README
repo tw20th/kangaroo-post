@@ -49,8 +49,14 @@ pnpm -C firebase/functions run a8:sync
 ↑
 （JSON → Firestore）
 
+// firebase/functions/src/jobs/a8/normalizeA8Offers.tsは、firestoreへ保存するファイルかな
 
+
+firebase deploy --only functions:a8_normalizeOffers
 pnpm -C firebase/functions run normalizeA8
+
+open "https://asia-northeast1-a8-affiliate-a2489.cloudfunctions.net/a8_normalizeOffers?siteId=kariraku"
+
 ↑
 （UI用に整形）
 
@@ -135,5 +141,66 @@ health（HTTP）
 「生きてる？」確認用のシンプルなヘルスチェック
 
 ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+pickBestKeywordForSite はキーワードを分析して、ブログに反映させるファイル
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+aggregateBlogPerformance.tsはスコア最適化アルゴリズムファイルです。
+scheduledAggregateKeywordScoresがfunctionsの関数名です。
+
+firebaseのコレクション
+siteKeywords … サイトごとのキーワード候補とスコアを保存
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+pushSitesFromFilesは新しいサイトを作ったときに実行するファイル
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+seedSiteKeywordsは新しいサイトにキーワードを追加するときに実行するファイル
+
+stitsから情報を取得して、siteKeywordsにキーワードに落とし込むコマンド
+pnpm tsx src/scripts/seedSiteKeywords.ts kariraku
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+これは、firebase/functions/sites/〇〇.jsonからfirestoreに情報をpushするコマンドです。
+↓
+node --loader ts-node/esm src/scripts/sites/pushSitesFromFiles.ts
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+apps/web/middleware.tsにサイトを追加するたびにこちらにもローカル開発の環境を追加する。
+
+  localhost: "kariraku",
+  "localhost:3000": "kariraku",
+  "localhost:3001": "workiroom"
+};
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+cd apps/web
+pnpm dev:kariraku
+
+
+cd apps/web
+pnpm dev:workiroom
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+これらはadminで企業情報を編集するためのファイルです。
+↓
+// apps/web/lib/firebase/companyProfiles.ts
+
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+このスクリプトは、既存のオファーに companyId を追加するためのマイグレーションスクリプトです。
+↓
+firebase/functions/src/scripts/migrate/addCompanyIdToOffers.ts
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+generateBlogFromOffer.tsは、特定の offerId を指定して商品紹介ブログを1本生成するスクリプトです。
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+firebase/functions/src/scripts/tools/setAdminClaim.tsはfirebaseにログインするスクリプト
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
 

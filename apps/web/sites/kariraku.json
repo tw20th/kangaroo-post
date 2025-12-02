@@ -1,13 +1,28 @@
 {
   "siteId": "kariraku",
   "displayName": "Kariraku（カリラク）",
-  "domain": "localhost",
-  "brand": { "primary": "#16a34a", "accent": "#0ea5e9", "logoUrl": "" },
+  "domain": "kariraku.com",
+  "brand": {
+    "primary": "#16a34a",
+    "accent": "#0ea5e9",
+    "logoUrl": ""
+  },
   "features": {
     "blogs": true,
     "ranking": true,
     "offers": true,
     "products": false
+  },
+  "navLabels": {
+    "offers": "家電レンタル",
+    "blog": "ブログ"
+  },
+  "offers": {
+    "metaTitle": "家電レンタルのおすすめ一覧｜比較・料金・最低期間",
+    "metaDescription": "引越しや転勤、一人暮らしのスタートに便利な家電レンタルサービスをまとめて比較。月額料金・最低利用期間・特徴をわかりやすく一覧表示します。（本ページは広告を含みます）",
+    "heroTitle": "家電レンタルおすすめ",
+    "heroLead": "引越し・転勤・一人暮らしの負担を軽くする、家電レンタルサービスをまとめました。※ 本ページは広告を含みます",
+    "breadcrumbOffersLabel": "家電レンタルおすすめ"
   },
   "categoryPreset": ["appliance-rental"]
 }

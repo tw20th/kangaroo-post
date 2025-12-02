@@ -1,0 +1,28 @@
+{
+  "siteId": "workiroom",
+  "displayName": "Workiroom（ワーキルーム）",
+  "domain": "workiroom.com",
+  "brand": {
+    "primary": "#059669",
+    "accent": "#0ea5e9",
+    "logoUrl": ""
+  },
+  "features": {
+    "blogs": true,
+    "ranking": true,
+    "offers": true,
+    "products": false
+  },
+  "navLabels": {
+    "offers": "在宅ワークアイテム",
+    "blog": "ヒント記事"
+  },
+  "offers": {
+    "metaTitle": "在宅ワークアイテムおすすめ｜チェア・デスク・ガジェット",
+    "metaDescription": "在宅ワークの「集中できない」「疲れやすい」「部屋が整わない」をラクにするチェア・デスク・ガジェットを比較して選べるページです。（本ページは広告を含みます）",
+    "heroTitle": "在宅ワークアイテム",
+    "heroLead": "在宅ワークの集中しやすい作業環境づくりに役立つアイテムをまとめました。※ 本ページは広告を含みます",
+    "breadcrumbOffersLabel": "在宅ワークアイテム"
+  },
+  "categoryPreset": ["smart-gadget"]
+}

@@ -1,9 +1,14 @@
+// apps/web/components/offers/OfferGallery.tsx
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
-import { fetchCollection } from "@/lib/firestore-rest";
 import Link from "next/link";
+import {
+  fetchCollection,
+  type SimpleWhere,
+  type SimpleOrderBy,
+} from "@/lib/firestore-rest";
 
 type Creative = {
   type: "banner" | "text";
@@ -11,6 +16,7 @@ type Creative = {
   imgSrc?: string;
   label?: string;
 };
+
 type Offer = {
   id: string;
   title: string;
@@ -18,13 +24,19 @@ type Offer = {
   images?: string[];
   creatives?: Creative[];
   updatedAt?: number;
+  ui?: {
+    priceLabel?: string;
+    minTermLabel?: string;
+    isPriceDynamic?: boolean;
+  };
 };
 
-function sendClick(payload: Record<string, any>) {
+function sendClick(payload: Record<string, unknown>) {
   try {
     const blob = new Blob([JSON.stringify(payload)], {
       type: "application/json",
     });
+
     if (typeof navigator !== "undefined" && "sendBeacon" in navigator) {
       navigator.sendBeacon("/api/track", blob);
     } else {
@@ -34,7 +46,9 @@ function sendClick(payload: Record<string, any>) {
         body: JSON.stringify(payload),
       }).catch(() => {});
     }
-  } catch {}
+  } catch {
+    // no-op
+  }
 }
 
 export default function OfferGallery(props: {
@@ -46,7 +60,7 @@ export default function OfferGallery(props: {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // siteId を ref に保持（useCallback の依存から外すため）
+  // siteId を ref に保持（クリックログ用）
   const siteIdRef = useRef(siteId);
   useEffect(() => {
     siteIdRef.current = siteId;
@@ -54,22 +68,23 @@ export default function OfferGallery(props: {
 
   useEffect(() => {
     (async () => {
-      const where: any[] = [
+      const where: SimpleWhere[] = [
         ["siteIds", "array-contains", siteId],
         ["archived", "==", false],
       ];
-      const orderBy: any = ["updatedAt", "desc"];
+      const orderBy: SimpleOrderBy = ["updatedAt", "desc"];
+
       const res = await fetchCollection<Offer>("offers", {
         where,
         orderBy,
         limit,
       });
+
       setOffers(res);
       setLoading(false);
     })();
   }, [siteId, limit]);
 
-  // ★ ここを「早期 return より前」に移動
   const makeFireClick = useCallback(
     (offerId: string) => (where: string, href: string) =>
       sendClick({
@@ -83,31 +98,14 @@ export default function OfferGallery(props: {
     []
   );
 
-  if (loading) return <div className="p-6">読み込み中…</div>;
+  if (loading)
+    return <div className="p-6 text-sm text-gray-600">読み込み中…</div>;
   if (!offers.length)
-    return <div className="p-6">掲載中の案件がありません。</div>;
-
-  const RenderImg = ({
-    src,
-    alt,
-    width,
-    height,
-    className,
-  }: {
-    src: string;
-    alt: string;
-    width: number;
-    height: number;
-    className?: string;
-  }) => (
-    <Image
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      className={className}
-    />
-  );
+    return (
+      <div className="p-6 text-sm text-gray-600">
+        掲載中のサービスがまだありません。
+      </div>
+    );
 
   const RenderImage = ({
     src,
@@ -141,141 +139,168 @@ export default function OfferGallery(props: {
     const hero = banner?.imgSrc ?? o.images?.[0];
     const fireClick = makeFireClick(o.id);
     const ctaHref = banner?.href ?? text?.href;
-    const ui = (o as any).ui as
-      | { priceLabel?: string; minTermLabel?: string; isPriceDynamic?: boolean }
-      | undefined;
+    const ui = o.ui;
 
     return (
-      <article className="card p-4">
-        {hero ? (
+      <article className="card flex h-full flex-col p-4">
+        {/* 画像 */}
+        {hero && (
           <a
             href={ctaHref || `/offers/${o.id}`}
             target={ctaHref ? "_blank" : undefined}
             rel={ctaHref ? "nofollow sponsored" : undefined}
             className="block"
-            onClick={() => fireClick("gallery_card_image", ctaHref || "")}
+            onClick={() =>
+              fireClick("gallery_card_image", ctaHref || `/offers/${o.id}`)
+            }
           >
             <RenderImage
               src={hero}
               alt={o.title}
               width={600}
               height={400}
-              className="img-soft w-full mb-3 h-auto"
+              className="img-soft mb-3 h-48 w-full object-contain md:h-56"
             />
           </a>
-        ) : null}
-
-        <h3 className="text-[15px] md:text-base font-semibold text-gray-800 leading-snug mb-1">
-          <Link href={`/offers/${o.id}`} className="hover:underline">
-            {o.title}
-          </Link>
-        </h3>
-
-        {o.description && (
-          <p className="text-sm text-gray-600 line-clamp-3 mb-3">
-            {o.description}
-          </p>
         )}
-        {/* 目安価格・最低期間 */}
-        {(ui?.priceLabel || ui?.minTermLabel) && (
-          <div className="mb-3 text-sm text-gray-700">
-            {ui?.priceLabel && (
-              <div>
-                <span className="font-medium">{ui.priceLabel}</span>
-                {ui?.isPriceDynamic ? (
-                  <span className="ml-1 text-xs text-gray-500">
-                    （目安・最新は公式）
-                  </span>
-                ) : null}
-              </div>
+
+        {/* テキスト */}
+        <div className="flex flex-1 flex-col">
+          <h3 className="mb-1 text-[15px] font-semibold leading-snug text-gray-900 md:text-base">
+            <Link href={`/offers/${o.id}`} className="hover:underline">
+              {o.title}
+            </Link>
+          </h3>
+
+          {o.description && (
+            <p className="mb-3 line-clamp-3 text-xs leading-relaxed text-gray-600 md:text-sm">
+              {o.description}
+            </p>
+          )}
+
+          {/* 目安価格・最低期間 */}
+          {(ui?.priceLabel || ui?.minTermLabel) && (
+            <div className="mb-3 text-sm text-gray-800">
+              {ui?.priceLabel && (
+                <div>
+                  <span className="font-medium">{ui.priceLabel}</span>
+                  {ui.isPriceDynamic && (
+                    <span className="ml-1 text-xs text-gray-500">
+                      （目安・最新は公式）
+                    </span>
+                  )}
+                </div>
+              )}
+              {ui?.minTermLabel && (
+                <div className="text-xs text-gray-600">{ui.minTermLabel}</div>
+              )}
+            </div>
+          )}
+
+          {/* CTA */}
+          <div className="mt-auto pt-1">
+            {banner?.href && (
+              <a
+                href={banner.href}
+                rel="nofollow sponsored"
+                target="_blank"
+                className="btn btn-brand"
+                onClick={() => fireClick("gallery_card_cta", banner.href)}
+              >
+                公式で詳しく見る
+              </a>
             )}
-            {ui?.minTermLabel && (
-              <div className="text-xs text-gray-600">{ui.minTermLabel}</div>
+            {!banner?.href && text?.href && (
+              <a
+                href={text.href}
+                rel="nofollow sponsored"
+                target="_blank"
+                className="btn btn-ghost"
+                onClick={() => fireClick("gallery_card_cta", text.href)}
+              >
+                {text.label ?? "公式で詳しく見る"}
+              </a>
             )}
           </div>
-        )}
-
-        <div>
-          {banner?.href && (
-            <a
-              href={banner.href}
-              rel="nofollow sponsored"
-              target="_blank"
-              className="btn btn-brand"
-              onClick={() => fireClick("gallery_card_cta", banner.href)}
-            >
-              公式で詳しく見る
-            </a>
-          )}
-          {!banner?.href && text?.href && (
-            <a
-              href={text.href}
-              rel="nofollow sponsored"
-              target="_blank"
-              className="btn btn-ghost"
-              onClick={() => fireClick("gallery_card_cta", text.href!)}
-            >
-              {text.label ?? "公式で詳しく見る"}
-            </a>
-          )}
         </div>
       </article>
     );
   };
 
+  /* ========== variant: list（Discover 仕様のリスト） ========== */
   if (variant === "list") {
     return (
-      <section className="container-kariraku space-y-5">
-        <header className="mb-2">
-          <h1 className="h1">家電レンタル特集</h1>
-          <p className="text-xs text-gray-500">※ 本ページは広告を含みます</p>
-        </header>
+      <section className="space-y-4">
         {offers.map((o) => {
           const banner = o.creatives?.find((c) => c.type === "banner");
           const text = o.creatives?.find((c) => c.type === "text");
           const hero = banner?.imgSrc ?? o.images?.[0];
-          const href = banner?.href ?? text?.href;
+          const href = banner?.href ?? text?.href ?? `/offers/${o.id}`;
+          const fireClick = makeFireClick(o.id);
+          const ui = o.ui;
+
           return (
-            <div key={o.id} className="card p-4 flex gap-4">
+            <article
+              key={o.id}
+              className="card flex gap-4 p-4 md:p-5 md:items-start"
+            >
               {hero && (
-                <div className="w-40 shrink-0">
-                  {href ? (
-                    <a href={href} rel="nofollow sponsored" target="_blank">
-                      <RenderImg
-                        src={hero}
-                        alt={o.title}
-                        width={320}
-                        height={200}
-                        className="img-soft h-auto"
-                      />
-                    </a>
-                  ) : (
-                    <RenderImg
+                <div className="w-32 shrink-0 md:w-40">
+                  <a
+                    href={href}
+                    target={banner?.href || text?.href ? "_blank" : undefined}
+                    rel={
+                      banner?.href || text?.href
+                        ? "nofollow sponsored"
+                        : undefined
+                    }
+                    onClick={() => fireClick("list_card_image", href)}
+                  >
+                    <RenderImage
                       src={hero}
                       alt={o.title}
                       width={320}
                       height={200}
-                      className="img-soft h-auto"
+                      className="img-soft h-auto w-full object-cover"
                     />
-                  )}
+                  </a>
                 </div>
               )}
-              <div className="min-w-0">
-                <h3 className="font-semibold mb-1">
+
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold text-gray-900 md:text-base">
                   <Link href={`/offers/${o.id}`} className="hover:underline">
                     {o.title}
                   </Link>
                 </h3>
+
                 {o.description && (
-                  <p className="mt-1 text-sm text-gray-600">{o.description}</p>
+                  <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-gray-600 md:text-sm">
+                    {o.description}
+                  </p>
                 )}
-                <div className="mt-2">
+
+                {(ui?.priceLabel || ui?.minTermLabel) && (
+                  <div className="mt-2 text-xs text-gray-800 md:text-sm">
+                    {ui?.priceLabel && (
+                      <div className="font-medium">{ui.priceLabel}</div>
+                    )}
+                    {ui?.minTermLabel && (
+                      <div className="text-gray-600">{ui.minTermLabel}</div>
+                    )}
+                  </div>
+                )}
+
+                <div className="mt-3">
                   {banner?.href ? (
                     <a
                       href={banner.href}
                       rel="nofollow sponsored"
                       target="_blank"
                       className="btn btn-brand"
+                      onClick={() =>
+                        fireClick("list_card_cta", banner.href ?? "")
+                      }
                     >
                       公式で詳しく見る
                     </a>
@@ -285,54 +310,50 @@ export default function OfferGallery(props: {
                       rel="nofollow sponsored"
                       target="_blank"
                       className="btn btn-ghost"
+                      onClick={() =>
+                        fireClick("list_card_cta", text.href ?? "")
+                      }
                     >
                       {text.label ?? "公式で詳しく見る"}
                     </a>
                   ) : null}
                 </div>
               </div>
-            </div>
+            </article>
           );
         })}
       </section>
     );
   }
 
+  /* ========== variant: hero（1件を大きく + 他をグリッド） ========== */
   if (variant === "hero") {
     const [first, ...rest] = offers;
+    if (!first) return null;
+
     return (
-      <main className="container-kariraku space-y-8">
-        <header className="space-y-2">
-          <h1 className="h1">家電レンタルおすすめ</h1>
-          <p className="text-sm text-gray-600">※ 本ページは広告を含みます</p>
-        </header>
-
-        <section className="card p-6 md:p-8">
+      <section className="space-y-6">
+        <div className="card p-5 md:p-6">
           <Card o={first} />
-        </section>
+        </div>
 
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rest.map((o) => (
-            <Card key={o.id} o={o} />
-          ))}
-        </section>
-      </main>
+        {rest.length > 0 && (
+          <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {rest.map((o) => (
+              <Card key={o.id} o={o} />
+            ))}
+          </section>
+        )}
+      </section>
     );
   }
 
-  // default: grid
+  /* ========== default: grid（Discover 仕様のカードグリッド） ========== */
   return (
-    <main className="container-kariraku space-y-8">
-      <header className="space-y-2">
-        <h1 className="h1">家電レンタル特集</h1>
-        <p className="text-sm text-gray-600">※ 本ページは広告を含みます</p>
-      </header>
-
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {offers.map((o) => (
-          <Card key={o.id} o={o} />
-        ))}
-      </section>
-    </main>
+    <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {offers.map((o) => (
+        <Card key={o.id} o={o} />
+      ))}
+    </section>
   );
 }

@@ -180,6 +180,85 @@
         { "fieldPath": "siteId", "order": "ASCENDING" },
         { "fieldPath": "date", "order": "DESCENDING" }
       ]
+    },
+
+    {
+      "collectionGroup": "siteKeywords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "siteId", "order": "ASCENDING" },
+        { "fieldPath": "intent", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "siteKeywords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "intent", "order": "ASCENDING" },
+        { "fieldPath": "siteId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "score", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "siteKeywords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "siteId", "order": "ASCENDING" },
+        { "fieldPath": "intent", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "score", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "siteKeywords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "siteId", "order": "ASCENDING" },
+        { "fieldPath": "intent", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "score", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "siteKeywords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "intent", "order": "ASCENDING" },
+        { "fieldPath": "siteId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "score", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "blogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "latestScore", "order": "DESCENDING" },
+        { "fieldPath": "views", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "offers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "siteId", "order": "ASCENDING" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "offers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "siteId", "order": "ASCENDING" },
+        { "fieldPath": "label", "order": "ASCENDING" },
+        { "fieldPath": "__name__", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

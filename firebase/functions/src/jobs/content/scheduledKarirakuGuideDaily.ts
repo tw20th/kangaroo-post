@@ -1,18 +1,16 @@
 // firebase/functions/src/jobs/content/scheduledKarirakuGuideDaily.ts
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import * as functions from "firebase-functions";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { generateBlogContent } from "../../utils/generateBlogContent.js";
 import { findUnsplashHero } from "../../services/unsplash/client.js";
+import { pickBestKeywordForSite } from "../../lib/keywords/pickSiteKeyword.js";
+import { getBlogEnabledSiteIds } from "../../lib/sites/sites.js";
 
 const REGION = process.env.FUNCTIONS_REGION || "asia-northeast1";
 const TZ = "Asia/Tokyo";
-const SITE_ID = "kariraku";
-const SITE_NAME = "Kariraku（カリラク）";
+const db = getFirestore();
 
 /* ================================
  * Types
@@ -37,48 +35,66 @@ type GeneratedBlog = {
   imageCreditLink?: string | null;
 };
 
+type RawPainRule = {
+  id?: string;
+  label?: string;
+  topic?: string;
+  persona?: string;
+  pain?: string;
+  compareUrl?: string;
+  enabled?: boolean;
+};
+
 /* ================================
  * helpers
  * ================================ */
 
-function loadPainTopics(): PainTopic[] {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
+/** sites/{siteId}.displayName を取得（なければ siteId を返す） */
+async function getSiteName(siteId: string): Promise<string> {
+  const snap = await db.collection("sites").doc(siteId).get();
+  const name = snap.get("displayName");
+  return (typeof name === "string" && name) || siteId;
+}
 
-  // 1) dist 環境: dist/jobs/content → ../../lib/content
-  // 2) src 環境: dist/jobs/content → ../../../src/lib/content
-  const candidates = [
-    path.resolve(__dirname, "../../lib/content/painTopics_kariraku.json"),
-    path.resolve(
-      __dirname,
-      "../../../src/lib/content/painTopics_kariraku.json"
-    ),
-  ];
-
-  let jsonPath: string | null = null;
-  for (const p of candidates) {
-    if (fs.existsSync(p)) {
-      jsonPath = p;
-      break;
-    }
-  }
-
-  if (!jsonPath) {
-    console.error(
-      "[KarirakuGuide] painTopics_kariraku.json not found in any candidate path",
-      { candidates }
-    );
+/** Firestore の sites/{siteId}.painRules から「悩みトピック」を組み立てる */
+async function loadPainTopicsForSite(siteId: string): Promise<PainTopic[]> {
+  const snap = await db.collection("sites").doc(siteId).get();
+  if (!snap.exists) {
+    console.warn("[GuideDaily] site doc not found", { siteId });
     return [];
   }
 
-  try {
-    const raw = fs.readFileSync(jsonPath, "utf8");
-    const parsed = JSON.parse(raw) as PainTopic[];
-    return parsed.filter((t) => t.enabled !== false);
-  } catch (e) {
-    console.error("[KarirakuGuide] failed to load _kariraku.jsopainTopicsn", e);
+  const raw = (snap.get("painRules") as RawPainRule[] | undefined) ?? [];
+  if (!Array.isArray(raw) || raw.length === 0) {
+    console.warn("[GuideDaily] no painRules on site", { siteId });
     return [];
   }
+
+  const defaultPersona =
+    siteId === "workiroom"
+      ? "在宅ワークで小さな不便やモヤモヤを抱えている人"
+      : "サービス選びや日々の暮らしに悩みを抱えている人";
+
+  const defaultPain =
+    siteId === "workiroom"
+      ? "仕事や生活の小さなストレスが積み重なって、なんとなく疲れてしまっている"
+      : "どのサービスや選び方がいいか分からず、モヤモヤしている";
+
+  const defaultCompareUrl = siteId === "kariraku" ? "/compare" : "/blog";
+
+  return raw
+    .filter((r) => r && r.enabled !== false)
+    .map((r, idx): PainTopic => {
+      const topic = r.topic || r.label || "お悩みガイド";
+      return {
+        id: r.id || `rule-${idx}`,
+        topic,
+        persona: r.persona || defaultPersona,
+        pain: r.pain || r.label || r.topic || defaultPain,
+        compareUrl: r.compareUrl || defaultCompareUrl,
+        enabled: r.enabled,
+      };
+    });
 }
 
 function pickTopicForToday(topics: PainTopic[]): PainTopic | null {
@@ -92,7 +108,7 @@ function pickTopicForToday(topics: PainTopic[]): PainTopic | null {
   return topics[idx];
 }
 
-function slugify(base: string): string {
+function slugify(siteId: string, base: string): string {
   const lower = base
     .toLowerCase()
     .replace(/[ぁ-んァ-ン]/g, "") // ひらがな・カタカナは一旦削る
@@ -104,7 +120,7 @@ function slugify(base: string): string {
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   const core = hyphenated || "guide";
-  const full = `${SITE_ID}-${y}${m}${d}-${core}`;
+  const full = `${siteId}-${y}${m}${d}-${core}`;
   return full.slice(0, 80);
 }
 
@@ -112,36 +128,73 @@ function slugify(base: string): string {
 function sanitizeText(s: string | null | undefined): string {
   if (!s) return "";
   return s
-    .replace(/\\n/g, "\n") // 文字列としての「\n」を改行に
+    .replace(/\\n/g, "\n")
     .replace(/\r\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n"); // 改行が多すぎるところは2つに
+    .replace(/\n{3,}/g, "\n\n");
 }
 
 /* ================================
- * main
+ * main (サイト単位)
  * ================================ */
 
-async function createKarirakuGuideOnce(): Promise<void> {
-  const topics = loadPainTopics();
-  const picked = pickTopicForToday(topics);
-  if (!picked) {
-    console.warn("[KarirakuGuide] no pain topics available");
+async function createGuideOnceForSite(siteId: string): Promise<void> {
+  const siteName = await getSiteName(siteId);
+  const topics = await loadPainTopicsForSite(siteId);
+
+  if (!topics.length) {
+    console.warn("[GuideDaily] no pain topics available", { siteId });
     return;
   }
 
-  // 🔗 比較リンクは今は固定で /compare を使う
-  const compareUrl = "/compare";
+  const nowMs = Date.now();
+
+  // 🔹 まず siteKeywords(intent: "guide") から今日の1本を選ぶ
+  const pickedKeyword = await pickBestKeywordForSite({
+    siteId,
+    intent: "guide",
+    avoidHours: 12,
+  });
+
+  // 🔹 キーワードに近い painTopic があればそれを優先
+  let picked: PainTopic | null = null;
+  if (pickedKeyword?.keyword) {
+    const kw = pickedKeyword.keyword;
+    picked =
+      topics.find((t) => t.topic.includes(kw)) ||
+      topics.find((t) => kw.includes(t.topic)) ||
+      null;
+  }
+
+  // 🔹 マッチしなければ、従来どおり「日付ベースのローテーション」
+  if (!picked) {
+    picked = pickTopicForToday(topics);
+  }
+
+  if (!picked) {
+    console.warn("[GuideDaily] no topic picked", { siteId });
+    return;
+  }
+
+  const defaultKeyword =
+    siteId === "kariraku" ? "家電レンタル 悩み" : "ガジェット 悩み";
+
+  const targetKeyword =
+    pickedKeyword?.keyword?.trim() || picked.topic || defaultKeyword;
+
+  // 🔗 比較リンク（サイトごとにざっくり出し分け）
+  const compareUrl = siteId === "kariraku" ? "/compare" : "/blog";
 
   const rawBlog = (await generateBlogContent({
     product: { name: picked.topic, asin: "none", tags: [] },
-    siteId: SITE_ID,
-    siteName: SITE_NAME,
+    siteId,
+    siteName,
     persona: picked.persona,
     pain: picked.pain,
-    templateName: "blogTemplate_kariraku_guide.txt",
+    templateName: "blogTemplate_painGuide.txt", // ← ここを新しい汎用テンプレ名に
     vars: {
       topic: picked.topic,
       compareUrl,
+      primaryKeyword: targetKeyword,
     },
   })) as GeneratedBlog;
 
@@ -166,13 +219,12 @@ async function createKarirakuGuideOnce(): Promise<void> {
     }
   }
 
-  const db = getFirestore();
-  const nowTs = Timestamp.now();
-  const slug = slugify(title || picked.id);
+  const nowTs = Timestamp.fromMillis(nowMs);
+  const slug = slugify(siteId, title || picked.id);
 
   await db.collection("blogs").add({
-    siteId: SITE_ID,
-    painId: picked.id, // 🌟 追加：どの悩みトピックから生まれた記事か
+    siteId,
+    painId: picked.id, // どの悩みトピックから生まれた記事か
     title,
     content,
     excerpt,
@@ -186,37 +238,93 @@ async function createKarirakuGuideOnce(): Promise<void> {
     createdAt: nowTs,
     updatedAt: nowTs,
     publishedAt: nowTs,
+    primaryKeyword: targetKeyword,
+    primaryKeywordDocId: pickedKeyword ? pickedKeyword.docId : null,
   });
 
-  console.log("[KarirakuGuide] blog created", {
+  // 🔹 使ったキーワードがあれば、siteKeywords 側の統計も更新
+  if (pickedKeyword) {
+    const kwRef = db.collection("siteKeywords").doc(pickedKeyword.docId);
+    const prev = pickedKeyword.raw;
+
+    await kwRef.set(
+      {
+        usedCount: (prev.usedCount ?? 0) + 1,
+        lastUsedAt: nowMs,
+        lastBlogSlug: slug,
+        updatedAt: nowMs,
+      },
+      { merge: true }
+    );
+  }
+
+  console.log("[GuideDaily] blog created", {
+    siteId,
     slug,
     title,
     compareUrl,
     painId: picked.id,
+    targetKeyword,
   });
 }
 
+// ===============================
+// sched / HTTP エントリ
+// ===============================
+
 /**
- * Kariraku 悩み解決ブログ（ガイド系）
- * - scheduledKarirakuGuideDaily: 毎朝 7:00 JST に1本生成
- * - runKarirakuGuideNow: 手動トリガー用 HTTP
+ * 悩み解決ブログ（ガイド系、マルチサイト版）
+ * - blogs: true の全サイトで 1 本ずつ生成
  */
 export const scheduledKarirakuGuideDaily = functions
   .region(REGION)
+  .runWith({
+    timeoutSeconds: 300, // ★ 60秒 → 300秒 に延長（最大 540 まで可）
+  })
   .pubsub.schedule("0 7 * * *") // 毎朝 7:00 JST
   .timeZone(TZ)
   .onRun(async () => {
-    await createKarirakuGuideOnce();
+    const siteIds = await getBlogEnabledSiteIds(db);
+    console.log("[GuideDaily] start scheduled run", { siteIds });
+
+    if (!siteIds.length) {
+      console.warn("[GuideDaily] no blog-enabled sites");
+      return;
+    }
+
+    for (const siteId of siteIds) {
+      console.log("[GuideDaily] start site", { siteId });
+      // eslint-disable-next-line no-await-in-loop
+      await createGuideOnceForSite(siteId);
+      console.log("[GuideDaily] done site", { siteId });
+    }
   });
 
+/**
+ * 手動トリガー用 HTTP
+ * - blogs: true の全サイトで 1 本ずつ生成
+ */
 export const runKarirakuGuideNow = functions
   .region(REGION)
+  .runWith({
+    timeoutSeconds: 300,
+  })
   .https.onRequest(async (_req, res) => {
     try {
-      await createKarirakuGuideOnce();
-      res.status(200).send("ok");
+      const siteIds = await getBlogEnabledSiteIds(db);
+      console.log("[GuideDaily] HTTP run", { siteIds });
+
+      const results: { siteId: string }[] = [];
+
+      for (const siteId of siteIds) {
+        // eslint-disable-next-line no-await-in-loop
+        await createGuideOnceForSite(siteId);
+        results.push({ siteId });
+      }
+
+      res.status(200).json({ ok: true, results });
     } catch (e) {
-      console.error("[KarirakuGuide] HTTP error", e);
+      console.error("[GuideDaily] HTTP error", e);
       res.status(500).send("error");
     }
   });

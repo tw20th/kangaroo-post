@@ -1,13 +1,52 @@
 import Link from "next/link";
 import { getSiteEntry } from "@/lib/site-server";
 
+type NavItem = {
+  href: string;
+  label: string;
+};
+
+type SiteEntryLike = {
+  id?: string;
+  siteId?: string;
+  displayName: string;
+};
+
+function getNavItems(siteId: string): NavItem[] {
+  switch (siteId) {
+    case "kariraku":
+      return [
+        { href: "/offers", label: "家電レンタル" },
+        { href: "/blog", label: "悩みガイド" },
+      ];
+    case "workiroom":
+      return [
+        { href: "/offers", label: "在宅ワークアイテム" },
+        { href: "/blog", label: "ヒント記事" },
+      ];
+    case "hadasmooth":
+      return [
+        { href: "/offers", label: "医療脱毛クリニック" },
+        { href: "/blog", label: "悩みガイド" },
+      ];
+    default:
+      return [
+        { href: "/offers", label: "サービス一覧" },
+        { href: "/blog", label: "ブログ" },
+      ];
+  }
+}
+
 export default function SiteHeader() {
-  const s = getSiteEntry(); // サーバー専用OK
-  const siteName = s.displayName;
+  const raw = getSiteEntry() as SiteEntryLike;
+  const siteId = raw.siteId ?? raw.id ?? "default";
+  const siteName = raw.displayName;
+
+  const navItems = getNavItems(siteId);
 
   return (
-    <header className="container-kariraku pt-6 pb-4">
-      <div className="flex items-center justify-between">
+    <header className="border-b border-black/5 bg-white/70 backdrop-blur-sm">
+      <div className="container-kariraku flex items-center justify-between py-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-xl bg-brand-600" />
           <span className="font-semibold tracking-tight">{siteName}</span>
@@ -15,16 +54,13 @@ export default function SiteHeader() {
 
         <nav className="text-sm">
           <ul className="flex items-center gap-5">
-            <li>
-              <Link href="/offers" className="hover:underline">
-                家電レンタル
-              </Link>
-            </li>
-            <li>
-              <Link href="/blog" className="hover:underline">
-                ブログ
-              </Link>
-            </li>
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className="hover:underline">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
       </div>

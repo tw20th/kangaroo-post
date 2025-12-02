@@ -1,4 +1,3 @@
-// apps/web/middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -9,6 +8,8 @@ const ALLOWED = new Set([
   "powerscope",
   "powerbank-scope",
   "kariraku",
+  "hadasmooth",
+  "workiroom",
 ]);
 
 const HOST_TO_SITE: Record<string, string> = {
@@ -21,8 +22,16 @@ const HOST_TO_SITE: Record<string, string> = {
   "kariraku.com": "kariraku",
   "www.kariraku.com": "kariraku",
 
+  "hadasmooth.com": "hadasmooth",
+  "www.hadasmooth.com": "hadasmooth",
+  "workiroom.com": "workiroom",
+  "www.workiroom.com": "workiroom",
+
+  // ローカル開発用マッピング
   localhost: "kariraku",
   "localhost:3000": "kariraku",
+  "localhost:3001": "workiroom",
+  "localhost:3002": "hadasmooth",
 };
 
 export function middleware(req: NextRequest) {
@@ -33,9 +42,9 @@ export function middleware(req: NextRequest) {
   const c = req.cookies.get(COOKIE_SITE_ID)?.value?.trim();
   const h = HOST_TO_SITE[host];
 
-  // 優先順: ?site > host > cookie > default
+  // ⭐ 優先順: ?site > host > cookie > default
   let siteId = q || h || c || DEFAULT_SITE_ID;
-  if (!ALLOWED.has(siteId)) siteId = DEFAULT_SITE_ID; // ★不正値ガード
+  if (!ALLOWED.has(siteId)) siteId = DEFAULT_SITE_ID;
 
   const reqHeaders = new Headers(req.headers);
   reqHeaders.set("x-site-id", siteId);

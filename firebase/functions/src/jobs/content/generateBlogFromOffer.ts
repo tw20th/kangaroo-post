@@ -138,6 +138,52 @@ function angleNotes(variantId: VariantId = "pros-cons") {
   return { h1Prefix, noteText, modules: spec.modules };
 }
 
+/* ========= Template resolver ========= */
+
+type IntentId = "service" | "compare" | "guide";
+type TemplateId =
+  | "kariraku_service"
+  | "kariraku_compare"
+  | "kariraku_daily"
+  | "a8";
+
+/**
+ * オファー起点の記事で使うテンプレート名を決定する
+ * - intent ごとに汎用テンプレへマッピング
+ * - templateId は将来の拡張用だが、現状は intent 優先で扱う
+ */
+function resolveTemplateNameForOffer(params: {
+  siteId: string;
+  intent: IntentId;
+  templateId?: TemplateId;
+}): string {
+  const { intent, templateId } = params;
+
+  // 1) templateId が渡されていても「どの種類か」だけを見るイメージ
+  if (templateId === "kariraku_compare") {
+    return "blogTemplate_compare.txt";
+  }
+  if (templateId === "kariraku_daily") {
+    return "blogTemplate_painGuide.txt";
+  }
+  if (templateId === "kariraku_service" || templateId === "a8") {
+    return "blogTemplate_companyIntro.txt";
+  }
+
+  // 2) intent ごとのデフォルト
+  if (intent === "compare") {
+    // 将来、オファー起点の比較記事を作るとき用
+    return "blogTemplate_compare.txt";
+  }
+  if (intent === "guide") {
+    // 将来、オファー起点のガイド記事を作るとき用
+    return "blogTemplate_painGuide.txt";
+  }
+
+  // 3) デフォルト（サービス紹介）
+  return "blogTemplate_companyIntro.txt";
+}
+
 /* ========= Helpers ========= */
 
 function sanitizeId(s: string): string {
@@ -323,6 +369,28 @@ function sanitizeTags(input: unknown, fallbackHints: string[] = []): string[] {
   return cleaned;
 }
 
+/** summary / content / title からハイライトを生成（BlogCard とほぼ同じロジック） */
+function buildHighlightFromText(
+  summary?: string | null,
+  content?: string | null,
+  title?: string | null
+): string | null {
+  const base =
+    (summary && summary.trim()) ||
+    (content && content.replace(/\s+/g, " ").trim()) ||
+    (title && title.trim()) ||
+    "";
+
+  if (!base) return null;
+
+  // 1文目だけを拾う（。！？!? で区切る）
+  const firstSentence = (base.split(/[。！？!?]/)[0] || base).trim();
+  const limit = 26;
+  return firstSentence.length > limit
+    ? `${firstSentence.slice(0, limit)}…`
+    : firstSentence;
+}
+
 /* ========= Main ========= */
 export async function generateBlogFromOffer(opts: {
   offerId: string;
@@ -331,12 +399,8 @@ export async function generateBlogFromOffer(opts: {
   dryRun?: boolean;
   publish?: boolean;
   // --- ↓ 追加: 多様化のためのメタ ---
-  intent?: "service" | "compare" | "guide";
-  templateId?:
-    | "kariraku_service"
-    | "kariraku_compare"
-    | "kariraku_daily"
-    | "a8";
+  intent?: IntentId;
+  templateId?: TemplateId;
   variantId?: VariantId;
   modules?: string[]; // priceTable / compareTable / faq ... など
 }) {
@@ -347,7 +411,7 @@ export async function generateBlogFromOffer(opts: {
     dryRun,
     publish = true,
     intent = "service",
-    templateId = "a8",
+    templateId,
     variantId = "pros-cons",
     modules: modulesInput,
   } = opts;
@@ -356,6 +420,13 @@ export async function generateBlogFromOffer(opts: {
 
   // 季節・行事のコンテキスト（日本時間ベース）
   const seasonal = getSeasonalContext();
+
+  // generateBlogFromOffer 内の最初の方（db/seasonal のすぐ後）に追加
+  const siteCfg = await getSiteConfig(siteId).catch(() => null);
+  const siteDisplay =
+    typeof siteCfg?.displayName === "string" && siteCfg.displayName
+      ? siteCfg.displayName
+      : siteId;
 
   // 1) offer / program
   const offerSnap = await db.collection("offers").doc(offerId).get();
@@ -448,8 +519,7 @@ export async function generateBlogFromOffer(opts: {
   if (variantId === "safety-trust") painBase.unshift("故障時の安心感");
   const pain = painBase.join("・");
 
-  // 5) generate（テンプレは既定：kariraku_service）
-  const siteDisplay = "Kariraku（カリラク）";
+  // 5) generate（intent / templateId に応じてテンプレ決定）
   const {
     title: genTitle,
     excerpt,
@@ -461,14 +531,11 @@ export async function generateBlogFromOffer(opts: {
     product: { name: serviceName, asin: offerId, tags: offer.tags ?? [] },
     persona,
     pain,
-    templateName:
-      templateId === "a8"
-        ? "blogTemplate_a8.txt"
-        : templateId === "kariraku_compare"
-        ? "blogTemplate_kariraku_compare.txt"
-        : templateId === "kariraku_daily"
-        ? "blogTemplate_kariraku_daily.txt"
-        : "blogTemplate_kariraku_service.txt",
+    templateName: resolveTemplateNameForOffer({
+      siteId,
+      intent,
+      templateId,
+    }),
     vars: {
       // キーワード・角度ヒント
       targetKeyword,
@@ -526,7 +593,6 @@ export async function generateBlogFromOffer(opts: {
   }
 
   // 7) 画像
-  const siteCfg = await getSiteConfig(siteId).catch(() => null);
   const preferUnsplash = Boolean(siteCfg?.images?.preferUnsplashHero) || false;
 
   let imageUrl: string | null = null;
@@ -581,13 +647,25 @@ export async function generateBlogFromOffer(opts: {
     (angle.h1Prefix ? `${angle.h1Prefix}${genTitle || ""}` : genTitle) ||
     `${offer.title}｜${program.advertiser ?? ""}`.replace(/｜$/, "");
 
+  // summary を先に決めておく
+  const summaryText =
+    excerpt ?? (offer.description ? offer.description.slice(0, 120) : null);
+
+  // summary / content / title から highlight を生成
+  const highlight = buildHighlightFromText(
+    summaryText,
+    cleanedContent,
+    finalTitle
+  );
+
   const doc = {
     slug,
     siteId,
     title: finalTitle,
-    summary:
-      excerpt ?? (offer.description ? offer.description.slice(0, 120) : null),
+    summary: summaryText,
     content: cleanedContent,
+    // highlight（BlogCard から利用）
+    highlight: highlight ?? null,
     imageUrl,
     imageCredit: imageCredit ?? null,
     imageCreditLink: imageCreditLink ?? null,

@@ -2,6 +2,29 @@
   "siteId": "kariraku",
   "displayName": "Kariraku（カリラク）",
   "domain": "www.kariraku.com",
+  "blogEnabled": true,
+  "blogTemplates": {
+    "service": "kariraku_service",
+    "guide": "kariraku_guide",
+    "discover": "discover_default",
+    "navLabels": {
+      "offers": "家電レンタル",
+      "blog": "ブログ"
+    },
+    "offers": {
+      "metaTitle": "家電レンタルのおすすめ一覧｜比較・料金・最低期間",
+      "metaDescription": "引越しや転勤、一人暮らしのスタートに便利な家電レンタルサービスをまとめて比較。月額料金・最低利用期間・特徴をわかりやすく一覧表示します。（本ページは広告を含みます）",
+      "heroTitle": "家電レンタルおすすめ",
+      "heroLead": "引越し・転勤・一人暮らしの負担を軽くする、家電レンタルサービスをまとめました。※ 本ページは広告を含みます",
+      "breadcrumbOffersLabel": "家電レンタルおすすめ"
+    },
+    "profile": {
+      "theme": "一人暮らしや引越し前後の生活を、家電レンタルで少し軽くする",
+      "reader": "引越し・転勤・一人暮らしを控えていて、初期費用や手間が気になっている人",
+      "tone": "落ち着いた, 静か, 寄り添う, 生活感のある",
+      "topic": "暮らしの小さな不便やストレスを言葉にして、選び方のヒントをそっと並べる"
+    }
+  },
 
   "gsc": { "propertyUrl": "sc-domain:kariraku.com" },
 
@@ -17,10 +40,32 @@
       "家電レンタル 初心者 向け",
       "短期 レンタル 退去 まで",
       "冷蔵庫 サイズ 選び方 レンタル"
+    ],
+    "service": [
+      "冷蔵庫 レンタル 安い",
+      "洗濯機 レンタル 即日",
+      "家電 レンタル おすすめ",
+      "冷蔵庫 一時的 レンタル",
+      "短期 家電 レンタル 安い",
+      "単身赴任 家電 レンタル セット"
+    ],
+    "discover": [
+      "一人暮らし 買ってよかった家電",
+      "引越し前にそろえておきたい家電",
+      "月額で試せる家電のある暮らし",
+      "買うか迷う家電をレンタルで試す",
+      "部屋がせまくても置きやすい小さな家電",
+      "子育て世代の家事を軽くする家電レンタル",
+      "在宅時間が増えたときに助かる家電"
     ]
   },
   "contentPlan": {
-    "weekly": { "pillarIntent": "比較/選び方の柱記事を増やす" }
+    "weekly": { "pillarIntent": "比較/選び方の柱記事を増やす" },
+    "daily": { "enabled": true },
+    "guide": { "enabled": true },
+    "service": { "enabled": true },
+    "monthlyCompare": { "enabled": true },
+    "discover": { "enabled": true }
   },
   "images": {
     "preferUnsplashHero": true
@@ -40,6 +85,7 @@
     "blogs": true,
     "ranking": true
   },
+
   "homeCopy": {
     "title": "借りて、暮らしをラクにする。",
     "subtitle": "冷蔵庫・洗濯機・家電のレンタル・サブスクで“買わない暮らし”を提案。",
@@ -98,6 +144,46 @@
       "label": "来客前に家を整えるのが大変",
       "keywords": ["掃除 時短", "片付け やる気出ない", "来客 準備 家電"],
       "personas": ["ファミリー"]
+    },
+    {
+      "id": "small-room-space",
+      "label": "部屋が狭くて家電の置き場所に困っている",
+      "keywords": [
+        "ワンルーム 家電 置き場所",
+        "狭い 部屋 冷蔵庫 サイズ",
+        "省スペース 家電 レンタル"
+      ],
+      "personas": ["一人暮らし", "カップル"]
+    },
+    {
+      "id": "dont-want-to-buy",
+      "label": "買い切るのは不安で、まずはお試ししたい",
+      "keywords": [
+        "家電 お試し レンタル",
+        "買うか迷う 家電 レンタル",
+        "家電 サブスク 試したい"
+      ],
+      "personas": ["新社会人", "慎重派"]
+    },
+    {
+      "id": "eco-waste",
+      "label": "家電の買い替えや廃棄がもったいないと感じる",
+      "keywords": [
+        "家電 処分 面倒",
+        "家電 廃棄 費用",
+        "サステナブル 家電 レンタル"
+      ],
+      "personas": ["環境意識が高い人", "ミニマリスト"]
+    },
+    {
+      "id": "temporary-family-stay",
+      "label": "里帰りや介護などで一時的に家電が必要",
+      "keywords": [
+        "里帰り 出産 家電",
+        "介護 一時的 家電",
+        "親の家 家電 レンタル"
+      ],
+      "personas": ["ファミリー", "子育て世代", "介護中"]
     }
   ]
 }

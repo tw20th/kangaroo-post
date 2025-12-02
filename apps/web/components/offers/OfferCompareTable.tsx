@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 
 export type OfferLite = {
@@ -15,8 +16,8 @@ export type OfferLite = {
     compareHighlight?: string;
     isPriceDynamic?: boolean;
   };
-  /** 一覧や比較で先頭を「おすすめ」扱いしたいとき用 */
   isRecommended?: boolean;
+  compareHighlight?: string;
 };
 
 const isExternal = (url: string) => /^https?:\/\//i.test(url);
@@ -31,18 +32,22 @@ export default function OfferCompareTable({
   if (!items?.length) return null;
 
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-gray-200 bg-white">
-      <table className="min-w-[800px] w-full text-sm">
+    <div className="w-full overflow-x-auto rounded-2xl border border-black/5 bg-white/80">
+      <table className="w-full min-w-[720px] text-sm">
         {caption && (
-          <caption className="text-left p-3 text-gray-600">{caption}</caption>
+          <caption className="p-3 text-left text-xs text-gray-600 md:text-sm">
+            {caption}
+          </caption>
         )}
         <thead className="bg-gray-50">
           <tr className="text-left">
             <th className="p-3 font-semibold">サービス</th>
-            <th className="p-3 font-semibold">月額目安</th>
-            <th className="p-3 font-semibold">最低利用期間</th>
+            <th className="p-3 font-semibold whitespace-nowrap">月額目安</th>
+            <th className="p-3 font-semibold whitespace-nowrap">
+              最低利用期間
+            </th>
             <th className="p-3 font-semibold">特徴</th>
-            <th className="p-3"></th>
+            <th className="p-3" />
           </tr>
         </thead>
         <tbody>
@@ -63,9 +68,19 @@ export default function OfferCompareTable({
                 ? `${o.minTermMonths}ヶ月〜`
                 : "—");
 
+            const highlight = o.compareHighlight ?? o.ui?.compareHighlight;
+            const features: string[] = [
+              ...(o.badges ?? []),
+              ...(o.notes ?? []),
+            ].slice(0, 3);
+
             return (
-              <tr key={o.id} className="border-t">
-                {/* サービス名 + 比較ハイライト + おすすめバッジ */}
+              <tr
+                key={o.id}
+                className={`border-t ${
+                  o.isRecommended ? "bg-emerald-50/60" : "bg-white"
+                }`}
+              >
                 <td className="p-3 align-top">
                   <div className="flex items-start gap-3">
                     {o.isRecommended && (
@@ -75,60 +90,45 @@ export default function OfferCompareTable({
                     )}
                     <div>
                       <div className="font-semibold">{o.title}</div>
-                      {o.ui?.compareHighlight && (
-                        <div className="mt-1 text-xs text-gray-500">
-                          {o.ui.compareHighlight}
+                      {highlight && (
+                        <div className="mt-1 inline-block rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                          {highlight}
                         </div>
                       )}
                     </div>
                   </div>
                 </td>
 
-                {/* 月額目安 */}
-                <td className="p-3 align-top whitespace-nowrap">{priceCell}</td>
+                <td className="whitespace-nowrap p-3 align-top">{priceCell}</td>
 
-                {/* 最低利用期間 */}
-                <td className="p-3 align-top whitespace-nowrap">{termCell}</td>
+                <td className="whitespace-nowrap p-3 align-top">{termCell}</td>
 
-                {/* 特徴バッジ */}
                 <td className="p-3 align-top">
                   <div className="flex flex-wrap gap-2">
-                    {o.badges?.slice(0, 4).map((b) => (
+                    {features.map((f, i) => (
                       <span
-                        key={b}
+                        key={`${o.id}-feature-${i}`}
                         className="inline-block rounded-full border px-2 py-0.5 text-xs"
                       >
-                        {b}
-                      </span>
-                    ))}
-                    {o.notes?.slice(0, 2).map((n, i) => (
-                      <span
-                        key={i}
-                        className="inline-block rounded-full border px-2 py-0.5 text-xs"
-                      >
-                        {n}
+                        {f}
                       </span>
                     ))}
                   </div>
                 </td>
 
-                {/* CTA */}
                 <td className="p-3 text-right align-top">
                   {external ? (
                     <a
                       href={href}
                       target="_blank"
                       rel="nofollow sponsored"
-                      className="inline-flex items-center rounded-lg bg-emerald-600 text-white px-3 py-2 hover:bg-emerald-700"
+                      className="btn btn-brand"
                     >
-                      公式へ →
+                      公式サイトへ
                     </a>
                   ) : (
-                    <Link
-                      href={href}
-                      className="inline-flex items-center rounded-lg bg-emerald-600 text-white px-3 py-2 hover:bg-emerald-700"
-                    >
-                      公式へ →
+                    <Link href={href} className="btn btn-brand">
+                      公式サイトへ
                     </Link>
                   )}
                 </td>

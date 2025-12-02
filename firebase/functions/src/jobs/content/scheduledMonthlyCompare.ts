@@ -3,89 +3,165 @@ import * as functions from "firebase-functions";
 import { getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/v2";
 import { generateBlogContent } from "../../utils/generateBlogContent.js";
+import { pickBestKeywordForSite } from "../../lib/keywords/pickSiteKeyword.js";
+import { getBlogEnabledSiteIds } from "../../lib/sites/sites.js";
+import { getSiteConfig } from "../../lib/sites/siteConfig.js";
 
 const REGION = "asia-northeast1";
 const TZ = "Asia/Tokyo";
-const SITE_ID = process.env.FOCUS_SITE_ID || "kariraku";
+
+const db = getFirestore();
 
 export const scheduledMonthlyCompare = functions
   .region(REGION)
+  // 🔹 タイムアウトとメモリを拡張（必要に応じて値は調整OK）
+  .runWith({ timeoutSeconds: 300, memory: "512MB" })
   .pubsub.schedule("0 4 1 * *") // 毎月1日 04:00 JST
   .timeZone(TZ)
   .onRun(async () => {
-    const db = getFirestore();
+    // 🔹 blogs 機能が ON のサイト一覧を取得（Kariraku / Workiroom / 追加サイトなど）
+    const siteIds = await getBlogEnabledSiteIds(db);
 
-    // 3社ピック（siteIdPrimary == SITE_ID）
-    const services = await pickServices(db, SITE_ID, 3);
-    if (services.length < 3) {
-      logger.warn("[monthlyCompare] need >=3 services", {
-        found: services.length,
-        siteId: SITE_ID,
-      });
+    if (!siteIds.length) {
+      logger.warn("[monthlyCompare] no blog-enabled sites");
       return;
     }
 
-    const now = new Date();
-    const seasonKeyword = seasonKeywordByMonth(now);
-    const dateStr = yyyymm(now);
-    const hash8 = Math.random().toString(36).slice(2, 10);
+    // 🔹 サイトごとの比較記事生成を並列実行して、全体時間を短縮
+    const results = await Promise.all(
+      siteIds.map((siteId) => createMonthlyCompareForSite(siteId))
+    );
 
-    // 🔹 ここで generateBlogContent を使う（世界観ベース + JSONスキーマ）
-    const { title, excerpt, tags, content } = await generateBlogContent({
-      siteId: SITE_ID,
-      siteName: "Kariraku（カリラク）",
-      product: {
-        name: "家電レンタル3社比較",
-        asin: `compare-${dateStr}`,
-        tags: ["家電レンタル", "比較"],
-      },
-      persona: "家電レンタルサービスを比較して、自分に合う1社を見つけたい人",
-      pain: "どの家電レンタルサービスを選べば良いか分からない・料金やサポートの違いが不安",
-      templateName: "blogTemplate_kariraku_compare.txt",
-      vars: {
-        site: {
-          id: SITE_ID,
-          displayName: "Kariraku（カリラク）",
-          domain: "kariraku.com",
-        },
-        services,
-        seasonKeyword,
-        seasonTag: seasonKeyword,
-        dateYYYYMM: dateStr,
-        hash8,
-      },
-    });
-
-    const md = content;
-    const slug = `compare-${dateStr}`;
-    const finalTitle =
-      title && title.trim() ? title.trim() : "家電レンタル3社を徹底比較";
-    const summary =
-      excerpt && excerpt.trim() ? excerpt.trim() : extractSummary(md);
-
-    const doc = {
-      slug,
-      siteId: SITE_ID,
-      title: finalTitle,
-      summary,
-      content: md,
-      status: "published" as const,
-      visibility: "public" as const,
-      type: "compare" as const,
-      // テンプレ側の slugKeys を優先しつつ、なければ従来タグを使う
-      tags:
-        Array.isArray(tags) && tags.length
-          ? tags
-          : sanitizeTags(["家電レンタル", "比較", seasonKeyword, SITE_ID]),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      publishedAt: Date.now(),
-      views: 0,
-    };
-
-    await db.collection("blogs").doc(slug).set(doc, { merge: true });
-    logger.info("[monthlyCompare] upserted", { slug, title: finalTitle });
+    logger.info("[monthlyCompare] finished for all sites", { results });
+    return { results };
   });
+
+/** サイトごとに 3社比較記事を1本つくる */
+async function createMonthlyCompareForSite(siteId: string) {
+  const services = await pickServices(db, siteId, 3);
+
+  if (services.length < 3) {
+    logger.warn("[monthlyCompare] need >=3 services", {
+      found: services.length,
+      siteId,
+    });
+    return { siteId, slug: null, reason: "not-enough-services" as const };
+  }
+
+  const now = new Date();
+  const seasonKeyword = seasonKeywordByMonth(now);
+  const dateStr = yyyymm(now);
+  const hash8 = Math.random().toString(36).slice(2, 10);
+
+  // 🔹 siteKeywords から intent: "compare" を1つ選ぶ
+  const picked = await pickBestKeywordForSite({
+    siteId,
+    intent: "compare",
+    avoidHours: 24,
+  });
+  const targetKeyword = picked?.keyword?.trim() || "サービス 比較 ガイド";
+
+  // 🔹 サイト設定から displayName を取得（なければ siteId を使う）
+  const siteCfg = await getSiteConfig(siteId).catch(() => null);
+  const siteName =
+    typeof siteCfg?.displayName === "string" && siteCfg.displayName
+      ? siteCfg.displayName
+      : siteId;
+
+  const { title, excerpt, tags, content } = await generateBlogContent({
+    siteId,
+    siteName,
+    product: {
+      // product.name は「記事全体のテーマ名」
+      name: targetKeyword,
+      asin: `compare-${siteId}-${dateStr}`,
+      tags: [seasonKeyword, "比較"],
+    },
+    persona:
+      "複数のサービスを比較して、自分に合う1社を見つけたい在宅ワーカー・生活者",
+    pain: "どのサービスを選べば良いか分からず、料金や特徴の違いが整理できていない",
+    // ★ 汎用テンプレ（比較用）
+    templateName: "blogTemplate_compare.txt",
+    vars: {
+      site: {
+        id: siteId,
+        displayName: siteName,
+        domain: `${siteId}.com`, // 必要なら後でちゃんとしたドメインを渡す
+      },
+      services,
+      seasonKeyword,
+      seasonTag: seasonKeyword,
+      dateYYYYMM: dateStr,
+      hash8,
+      primaryKeyword: targetKeyword,
+      primaryKeywordDocId: picked?.docId ?? null,
+    },
+  });
+
+  const md = content;
+  const slug = `compare-${siteId}-${dateStr}`;
+  const finalTitle =
+    title && title.trim()
+      ? title.trim()
+      : `${targetKeyword}｜${siteName} の3社比較ガイド`;
+
+  const summary =
+    excerpt && excerpt.trim() ? excerpt.trim() : extractSummary(md);
+
+  const finalTags =
+    Array.isArray(tags) && tags.length
+      ? tags
+      : sanitizeTags(["比較", seasonKeyword, siteId, targetKeyword]);
+
+  const nowMs = Date.now();
+
+  const doc = {
+    slug,
+    siteId,
+    title: finalTitle,
+    summary,
+    content: md,
+    status: "published" as const,
+    visibility: "public" as const,
+    type: "compare" as const,
+    tags: finalTags,
+    createdAt: nowMs,
+    updatedAt: nowMs,
+    publishedAt: nowMs,
+    views: 0,
+    primaryKeyword: targetKeyword,
+    primaryKeywordDocId: picked?.docId ?? null,
+  };
+
+  await db.collection("blogs").doc(slug).set(doc, { merge: true });
+
+  // 🔹 使ったキーワードの統計を siteKeywords に反映
+  if (picked) {
+    const kwRef = db.collection("siteKeywords").doc(picked.docId);
+    const prev = picked.raw;
+
+    await kwRef.set(
+      {
+        usedCount: (prev.usedCount ?? 0) + 1,
+        lastUsedAt: nowMs,
+        lastBlogSlug: slug,
+        updatedAt: nowMs,
+      },
+      { merge: true }
+    );
+  }
+
+  logger.info("[monthlyCompare] upserted", {
+    siteId,
+    slug,
+    title: finalTitle,
+    targetKeyword,
+  });
+
+  return { siteId, slug, reason: "created" as const };
+}
+
+/* ========== 以下は元の関数を siteId パラメータ化して流用 ========== */
 
 function seasonKeywordByMonth(d: Date): string {
   const m = d.getMonth() + 1;
@@ -96,9 +172,11 @@ function seasonKeywordByMonth(d: Date): string {
   if ([10, 11].includes(m)) return "引っ越しシーズン";
   return "季節の準備";
 }
+
 function yyyymm(d: Date): string {
   return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
+
 function extractSummary(md: string): string {
   const text = md
     .replace(/\r/g, "")
@@ -144,7 +222,7 @@ async function pickServices(
         ? d.get("category")
         : []
       ).join(","),
-      area: String(d.get("extras.area") ?? d.get("area") ?? "全国"), // ← ドット記法
+      area: String(d.get("extras.area") ?? d.get("area") ?? "全国"),
       minTerm: String(d.get("extras.minTerm") ?? "30日〜"),
       highlightsCsv: (Array.isArray(d.get("badges"))
         ? d.get("badges")
@@ -159,7 +237,7 @@ async function pickServices(
     };
   };
 
-  // 1st: siteIdPrimary == SITE_ID
+  // 1st: siteIdPrimary == siteId
   let docs: FirebaseFirestore.QueryDocumentSnapshot[] = [];
   {
     const snap = await db
@@ -171,7 +249,7 @@ async function pickServices(
     docs = snap.docs;
   }
 
-  // 2nd: 足りなければ siteIds array-contains SITE_ID
+  // 2nd: 足りなければ siteIds array-contains siteId
   if (docs.length < limit) {
     const snap = await db
       .collection("offers")
@@ -179,7 +257,6 @@ async function pickServices(
       .where("archived", "==", false)
       .limit(limit * 2)
       .get();
-    // 既出を除外して追加
     const seen = new Set(docs.map((d) => d.id));
     for (const d of snap.docs) {
       if (!seen.has(d.id)) docs.push(d);
@@ -187,7 +264,7 @@ async function pickServices(
     }
   }
 
-  // 3rd: まだ足りなければ archived 条件外して穴埋め（安全のため軽く）
+  // 3rd: まだ足りなければ archived 条件外して穴埋め
   if (docs.length < limit) {
     const snap = await db
       .collection("offers")

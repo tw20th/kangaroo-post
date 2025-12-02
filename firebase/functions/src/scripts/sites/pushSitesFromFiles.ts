@@ -1,3 +1,4 @@
+// firebase/functions/src/scripts/sites/pushSitesFromFiles.ts
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import fs from "node:fs";
@@ -11,13 +12,27 @@ type SiteFile = {
   displayName?: string;
   domain?: string;
   features?: { blogs?: boolean; ranking?: boolean };
-  tagRules?: any[];
-  painRules?: any[];
-  productRules?: any;
-  discovery?: any;
+  tagRules?: unknown[];
+  painRules?: unknown[];
+  productRules?: unknown;
+  discovery?: unknown;
   rakutenKeywords?: string[];
   rakutenCategoryMap?: Record<string, string>;
   defaultCategoryId?: string;
+
+  // ★ 追加：サイトごとの世界観＆テンプレ
+  profile?: {
+    tone?: string;
+    audienceNote?: string;
+    discoverNote?: string;
+  };
+  blogTemplates?: {
+    service?: string;
+    compare?: string;
+    guide?: string;
+    discover?: string;
+    [k: string]: string | undefined;
+  };
 };
 
 async function main() {
@@ -33,7 +48,7 @@ async function main() {
     if (!json.siteId) continue;
     const docId = json.siteId;
 
-    // Firestore に必要なフィールドだけ投影（他はそのままでもOK）
+    // Firestore に必要なフィールドだけ投影
     const payload = {
       siteId: json.siteId,
       displayName: json.displayName ?? null,
@@ -48,6 +63,11 @@ async function main() {
         : [],
       rakutenCategoryMap: json.rakutenCategoryMap ?? {},
       defaultCategoryId: json.defaultCategoryId ?? null,
+
+      // ★ 追加分
+      profile: json.profile ?? null,
+      blogTemplates: json.blogTemplates ?? {},
+
       updatedAt: Date.now(),
       createdAt: Date.now(),
     };

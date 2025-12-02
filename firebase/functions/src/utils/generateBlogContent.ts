@@ -1,9 +1,10 @@
-// firebase/functions/src/utils/generateBlogContent.ts
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getOpenAI } from "../lib/infra/openai.js";
 import { buildPrompt, BuildPromptParams, TemplateVars } from "./blogPrompt.js";
+import { getSiteConfig } from "../lib/sites/siteConfig.js";
+import { BASE_TRUST_PROMPT } from "../lib/prompts/baseTrustPrompt.js";
 
 type ProductLite = { name: string; asin: string; tags?: string[] };
 
@@ -22,56 +23,41 @@ export type GenerateParams = {
 const MODEL = process.env.MODEL_BLOG || "gpt-4o-mini";
 
 /* =========================================================
-   ゆずは共通ベースプロンプト
-   （すべての記事：悩みガイド / 企業紹介 / 比較 で共通）
+   Discover 用タグのデフォルト（サイトごと）
+   - siteConfig.profile.discoverTags があればそちらを優先
    ========================================================= */
-const BASE_TRUST_PROMPT = `
-【文章ルール：信頼を得るための6要素】
-あなたは「事実 × 透明感 × 生活感 × 寄り添い × SEO × 季節性（週1）」を満たした、
-誠実で読みやすい日本語のWebライターとして記事を書いてください。
+const DISCOVER_TAGS_BY_SITE: Record<string, string[]> = {
+  kariraku: ["一人暮らし", "暮らしの工夫", "家電のある生活", "ミニコラム"],
+  workiroom: ["在宅ワーク", "デスク環境", "働き方の工夫", "ミニコラム"],
+  hadasmooth: ["肌のゆらぎ", "生活リズム", "やさしいケア", "ミニコラム"],
+};
 
-◆ 1. 事実（Fact）
-- 料金・日数・条件・特徴・デメリットなどを、数字と根拠をもとに正確に書きます。
-- 推測や誇張ではなく、公式情報や一般的なデータに基づいて説明します。
-- メリットとデメリットは必ず分けて整理します。
+async function resolveDiscoverTags(siteId: string): Promise<string[]> {
+  try {
+    const cfg = await getSiteConfig(siteId);
+    // sites/<id>.json の profile.discover.tags を優先して使う
+    const fromProfileUnknown = cfg?.profile?.discover?.tags ?? [];
+    const fromProfile = Array.isArray(fromProfileUnknown)
+      ? (fromProfileUnknown as unknown[])
+      : [];
 
-◆ 2. 透明感（Transparency）
-- 宣伝っぽさを抑えるために、「良い点」と「弱い点／注意点」を両方書きます。
-- 「正直に言うと〜」「ここは注意が必要です」のような、誠実なトーンを入れます。
-- PR案件でも、中立的な視点を保ちます。
+    const filtered = fromProfile.filter(
+      (t): t is string => typeof t === "string" && t.trim().length > 0
+    );
 
-◆ 3. 生活感（Life-story）
-- 朝・夜・帰宅後・荷ほどき・料理中など、“日常の場面”を少しだけ描写します。
-- 読者が自分の生活に置き換えやすいように、「いつ・どこで・どんな気持ちか」がイメージできるように書きます。
+    if (filtered.length > 0) {
+      return filtered;
+    }
+  } catch {
+    // siteConfig の読み込み失敗時はサイレントにフォールバック
+  }
 
-◆ 4. 寄り添い（Empathy）
-- 文章のトーンは柔らかく、落ち着いていて、読者の不安や迷いに寄り添います。
-- 「ん？」「まー」「〜かも」「そっかもしれない」など、やわらかい語尾を自然な範囲で混ぜます。
-- 「こういう時、ちょっと不安になりますよね」「わかるよって伝えたい感じです」のような共感のひと言を入れます。
+  const fallback = DISCOVER_TAGS_BY_SITE[siteId];
+  if (fallback && fallback.length > 0) return fallback;
 
-◆ 5. SEO（Search Intent）
-- primaryKeyword や関連キーワードは、不自然にならない範囲で文中や見出しに含めます。
-- 検索意図を満たすために、基本構成は
-  「結論 → 理由 → 具体例 → 注意点 → まとめ」
-  の流れを優先します。
-- 見出し（H2/H3）は、1つの見出しで1つの疑問・テーマを解決するように配置します。
-
-◆ 6. 季節性（Seasonal：週1で使用）
-- 季節の話題を使う記事では、冒頭に“今の季節・時期の生活の変化”を短く書きます。
-  例）年末・新生活シーズン・夏の暑さ・冬の寒さ・連休・引越しピークなど。
-- 季節の話題はあくまで「悩み」や「サービス紹介」と自然につながる範囲で使います。
-- それ以外の日は、季節の話題を無理に入れず、悩み解決を主軸にして構いません。
-
-【禁止】
-- 「絶対」「100%」「必ず〜になる」などの断定的・過剰な表現。
-- 実際には存在しない事実やデータを書くこと。
-- キーワードの不自然な連発や、スパム的な文章。
-
-【全体トーン】
-- 読者の立場に立ち、「自分ごととして考えやすい」文章にします。
-- 専門性は、数字・比較・具体例・事実で静かに示します。
-- 生活の中にそっとなじむ、あたたかさと余白のある文章を意識します。
-`;
+  // どのサイトにもマッチしなかった場合の最後の保険
+  return ["暮らしのメモ", "ミニコラム"];
+}
 
 /* ========== 小ユーティリティ ========== */
 function promptsDir() {
@@ -322,9 +308,31 @@ export async function generateBlogContent(params: GenerateParams) {
       ? json.title
       : `${params.product.name} 値下げ情報`;
   const excerpt = json.excerpt ?? null;
-  const tags = Array.isArray(json.slugKeys)
+  let tags = Array.isArray(json.slugKeys)
     ? json.slugKeys
     : params.product.tags ?? [];
+
+  // ★ Discover 記事なら、サイト固有の Discover タグをマージする
+  const varsObj =
+    (params.vars as unknown as Record<string, unknown> | undefined) ??
+    undefined;
+  const isDiscoverIntent =
+    params.templateName === "blogTemplate_discover.txt" ||
+    (varsObj && varsObj["intent"] === "discover");
+
+  if (isDiscoverIntent) {
+    const discoverTags = await resolveDiscoverTags(params.siteId);
+    if (discoverTags.length > 0) {
+      const merged = new Set<string>();
+      for (const t of tags) {
+        if (t && t.trim().length > 0) merged.add(t);
+      }
+      for (const t of discoverTags) {
+        if (t && t.trim().length > 0) merged.add(t);
+      }
+      tags = Array.from(merged);
+    }
+  }
 
   return {
     title,

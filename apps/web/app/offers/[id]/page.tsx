@@ -217,6 +217,9 @@ export default async function OfferDetailPage({
       : undefined;
   const ui: OfferUi | undefined = offer.ui ?? fallbackUi;
 
+  // 「こんな方におすすめ」用の箇条書き
+  const recommendBullets: string[] = ui?.faqBullets ?? [];
+
   // ヒーロー（A8バナー or product画像）
   const banner = pickBestBanner(offer.creatives);
   const productHero =
@@ -305,7 +308,7 @@ export default async function OfferDetailPage({
     ui?.minTermLabel || typeof offer.minTermMonths === "number";
 
   return (
-    <main className="container-kariraku p-6 space-y-8">
+    <main className="container-kariraku py-10 space-y-10">
       {/* 可視パンくず */}
       <nav className="text-sm text-gray-500">
         <Link href="/" className="underline">
@@ -331,15 +334,25 @@ export default async function OfferDetailPage({
 
       {/* タイトル + 序文 */}
       <header className="space-y-2">
+        <p className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-700">
+          家電レンタル・サービスの詳細
+        </p>
         <h1 className="h1">{offer.title}</h1>
+
+        {ui?.highlightLabel && (
+          <p className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+            {ui.highlightLabel}
+          </p>
+        )}
+
         <p className="text-xs text-gray-500">※ 本ページは広告を含みます</p>
       </header>
 
       {/* ヒーロー：画像 + 料金・概要 */}
-      <section className="grid gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-start">
+      <section className="grid items-start gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         {/* 画像側 */}
         {(banner || productHero) && (
-          <div className="card p-4">
+          <div className="card p-4 md:p-5">
             {banner ? (
               <TrackLink
                 type="offer"
@@ -355,17 +368,17 @@ export default async function OfferDetailPage({
                   alt={offer.title}
                   width={banner.w}
                   height={banner.h}
-                  className="w-full h-auto max-h-72 md:max-h-80 object-contain img-soft mx-auto"
+                  className="img-soft mx-auto h-auto max-h-72 w-full object-contain md:max-h-80"
                 />
               </TrackLink>
             ) : (
               <img
                 src={productHero!}
                 alt={offer.title}
-                className="w-full h-auto max-h-72 md:max-h-80 object-contain img-soft mx-auto"
+                className="img-soft mx-auto h-auto max-h-72 w-full object-contain md:max-h-80"
               />
             )}
-            <p className="mt-2 text-[11px] text-gray-400 text-center">
+            <p className="mt-2 text-center text-[11px] text-gray-400">
               画像クリックで公式サイト（外部）に移動します。
             </p>
           </div>
@@ -374,29 +387,35 @@ export default async function OfferDetailPage({
         {/* 右側：料金・最低期間・CTA */}
         <aside className="space-y-4">
           {(hasPriceInfo || hasMinTermInfo || ui?.isPriceDynamic) && (
-            <div className="rounded-xl border p-4 text-sm text-gray-700 bg-white space-y-1">
+            <div className="card border-emerald-50 bg-white/90 p-4 text-sm text-gray-700">
               {ui?.priceLabel && (
                 <div className="font-semibold">{ui.priceLabel}</div>
               )}
               {ui?.minTermLabel && (
-                <div className="text-gray-600">{ui.minTermLabel}</div>
+                <div className="text-xs text-gray-600">{ui.minTermLabel}</div>
               )}
 
               {/* フォールバック（従来フィールド） */}
               {!ui?.priceLabel && typeof offer.priceMonthly === "number" && (
-                <div>月額目安：¥{offer.priceMonthly.toLocaleString()}〜</div>
+                <div className="mt-1">
+                  月額目安：¥{offer.priceMonthly.toLocaleString()}〜
+                </div>
               )}
               {!ui?.priceLabel &&
                 !offer.priceMonthly &&
                 typeof offer.priceRange === "number" && (
-                  <div>目安価格：¥{offer.priceRange.toLocaleString()}〜</div>
+                  <div className="mt-1">
+                    目安価格：¥{offer.priceRange.toLocaleString()}〜
+                  </div>
                 )}
               {!ui?.minTermLabel && typeof offer.minTermMonths === "number" && (
-                <div>最低利用期間：{offer.minTermMonths}ヶ月〜</div>
+                <div className="mt-1">
+                  最低利用期間：{offer.minTermMonths}ヶ月〜
+                </div>
               )}
 
               {ui?.isPriceDynamic && (
-                <div className="text-xs text-gray-500 mt-2">
+                <div className="mt-2 text-xs text-gray-500">
                   ※ 料金は時期や商品により変動する場合があります。
                   最新の料金は公式サイトをご確認ください。
                 </div>
@@ -405,7 +424,7 @@ export default async function OfferDetailPage({
           )}
 
           {(offer.tags?.length || offer.notes?.length) && (
-            <div className="rounded-xl bg-emerald-50/60 border border-emerald-100 px-3 py-2 text-xs flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-xs">
               {(offer.tags?.length ? offer.tags : offer.notes ?? [])
                 ?.slice(0, 4)
                 .map((t) => (
@@ -440,11 +459,23 @@ export default async function OfferDetailPage({
         </aside>
       </section>
 
+      {/* こんな方におすすめ */}
+      {recommendBullets.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-base font-semibold">こんな方におすすめです</h2>
+          <ul className="space-y-1 list-disc pl-5 text-sm text-gray-700">
+            {recommendBullets.map((b) => (
+              <li key={b}>{b}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* 概要テキスト */}
       {offer.description && (
         <section className="space-y-2">
           <h2 className="text-base font-semibold">サービスの概要</h2>
-          <p className="text-gray-700 leading-7 whitespace-pre-wrap">
+          <p className="leading-7 whitespace-pre-wrap text-gray-700">
             {offer.description}
           </p>
         </section>
@@ -455,7 +486,7 @@ export default async function OfferDetailPage({
 
       {/* 梱包の補足など（shipping/promotion） */}
       {(offer.shipping?.policy || offer.promotion) && (
-        <div className="rounded-xl border p-4 text-sm text-gray-700 bg-white space-y-2">
+        <section className="card bg-white p-4 text-sm text-gray-700 space-y-1">
           {offer.shipping?.policy && <div>配送：{offer.shipping.policy}</div>}
           {offer.promotion?.couponCode && (
             <div>クーポン：{offer.promotion.couponCode}</div>
@@ -463,7 +494,7 @@ export default async function OfferDetailPage({
           {offer.promotion?.validUntil && (
             <div>有効期限：{offer.promotion.validUntil}</div>
           )}
-        </div>
+        </section>
       )}
 
       {/* FAQ（notes） */}
