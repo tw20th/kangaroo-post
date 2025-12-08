@@ -1,0 +1,19 @@
+{
+  "siteId": "joblabo",
+  "displayName": "Job Labo（ジョブラボ）",
+  "domain": "job-labo.com",
+  "brand": {
+    "primary": "#16A34A",
+    "accent": "#F59E0B",
+    "logoUrl": "/logos/default.svg",
+    "theme": "light"
+  },
+  "features": {
+    "blogs": true,
+    "offers": true,
+    "products": false,
+    "ranking": false
+  },
+  "analytics": {},
+  "categoryPreset": ["転職", "副業", "在宅ワーク", "キャリア"]
+}

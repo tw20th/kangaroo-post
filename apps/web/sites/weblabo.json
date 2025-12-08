@@ -1,0 +1,19 @@
+{
+  "siteId": "weblabo",
+  "displayName": "Web Labo（ウェブラボ）",
+  "domain": "web-labo.com",
+  "brand": {
+    "primary": "#2563EB",
+    "accent": "#F97316",
+    "logoUrl": "/logos/default.svg",
+    "theme": "light"
+  },
+  "features": {
+    "blogs": true,
+    "offers": true,
+    "products": false,
+    "ranking": false
+  },
+  "analytics": {},
+  "categoryPreset": ["Web制作", "ホームページ", "LP制作", "ツール紹介"]
+}
