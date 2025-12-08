@@ -1,0 +1,220 @@
+{
+  "program": {
+    "advertiserInfo": {
+      "companyName": "株式会社EVERING",
+      "officialName": "株式会社EVERING（エブリング）",
+      "type": "smart-ring",
+      "founded": "2020年2月",
+      "headquarters": "〒103-0027 東京都中央区日本橋3丁目6番2号 日本橋フロント1F",
+      "capital": "",
+      "employees": "",
+      "businessAreas": [
+        "リング型デバイス（スマートリング）の製造・販売",
+        "付帯するプロダクトの輸入・販売",
+        "前払式支払手段（第三者型）に基づく決済サービス提供"
+      ],
+      "strengths": [
+        "指にはめるだけで支払いができる、スマートリング型の決済デバイスを提供",
+        "Visaのタッチ決済対応で、レジ前でカードやスマホを取り出す手間を減らせる",
+        "VISAプリペイド（チャージ式）のため、使いすぎを防ぎながらキャッシュレスを楽しめる",
+        "5気圧防水対応で、手洗いやシャワーのたびに外す必要がない日常使い設計"
+      ],
+      "officialUrls": {
+        "company": "https://evering.jp/",
+        "service": "https://evering.jp/collections/evering",
+        "recruit": "",
+        "ir": ""
+      },
+      "socials": {
+        "x": "",
+        "instagram": "",
+        "youtube": ""
+      }
+    },
+    "programId": "s00000024909001",
+    "advertiser": "株式会社EVERING",
+    "category": ["スマートリング", "キャッシュレス", "ガジェット"]
+  },
+
+  "offer": {
+    "id": "s00000024909001:evering",
+    "title": "支払い1秒。充電ゼロ。【EVERING（スマートリング）】",
+    "description": "指にはめるだけでVisaのタッチ決済ができるスマートリング EVERING。充電不要・5気圧防水で、ふだんの生活の中で“財布もスマホも出さずに”キャッシュレス決済を完結できます。スタンダード一括プランと、月額で始められる定額プランから選べます。",
+    "planType": "both",
+    "landingUrl": "https://evering.jp/collections/evering",
+    "affiliateUrl": "https://px.a8.net/svt/ejp?a8mat=45II8Y+85IT3M+5C76+5YJRM",
+    "images": [],
+
+    "badges": [
+      "支払い1秒のスマートリング",
+      "充電不要・5気圧防水",
+      "Visaタッチ決済対応（国内）",
+      "プリペイド式で使いすぎ防止",
+      "一括プラン／定額プランあり"
+    ],
+    "tags": [
+      "スマートリング",
+      "キャッシュレス",
+      "Visaタッチ決済",
+      "ウェアラブルデバイス",
+      "NFCガジェット",
+      "プリペイド",
+      "セキュリティ",
+      "防水ガジェット"
+    ],
+
+    "siteIds": ["workiroom"],
+
+    "vertical": "gadget",
+
+    "profile": {
+      "companyType": "gadget",
+      "targetUsers": [
+        "キャッシュレス決済をよく使うが、カードやスマホを取り出すのが面倒に感じている人",
+        "ミニマルな持ち物で外出したい人（財布・スマホを頻繁に出したくない人）",
+        "ガジェット好きで、新しい決済体験・ウェアラブルデバイスに興味がある人",
+        "使いすぎが不安で、チャージ式で支出を管理しながらキャッシュレスを使いたい人"
+      ],
+      "strengths": [
+        "指にはめたリングをかざすだけで支払いができ、会計動作がとてもスマート",
+        "充電不要・5気圧防水で、日常生活のなかでバッテリー残量や水濡れを気にせず使える",
+        "プリペイド式のため、チャージした分だけ使える安心感がある",
+        "カード番号の印字がなく、のぞき見やスキミングなどのリスクを減らせるデザイン"
+      ],
+      "weaknesses": [
+        "利用できる場所は日本国内のVisaタッチ決済対応店舗に限られる（海外では利用不可）",
+        "チャージには日本国内発行のクレジットカードが必要で、利用にはスマホアプリ登録が前提となる",
+        "指輪サイズの計測が必要で、サイズが合わないと交換対応に時間と送料がかかる",
+        "不良品以外の返品は不可で、購入後のキャンセル・サイズ変更には条件がある"
+      ],
+      "importantNotes": [
+        "利用できるのは日本国内のVisaタッチ決済対応店舗のみで、海外では利用不可",
+        "チャージには日本国内で発行されたクレジットカードと、SMS受信可能な国内携帯電話番号が必要",
+        "1つの携帯電話番号につき1アカウント・1つのEVERINGが紐づき、複数利用には複数の電話番号が必要",
+        "サイズ交換はアクティベーション前・商品到着日を含む7日以内・1回のみ／刻印リングは交換不可／送料1,320円(税込)は自己負担",
+        "不良品以外の返品は不可。誤配送・初期不良などの場合のみ、商品到着後7日以内の連絡で返品交換対応（送料は企業負担）"
+      ]
+    },
+
+    "extras": {
+      "pricing": {
+        "plan": "both",
+        "monthlyPriceFrom": 660,
+        "shortBase": {
+          "days": 1460,
+          "priceFrom": 21450
+        },
+        "extendPerDayExample": null,
+        "priceIsDynamic": true,
+        "priceLastChecked": 0
+      },
+
+      "ui": {
+        "priceLabel": "スタンダード一括 ¥21,450（4年間）／定額プラン 月額 ¥660〜",
+        "minTermLabel": "定額プランは最低利用期間2年",
+        "isPriceDynamic": true,
+        "compareHighlight": "充電不要で4年間使えるスマートリング決済。月額プランなら初期費用を抑えて始めやすい"
+      },
+
+      "payment": {
+        "methods": ["クレジットカード", "プリペイドチャージ"],
+        "cardBrands": [
+          "VISA",
+          "MasterCard",
+          "JCB",
+          "AMERICAN EXPRESS",
+          "Diners Club"
+        ],
+        "threeDSecure": false,
+        "notes": [
+          "チャージには日本国内で発行されたクレジットカードが必要",
+          "プリペイド（チャージ式）のため、残高の範囲内でのみ利用可能",
+          "定額プランは2年間の継続が必要（以降はいつでも解約可能）"
+        ],
+        "timing": {
+          "prepaid": "クレジットカードからチャージしたタイミングで残高反映",
+          "card": "本体購入時に決済"
+        },
+        "billingFailure": "チャージや支払いが完了しない場合は決済利用ができず、サポート窓口への問い合わせが必要"
+      },
+
+      "shipping": {
+        "carrier": null,
+        "roundTripFree": false,
+        "baseShippingYen": null,
+        "exceptions": {},
+        "returnLabelIncluded": false,
+        "returnMethods": [],
+        "packagingNote": "発送・梱包の詳細は公式オンラインストアの案内に準拠"
+      },
+
+      "warranty": {
+        "normalWearFree": true,
+        "repairCapYen": null,
+        "lostTheftMax": null,
+        "notes": [
+          "不良品や配送時の破損などの場合、商品到着後7日以内の連絡で返品・交換に対応（送料企業負担）",
+          "不良品以外の理由による返品は不可",
+          "サイズ交換はアクティベーション前・到着日を含む7日以内・1回のみで、送料は利用者負担"
+        ]
+      },
+
+      "policies": {
+        "disclosureRequired": true,
+        "prLabelRequired": true,
+        "listingAdsNG": false
+      },
+
+      "faqHints": [
+        "スタンダードプランは一括払い ¥21,450（税込）で4年間利用可能（実質¥447/月相当）",
+        "定額プランは月額 ¥660（税込）で、最低利用期間2年。以降はいつでも解約可能",
+        "利用には日本国内発行のクレジットカードとSMS受信可能な携帯電話番号が必要",
+        "サイズ交換はアクティベーション前・商品到着日を含む7日以内・1回のみ／刻印リングは交換不可",
+        "Visaタッチ決済対応店舗（日本国内）のみ利用可能で、海外や磁気決済専用レジでは使用不可"
+      ]
+    },
+
+    "creatives": [
+      {
+        "materialId": "001",
+        "type": "text",
+        "label": "支払い1秒。充電ゼロ。EVERING",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+85IT3M+5C76+5YJRM"
+      },
+      {
+        "materialId": "002",
+        "type": "text",
+        "label": "EVERING",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+85IT3M+5C76+5YRHE"
+      },
+      {
+        "materialId": "003",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+85IT3M+5C76+5YZ75",
+        "imgSrc": "https://www25.a8.net/svt/bgt?aid=251126242493&wid=005&eno=01&mid=s00000024909001003000&mc=1"
+      },
+      {
+        "materialId": "004",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+85IT3M+5C76+5Z6WX",
+        "imgSrc": "https://www26.a8.net/svt/bgt?aid=251126242493&wid=005&eno=01&mid=s00000024909001004000&mc=1"
+      },
+      {
+        "materialId": "005",
+        "type": "banner",
+        "size": "100x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+85IT3M+5C76+5ZEMP",
+        "imgSrc": "https://www26.a8.net/svt/bgt?aid=251126242493&wid=005&eno=01&mid=s00000024909001005000&mc=1"
+      },
+      {
+        "materialId": "009",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+85IT3M+5C76+609HT",
+        "imgSrc": "https://www24.a8.net/svt/bgt?aid=251126242493&wid=005&eno=01&mid=s00000024909001009000&mc=1"
+      }
+    ]
+  }
+}

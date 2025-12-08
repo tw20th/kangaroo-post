@@ -19,16 +19,32 @@ function getNavItems(siteId: string): NavItem[] {
         { href: "/offers", label: "家電レンタル" },
         { href: "/blog", label: "悩みガイド" },
       ];
+
     case "workiroom":
       return [
         { href: "/offers", label: "在宅ワークアイテム" },
         { href: "/blog", label: "ヒント記事" },
       ];
+
     case "hadasmooth":
       return [
         { href: "/offers", label: "医療脱毛クリニック" },
         { href: "/blog", label: "悩みガイド" },
       ];
+
+    // ★ 新規 2 サイト
+    case "weblabo":
+      return [
+        { href: "/offers", label: "Webサービス比較" },
+        { href: "/blog", label: "ノウハウ記事" },
+      ];
+
+    case "joblabo":
+      return [
+        { href: "/offers", label: "転職エージェント" },
+        { href: "/blog", label: "キャリアガイド" },
+      ];
+
     default:
       return [
         { href: "/offers", label: "サービス一覧" },

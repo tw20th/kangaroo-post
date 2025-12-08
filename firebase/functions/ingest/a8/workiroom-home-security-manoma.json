@@ -1,0 +1,87 @@
+{
+  "program": {
+    "id": "s00000024563001",
+    "name": "ソニーのスマートホーム MANOMA（マノマ）「見守り・セキュリティセット」",
+    "advertiserId": "manoma-security",
+    "advertiserName": "ライフエレメンツ株式会社",
+    "category": ["物件", "ホームセキュリティ", "スマートホーム"],
+    "mainA8mat": "45II8Y+8HFH76+59J2+5YJRM",
+    "serviceUrl": "https://manoma.jp/"
+  },
+  "offer": {
+    "id": "workiroom-home-security-manoma",
+    "siteId": "workiroom",
+    "advertiserId": "manoma-security",
+    "programId": "s00000024563001",
+    "landingUrl": "https://manoma.jp/lp/trial_security_set_a8/",
+    "serviceName": "MANOMA セキュリティセット",
+    "serviceNameEn": "MANOMA Security Set",
+    "catchCopy": "ソニーの防犯サービス MANOMA（マノマ）「セキュリティセット」。最大3か月間980円/月でスマホからおうちを見守れるスマートホーム防犯サービス。",
+    "category": [
+      "ホームセキュリティ",
+      "見守りサービス",
+      "サブスク・月額サービス"
+    ],
+    "officialSiteUrl": "https://manoma.jp/lp/trial_security_set_a8/",
+    "a8Links": {
+      "main": {
+        "label": "ソニーの防犯サービス MANOMA（マノマ）「セキュリティセット」",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8HFH76+59J2+5YJRM"
+      },
+      "brand": {
+        "label": "MANOMA",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8HFH76+59J2+5YRHE"
+      },
+      "banner300x250": {
+        "label": "300x250バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8HFH76+59J2+62ENL"
+      },
+      "banner320x50": {
+        "label": "320x50バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8HFH76+59J2+626XT"
+      },
+      "banner100x60": {
+        "label": "100x60バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8HFH76+59J2+5ZEMP"
+      }
+    },
+    "feeModel": {
+      "type": "contract",
+      "rewardNote": "成果報酬：新規契約1件あたり固定報酬（詳細はA8管理画面を参照）"
+    },
+    "company": {
+      "name": "ライフエレメンツ株式会社",
+      "brand": "MANOMA",
+      "address": "（特商法表記に準拠・公式サイト参照）",
+      "business": [
+        "スマートホームサービスの企画・運営",
+        "IoT機器を活用した防犯・見守りサービス"
+      ],
+      "partner": "セコム株式会社（駆けつけサービス連携）"
+    },
+    "serviceOverview": {
+      "description": "カメラ・開閉センサー・AIホームゲートウェイ・セキュリティステッカーをセットにした、ソニーグループのスマートホーム防犯サービス。スマホアプリから戸締まりや室内の様子を確認でき、異常時には警告音や通知で知らせる。",
+      "features": [
+        "最大3か月間980円/月でお試しでき、違約金なし（初期設定代行利用や早期解約条件は別途あり）",
+        "室内カメラはシャッター付きでプライバシーに配慮、在宅時は自動でシャッターを閉じる設定も可能",
+        "セコム駆けつけサービスと連携し、もしものときにはプロが現場に駆けつけ"
+      ],
+      "mainDevices": [
+        "AIホームゲートウェイ",
+        "室内コミュニケーションカメラ",
+        "開閉センサー（窓・ドア用）",
+        "セキュリティステッカー"
+      ]
+    },
+    "recommendedFor": [
+      "共働き・共働きで日中家を空けることが多い家庭",
+      "小さな子どもやペットのいる家庭で、外出中も室内の様子を見守りたい人",
+      "一戸建てや1階住まいで空き巣対策をしたいけれど、本格的なセキュリティ工事はハードルが高い人"
+    ],
+    "notes": [
+      "初期設定代行サービスやWi-Fiオプションなど、オプション費用・解約条件の説明を記事側でフォローしておくと安心。",
+      "「月額980円お試し」と「通常料金」の切り替わりタイミングを図解したコンテンツと相性が良い。",
+      "セコム駆けつけサービスの詳細（別途申込・1回ごとの料金）も合わせて整理しておくと、読者の不安を減らせる。"
+    ]
+  }
+}

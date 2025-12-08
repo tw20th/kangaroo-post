@@ -1,0 +1,79 @@
+{
+  "program": {
+    "id": "s00000022582001",
+    "name": "Amazon売れ筋ランキング1位のゲーミングチェア！【ジーティーレーシング】",
+    "advertiserId": "gtracing",
+    "advertiserName": "ジーティーレーシング株式会社",
+    "category": ["インテリア", "ゲーミングチェア"],
+    "mainA8mat": "45II8Y+8IMCEQ+4U8S+5YRHE",
+    "serviceUrl": "https://gtracing.co.jp/"
+  },
+  "offer": {
+    "id": "workiroom-gtracing",
+    "siteId": "workiroom",
+    "advertiserId": "gtracing",
+    "programId": "s00000022582001",
+    "landingUrl": "https://gtracing.co.jp/",
+    "serviceName": "GTRACING（ジーティーレーシング）",
+    "serviceNameEn": "GTRACING",
+    "catchCopy": "Amazon売れ筋ランキング1位クラスの実績を持つ人気ゲーミングチェアブランド【ジーティーレーシング】。",
+    "category": ["ゲーミングチェア", "オフィスチェア", "テレワーク"],
+    "officialSiteUrl": "https://gtracing.co.jp/",
+    "a8Links": {
+      "brandText": {
+        "label": "ゲーミングチェアの【ジーティーレーシング】",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8IMCEQ+4U8S+5YJRM"
+      },
+      "rankingText": {
+        "label": "Amazon売れ筋ランキング1位のゲーミングチェア！【ジーティーレーシング】",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8IMCEQ+4U8S+5YRHE"
+      },
+      "banner120x60": {
+        "label": "120x60バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8IMCEQ+4U8S+60OXD"
+      },
+      "banner640x100": {
+        "label": "640x100バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8IMCEQ+4U8S+61RI9"
+      },
+      "banner468x60": {
+        "label": "468x60バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8IMCEQ+4U8S+5ZU29"
+      }
+    },
+    "feeModel": {
+      "type": "purchase",
+      "rewardNote": "成果報酬：購入額の5%以上（詳細はA8管理画面を参照）"
+    },
+    "company": {
+      "name": "ジーティーレーシング株式会社",
+      "address": "〒101-0032 東京都千代田区岩本町3-10-7 東自機ビル7F15号室",
+      "phone": "0570-033-393",
+      "supportEmail": "info@gtracing.jp",
+      "business": [
+        "ゲーミングチェア・周辺家具の企画・販売",
+        "オンラインストア運営"
+      ],
+      "mission": "高品質でコスパがよい製品を世界中の消費者に届ける。",
+      "vision": "世界No.1のeスポーツ周辺装置のブランドを目指す。"
+    },
+    "serviceOverview": {
+      "description": "コスパの高さと豊富なラインナップで人気のゲーミングチェアブランド。リクライニング・フットレスト・ランバーサポートなど、快適性と機能性を両立したモデルを多数展開。",
+      "features": [
+        "ゲーミングだけでなく、在宅ワークや長時間デスクワークにも使いやすい設計",
+        "価格帯を抑えつつ、多段階リクライニング・アームレスト調整など必要十分な機能を搭載",
+        "公式サイト限定のセールやクーポン、ポイント制度があり、コスパ重視層と相性が良い"
+      ]
+    },
+    "recommendedFor": [
+      "初めてゲーミングチェアを買う人（コスパ重視）",
+      "自宅でのテレワーク時間が長く、腰や肩こりを軽減したい人",
+      "Amazonなどの口コミを参考に、評価が安定しているブランドを選びたい人"
+    ],
+    "notes": [
+      "セールやクーポンが頻繁にあるため、記事では「セール情報」「最安値情報」への導線があると◎。",
+      "開梱・組立は原則ユーザー自身が行うため、組立のポイント紹介記事とも相性が良い。",
+      "保証やサポート内容（返品・交換条件）をわかりやすく整理した比較記事も作りやすい。"
+    ]
+  }
+}

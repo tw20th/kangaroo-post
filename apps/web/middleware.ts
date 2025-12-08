@@ -10,6 +10,8 @@ const ALLOWED = new Set([
   "kariraku",
   "hadasmooth",
   "workiroom",
+  "weblabo", // ★ 追加
+  "joblabo", // ★ 追加
 ]);
 
 const HOST_TO_SITE: Record<string, string> = {
@@ -24,14 +26,22 @@ const HOST_TO_SITE: Record<string, string> = {
 
   "hadasmooth.com": "hadasmooth",
   "www.hadasmooth.com": "hadasmooth",
+
   "workiroom.com": "workiroom",
   "www.workiroom.com": "workiroom",
 
-  // ローカル開発用マッピング
+  "weblabo.com": "weblabo", // ★ 追加（将来の独自ドメイン）
+  "www.weblabo.com": "weblabo", // ★ 追加
+  "joblabo.com": "joblabo", // ★ 追加
+  "www.joblabo.com": "joblabo", // ★ 追加
+
+  // Localhost
   localhost: "kariraku",
   "localhost:3000": "kariraku",
   "localhost:3001": "workiroom",
   "localhost:3002": "hadasmooth",
+  "localhost:3003": "weblabo", // ★ 追加
+  "localhost:3004": "joblabo", // ★ 追加
 };
 
 export function middleware(req: NextRequest) {

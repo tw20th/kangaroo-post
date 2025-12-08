@@ -45,11 +45,11 @@ firebase/functions/src/jobs/a8/seedUiFromIngest.tsはingestされた内容をUI�
 
 ーーーーーーーーーーーーーーーーーーーーーーーーー
 重要！企業の情報を追加して
-pnpm -C firebase/functions run a8:sync
+pnpm -C firebase/functions run a8:sync ←メイン
 ↑
 （JSON → Firestore）
 
-// firebase/functions/src/jobs/a8/normalizeA8Offers.tsは、firestoreへ保存するファイルかな
+// firebase/functions/src/jobs/a8/normalizeA8Offers.ts ←これは価格とかっぽいね。
 
 
 firebase deploy --only functions:a8_normalizeOffers
@@ -184,9 +184,7 @@ pnpm dev:workiroom
 
 ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
-これらはadminで企業情報を編集するためのファイルです。
-↓
-// apps/web/lib/firebase/companyProfiles.ts
+
 
 
 ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
@@ -203,4 +201,20 @@ generateBlogFromOffer.tsは、特定の offerId を指定して商品紹介ブ�
 firebase/functions/src/scripts/tools/setAdminClaim.tsはfirebaseにログインするスクリプト
 ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
+seo関連
 
+pullGscQueries.ts
+→ データ取得＆保存（生ログ）
+
+updateBlogSeoFromGSC.ts
+→ 既存ブログに「成績ラベル」を貼る
+
+generateFromGSC.ts
+→ 伸ばしたいクエリから新記事/リライトを作る
+
+curl "http://127.0.0.1:5001/a8-affiliate-a2489/asia-northeast1/runSyncSiteKeywordsFromGSCNow?siteId=〇〇"
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+firebase/functions/src/scripts/diagnostics/analyzeTitlePatterns.ts はsiteKeywordsからタイトルを分析して良いものを分析するスクリプトです。
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー

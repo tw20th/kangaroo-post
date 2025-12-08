@@ -108,7 +108,7 @@ async function runOnceForSite(saJson: string, siteId: string) {
     .get();
   const days = latest.exists ? 28 : 90;
 
-  const sc = makeGscJwt(saJson);
+  const sc = await makeGscJwt(saJson); // ← await を追加
   const { rowsQ, rowsPQ } = await fetchRows(sc, propertyUrl, days);
 
   const now = Date.now();

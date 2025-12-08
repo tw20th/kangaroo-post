@@ -2,6 +2,7 @@
 
 import type { Firestore } from "firebase/firestore";
 import { getDb, numOrTsToNumber, getFs } from "@/lib/firebase";
+import { fsGet, fsDecode, type FsValue } from "@/lib/firestore-rest";
 
 /* ========= Types ========= */
 
@@ -144,4 +145,71 @@ export async function updateOffer(
     ...input,
     updatedAt: serverTimestamp(),
   });
+}
+
+/* ========= 会社プロフィール（companyProfile）取得 ========= */
+
+export type OfferCompanyProfile = {
+  targetUsers?: string[];
+  strengths?: string[];
+  weaknesses?: string[];
+  importantNotes?: string[];
+};
+
+function toStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const arr = value
+    .map((v) => (typeof v === "string" ? v : null))
+    .filter((v): v is string => v !== null);
+  return arr.length > 0 ? arr : undefined;
+}
+
+/**
+ * REST API 経由で offers/{id} を読み、companyProfile を安全に取り出す
+ * - functions 側で set している構造:
+ *   companyProfile: {
+ *     targetUsers: string[];
+ *     strengths: string[];
+ *     weaknesses: string[];
+ *     importantNotes: string[];
+ *   }
+ */
+export async function fetchOfferCompanyProfile(
+  offerId: string
+): Promise<OfferCompanyProfile | null> {
+  if (!offerId) return null;
+
+  const doc = await fsGet({
+    path: `offers/${encodeURIComponent(offerId)}`,
+  });
+
+  if (!doc) return null;
+
+  const fields = (doc as { fields?: Record<string, FsValue> }).fields;
+  if (!fields || !fields.companyProfile) return null;
+
+  const raw = fsDecode(fields.companyProfile);
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+
+  const profileObj = raw as {
+    targetUsers?: unknown;
+    strengths?: unknown;
+    weaknesses?: unknown;
+    importantNotes?: unknown;
+  };
+
+  const profile: OfferCompanyProfile = {
+    targetUsers: toStringArray(profileObj.targetUsers),
+    strengths: toStringArray(profileObj.strengths),
+    weaknesses: toStringArray(profileObj.weaknesses),
+    importantNotes: toStringArray(profileObj.importantNotes),
+  };
+
+  const hasContent =
+    (profile.targetUsers && profile.targetUsers.length > 0) ||
+    (profile.strengths && profile.strengths.length > 0) ||
+    (profile.weaknesses && profile.weaknesses.length > 0) ||
+    (profile.importantNotes && profile.importantNotes.length > 0);
+
+  return hasContent ? profile : null;
 }

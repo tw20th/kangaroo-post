@@ -43,3 +43,10 @@ export function a8BlogSlug(
   }
   return base;
 }
+
+/** 企業記事（service）用の「固定 slug」: <siteId>-service-<offerId> */
+export function serviceBlogSlug(siteId: string, offerId: string): string {
+  const cleanedSiteId = safe(siteId);
+  const cleanedOfferId = safe(offerId);
+  return `${cleanedSiteId}-service-${cleanedOfferId}`;
+}

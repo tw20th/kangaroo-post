@@ -1,510 +1,374 @@
-/* eslint-disable @next/next/no-img-element */
-export const revalidate = 0;
+// apps/web/app/offers/[id]/page.tsx
+import Link from "next/link";
+import Image from "next/image";
+import { getServerSiteId } from "@/lib/site-server";
+import { fsRunQuery, vNum, vStr, type FsValue } from "@/lib/firestore-rest";
+
+export const revalidate = 1800;
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import {
-  fsGet,
-  fsDecode,
-  fsGetStringArray,
-  fsRunQuery,
-} from "@/lib/firestore-rest";
-import { getServerSiteId, getSiteEntry } from "@/lib/site-server";
-import FaqList from "@/components/common/FaqList";
-import RelatedByTags from "@/components/common/RelatedByTags";
-import { fetchRelatedOffersByTags } from "@/lib/queries";
-import TrackLink from "@/components/common/TrackLink";
-import OfferDetailSections from "@/components/offers/OfferDetailSections";
-
-/* ===== types ===== */
-type Creative = {
-  type: "banner" | "text";
-  href: string;
-  imgSrc?: string;
-  size?: string; // "300x250" (A8)
-  materialId?: string;
-  label?: string;
-};
-
-type VendorSnapshot = {
-  vendorId: string;
-  name: string;
-  siteUrl?: string | null;
-  logoUrl?: string | null;
-} | null;
-
-type ProductSnapshot = {
-  productId: string;
-  title: string;
-  category: string[];
-  images?: string[];
-  tags?: string[];
-} | null;
-
-type Cta = { type: "a8" | "external"; programId?: string; href: string } | null;
-type Shipping = { policy?: string } | null;
-type Promotion = {
-  couponCode?: string | null;
-  validUntil?: string | null;
-} | null;
-
-type OfferUi = {
-  priceLabel?: string;
-  minTermLabel?: string;
-  isPriceDynamic?: boolean;
-  shippingNote?: string;
-  paymentNote?: string;
-  warrantyNote?: string;
-  faqBullets?: string[];
-  /** 比較用の一言ラベル（例：コスパ重視 / 全国配送対応） */
-  highlightLabel?: string;
-};
-
-type OfferDoc = {
+type Params = {
   id: string;
-  siteId?: string;
-  title: string;
-  description?: string;
-  images?: string[];
-  creatives?: Creative[];
-  status?: string;
-  archived?: boolean;
-  updatedAt?: number;
-  tags?: string[];
-  notes?: string[];
-  planType?: "subscription" | "one-time" | "product" | "trial";
-  priceMonthly?: number | null;
-  priceRange?: number | null;
-  minTermMonths?: number | null;
-  ratingValue?: number | null;
-  ratingCount?: number | null;
-  vendorSnapshot?: VendorSnapshot;
-  productSnapshot?: ProductSnapshot;
-  cta?: Cta;
-  shipping?: Shipping;
-  promotion?: Promotion;
-  // 追加
-  extras?: unknown;
-  ui?: OfferUi;
 };
 
-/* ===== helpers ===== */
-function parseSize(size?: string): { w: number; h: number } | null {
-  if (!size) return null;
-  const m = size.match(/(\d+)[xX](\d+)/);
-  if (!m) return null;
-  return { w: parseInt(m[1], 10), h: parseInt(m[2], 10) };
-}
-function pickBestBanner(
-  creatives?: Creative[]
-): { img: string; href?: string; w: number; h: number } | null {
-  if (!creatives?.length) return null;
-  const banners = creatives.filter(
-    (c) => c.type === "banner" && (c.imgSrc || c.size)
-  );
-  if (banners.length === 0) return null;
-  const scored = banners.map((b) => {
-    const size = parseSize(b.size);
-    const w = size?.w ?? 1200;
-    const h = size?.h ?? 628;
-    const area = w * h;
-    return { img: b.imgSrc!, href: b.href, w, h, area };
-  });
-  const best = scored.sort((a, b) => b.area - a.area)[0];
-  return best ?? null;
+type OfferProfile = {
+  companyType?: string | null;
+  shortCopy?: string | null;
+  priceLabel?: string | null;
+  minTermLabel?: string | null;
+};
+
+type OfferDetail = {
+  id: string;
+  siteId?: string | null;
+  advertiser?: string | null;
+  programId?: string | null;
+  programName?: string | null;
+  displayName?: string | null;
+  affiliateUrl?: string | null;
+  profile?: OfferProfile;
+  overview?: string | null;
+  createdAt?: number | null;
+  updatedAt?: number | null;
+};
+
+type FsDoc = { name: string; fields: Record<string, FsValue> };
+
+function getDisplayName(offer: OfferDetail): string {
+  if (offer.displayName && offer.displayName.trim().length > 0) {
+    return offer.displayName.trim();
+  }
+  if (offer.programName && offer.programName.trim().length > 0) {
+    return offer.programName.trim();
+  }
+  if (offer.advertiser && offer.advertiser.trim().length > 0) {
+    return offer.advertiser.trim();
+  }
+  return "サービス名未設定";
 }
 
-async function fetchOfferByAnyId(rawParamId: string) {
-  const id = decodeURIComponent(rawParamId);
-  const byId = await fsGet({ path: `offers/${id}` }).catch(() => null);
-  if (byId) return byId;
+function labelForCompanyType(type?: string | null): string {
+  if (!type) return "暮らし全般";
+  switch (type) {
+    case "living":
+      return "くらし全般";
+    case "gadget":
+      return "ガジェット・家電";
+    case "trial":
+      return "お試し・期間限定";
+    default:
+      return type;
+  }
+}
 
-  // 互換: "programId:vendor" 形式をサポート（旧データ向け）
-  const [programId, vendor] = id.split(":");
-  if (!programId) return null;
-  const tryBoth = await fsRunQuery({
+function getThemeThumbnail(type?: string | null): string {
+  switch (type) {
+    case "living":
+      return "/images/offers/theme-living.jpg";
+    case "gadget":
+      return "/images/offers/theme-gadget.jpg";
+    case "trial":
+      return "/images/offers/theme-trial.jpg";
+    default:
+      return "/images/offers/theme-default.jpg";
+  }
+}
+
+// id フィールドで 1 件だけ取得
+async function fetchOfferById(
+  _siteId: string,
+  rawId: string
+): Promise<OfferDetail | null> {
+  const id = decodeURIComponent(rawId);
+
+  const rows = (await fsRunQuery({
     collection: "offers",
     where: [
-      { field: "programId", value: programId },
-      ...(vendor ? [{ field: "vendor", value: vendor }] : []),
+      {
+        field: "id",
+        op: "EQUAL",
+        value: id,
+      },
     ],
     limit: 1,
-  }).catch(() => []);
-  // @ts-ignore
-  if (tryBoth && tryBoth[0]) return tryBoth[0];
+  })) as FsDoc[];
 
-  const tryProgOnly = await fsRunQuery({
-    collection: "offers",
-    where: [{ field: "programId", value: programId }],
-    limit: 1,
-  }).catch(() => []);
-  // @ts-ignore
-  return tryProgOnly && tryProgOnly[0] ? tryProgOnly[0] : null;
-}
+  if (!rows.length) return null;
 
-/* ===== Metadata（タイトル/説明） ===== */
-export async function generateMetadata({ params }: { params: { id: string } }) {
-  const res: unknown = await fetchOfferByAnyId(params.id);
-  // @ts-ignore
-  if (!res?.fields) return {};
-  // @ts-ignore
-  const f = res.fields;
-  const title = (fsDecode(f?.title) as string) ?? "レンタルサービス";
-  const desc =
-    (fsDecode(f?.description) as string) ??
-    "家電レンタルの料金・最低利用期間の詳細。";
+  const row = rows[0];
+  const f = row.fields ?? {};
+
+  const companyType = vStr(f, "profile.companyType");
+
+  const shortCopy =
+    vStr(f, "ui.compareHighlight") ||
+    vStr(f, "ui.highlightLabel") ||
+    vStr(f, "highlightLabel") ||
+    vStr(f, "service.overview") ||
+    vStr(f, "description");
+
+  const priceLabel = vStr(f, "ui.priceLabel") || vStr(f, "pricing.priceLabel");
+  const minTermLabel =
+    vStr(f, "ui.minTermLabel") || vStr(f, "pricing.minTermLabel");
+
+  const profile: OfferProfile | undefined =
+    companyType || shortCopy || priceLabel || minTermLabel
+      ? {
+          companyType,
+          shortCopy: shortCopy ?? undefined,
+          priceLabel: priceLabel ?? undefined,
+          minTermLabel: minTermLabel ?? undefined,
+        }
+      : undefined;
+
   return {
-    title: `${title}｜家電レンタルの詳細`,
-    description: desc.slice(0, 160),
+    id,
+    siteId: vStr(f, "siteIdPrimary") || vStr(f, "siteId"),
+    advertiser: vStr(f, "advertiser"),
+    programId: vStr(f, "programId"),
+    programName: vStr(f, "service.name") || vStr(f, "programName"),
+    displayName:
+      vStr(f, "service.name") || vStr(f, "title") || vStr(f, "displayName"),
+    affiliateUrl: vStr(f, "affiliateUrl"),
+    overview: vStr(f, "service.overview"),
+    createdAt: vNum(f, "createdAt"),
+    updatedAt: vNum(f, "updatedAt"),
+    profile,
   };
 }
 
-/* ===== page ===== */
-export default async function OfferDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const site = getSiteEntry();
-  if (site.features?.offers === false) notFound();
-
+export async function generateMetadata({ params }: { params: Params }) {
   const siteId = getServerSiteId();
-  const res: unknown = await fetchOfferByAnyId(params.id);
-  // @ts-ignore
-  if (!res) notFound();
+  const offer = await fetchOfferById(siteId, params.id);
 
-  // @ts-ignore
-  const f = res.fields;
+  const base = (
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.kariraku.com"
+  ).replace(/\/$/, "");
 
-  const offer: OfferDoc = {
-    id: decodeURIComponent(params.id),
-    siteId: (fsDecode(f?.siteId) as string | undefined) ?? undefined,
-    title: (fsDecode(f?.title) as string) ?? "(no title)",
-    description: (fsDecode(f?.description) as string) ?? "",
-    images: fsGetStringArray(f, "images") ?? [],
-    creatives: (fsDecode(f?.creatives) as Creative[]) ?? [],
-    status: (fsDecode(f?.status) as string) ?? undefined,
-    archived: (fsDecode(f?.archived) as boolean) ?? false,
-    updatedAt: (fsDecode(f?.updatedAt) as number) ?? undefined,
-    tags: fsGetStringArray(f, "tags") ?? [],
-    notes: fsGetStringArray(f, "notes") ?? [],
-    planType: (fsDecode(f?.planType) as OfferDoc["planType"]) ?? undefined,
-    priceMonthly: (fsDecode(f?.priceMonthly) as number | null) ?? null,
-    priceRange: (fsDecode(f?.priceRange) as number | null) ?? null,
-    minTermMonths: (fsDecode(f?.minTermMonths) as number | null) ?? null,
-    ratingValue: (fsDecode(f?.ratingValue) as number | null) ?? null,
-    ratingCount: (fsDecode(f?.ratingCount) as number | null) ?? null,
-    vendorSnapshot: (fsDecode(f?.vendorSnapshot) as VendorSnapshot) ?? null,
-    productSnapshot: (fsDecode(f?.productSnapshot) as ProductSnapshot) ?? null,
-    cta: (fsDecode(f?.cta) as Cta) ?? null,
-    shipping: (fsDecode(f?.shipping) as Shipping) ?? null,
-    promotion: (fsDecode(f?.promotion) as Promotion) ?? null,
-    // 追加（互換）
-    extras: (fsDecode(f?.extras) as unknown) ?? undefined,
-    ui: (fsDecode(f?.ui) as OfferDoc["ui"]) ?? undefined,
+  if (!offer) {
+    return {
+      title: "サービス詳細｜Kariraku（カリラク）",
+      description: "くらしを少しラクにしてくれるサービスの詳細ページです。",
+      alternates: { canonical: `${base}/offers/${params.id}` },
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const name = getDisplayName(offer);
+  const shortCopy = offer.profile?.shortCopy ?? "";
+
+  return {
+    title: `${name}｜サービス詳細`,
+    description:
+      shortCopy || "くらしを少しラクにしてくれるサービスの詳細ページです。",
+    alternates: { canonical: `${base}/offers/${offer.id}` },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true },
+    },
   };
+}
 
-  // 非公開・サイト不一致は 404
-  if (offer.archived) notFound();
-  if (offer.status && offer.status !== "active") notFound();
-  if (offer.siteId && offer.siteId !== siteId) notFound();
-
-  // 表示用UIメモ（旧 extras.ui を互換吸収）
-  const fallbackUi =
-    offer.extras && typeof offer.extras === "object" && offer.extras !== null
-      ? (offer.extras as { ui?: OfferUi }).ui
-      : undefined;
-  const ui: OfferUi | undefined = offer.ui ?? fallbackUi;
-
-  // 「こんな方におすすめ」用の箇条書き
-  const recommendBullets: string[] = ui?.faqBullets ?? [];
-
-  // ヒーロー（A8バナー or product画像）
-  const banner = pickBestBanner(offer.creatives);
-  const productHero =
-    offer.productSnapshot?.images && offer.productSnapshot.images[0]
-      ? offer.productSnapshot.images[0]
-      : undefined;
-
-  // CTAリンクの決定順：cta.href > text素材 > バナー > 自ページ
-  const textCreative = offer.creatives?.find((c) => c.type === "text");
-  const ctaHref =
-    offer.cta?.href ??
-    textCreative?.href ??
-    banner?.href ??
-    `${
-      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? ""
-    }/offers/${encodeURIComponent(offer.id)}`;
-
-  const related = await fetchRelatedOffersByTags(
-    siteId,
-    offer.tags ?? [],
-    offer.id,
-    3
-  );
+export default async function OfferDetailPage({ params }: { params: Params }) {
+  const siteId = getServerSiteId();
+  const offer = await fetchOfferById(siteId, params.id);
 
   const siteUrl = (
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.kariraku.com"
   ).replace(/\/$/, "");
 
-  /* ===== JSON-LD: パンくず + Service/Offer ===== */
-  const breadcrumbLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "ホーム", item: siteUrl + "/" },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "家電レンタル",
-        item: `${siteUrl}/offers`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: offer.title,
-        item: `${siteUrl}/offers/${encodeURIComponent(offer.id)}`,
-      },
-    ],
-  };
+  if (!offer) {
+    return (
+      <main className="container-kariraku py-10">
+        <nav className="text-sm text-gray-500">
+          <Link href="/" className="underline">
+            ホーム
+          </Link>
+          <span className="mx-2">/</span>
+          <Link href="/offers" className="underline">
+            サービス比較
+          </Link>
+          <span className="mx-2">/</span>
+          <span className="opacity-70">サービスが見つかりません</span>
+        </nav>
 
-  const serviceLd: any = {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    name: offer.title,
-    description: offer.description,
-    ...(productHero ? { image: productHero } : {}),
-    offers: {
-      "@type": "Offer",
-      url: ctaHref,
-      priceCurrency: "JPY",
-      ...(typeof offer.priceMonthly === "number"
-        ? { price: String(offer.priceMonthly) }
-        : typeof offer.priceRange === "number"
-        ? { price: String(offer.priceRange) }
-        : {}),
-      availability: "https://schema.org/InStock",
-    },
-  };
-  if (
-    typeof offer.ratingValue === "number" &&
-    typeof offer.ratingCount === "number"
-  ) {
-    serviceLd.aggregateRating = {
-      "@type": "AggregateRating",
-      ratingValue: offer.ratingValue,
-      reviewCount: offer.ratingCount,
-    };
+        <section className="mt-6 rounded-3xl bg-white p-6 text-sm text-gray-700 shadow-soft">
+          <p className="font-semibold">
+            指定されたサービスが見つかりませんでした。
+          </p>
+          <p className="mt-2">
+            URL の ID:{" "}
+            <code className="rounded bg-gray-100 px-1 py-0.5">{params.id}</code>
+          </p>
+          <p className="mt-2">
+            Firestore の <code>offers</code> コレクションで、
+            <code>id</code>{" "}
+            フィールドが同じ値のドキュメントがあるかご確認ください。
+          </p>
+          <p className="mt-4">
+            一覧に戻る場合は{" "}
+            <Link href="/offers" className="underline">
+              サービス比較ページ
+            </Link>{" "}
+            へどうぞ。
+          </p>
+        </section>
+      </main>
+    );
   }
 
-  /* ===== price/minTerm 表示用テキスト ===== */
-  const hasPriceInfo =
-    ui?.priceLabel ||
-    typeof offer.priceMonthly === "number" ||
-    typeof offer.priceRange === "number";
-
-  const hasMinTermInfo =
-    ui?.minTermLabel || typeof offer.minTermMonths === "number";
+  const name = getDisplayName(offer);
+  const companyType = offer.profile?.companyType ?? null;
+  const companyTypeLabel = labelForCompanyType(companyType);
+  const thumbnail = getThemeThumbnail(companyType);
+  const shortCopy = offer.profile?.shortCopy ?? "";
+  const priceLabel = offer.profile?.priceLabel ?? "";
+  const minTermLabel = offer.profile?.minTermLabel ?? "";
+  const overview = offer.overview ?? "";
+  const affiliateHref = offer.affiliateUrl ?? null;
 
   return (
-    <main className="container-kariraku py-10 space-y-10">
-      {/* 可視パンくず */}
+    <main className="container-kariraku py-10">
+      {/* breadcrumb */}
       <nav className="text-sm text-gray-500">
         <Link href="/" className="underline">
           ホーム
         </Link>
         <span className="mx-2">/</span>
         <Link href="/offers" className="underline">
-          家電レンタル
+          サービス比較
         </Link>
         <span className="mx-2">/</span>
-        <span className="opacity-70">{offer.title}</span>
+        <span className="opacity-70">{name}</span>
       </nav>
 
-      {/* JSON-LD */}
+      {/* 構造化データ: BreadcrumbList */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "ホーム",
+                item: siteUrl + "/",
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "サービス比較",
+                item: `${siteUrl}/offers`,
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: name,
+                item: `${siteUrl}/offers/${offer.id}`,
+              },
+            ],
+          }),
+        }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceLd) }}
-      />
 
-      {/* タイトル + 序文 */}
-      <header className="space-y-2">
-        <p className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-700">
-          家電レンタル・サービスの詳細
-        </p>
-        <h1 className="h1">{offer.title}</h1>
+      {/* ヒーローエリア */}
+      <section className="mt-4 overflow-hidden rounded-3xl bg-white shadow-soft">
+        <div className="relative w-full overflow-hidden">
+          <div className="relative aspect-[16/7] w-full">
+            <Image
+              src={thumbnail}
+              alt={`${companyTypeLabel}のイメージ`}
+              fill
+              sizes="100vw"
+              className="object-cover"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-black/0" />
+          </div>
+        </div>
 
-        {ui?.highlightLabel && (
-          <p className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-            {ui.highlightLabel}
-          </p>
-        )}
+        <div className="px-5 pb-5 pt-4 md:px-7 md:pb-7">
+          <div className="mb-3 inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-800">
+            {companyTypeLabel}
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-gray-900 md:text-2xl">
+            {name}
+          </h1>
 
-        <p className="text-xs text-gray-500">※ 本ページは広告を含みます</p>
-      </header>
+          {(priceLabel || minTermLabel) && (
+            <p className="mt-2 text-sm font-medium text-gray-900">
+              {priceLabel}
+              {priceLabel && minTermLabel ? " ／ " : ""}
+              {minTermLabel}
+            </p>
+          )}
 
-      {/* ヒーロー：画像 + 料金・概要 */}
-      <section className="grid items-start gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        {/* 画像側 */}
-        {(banner || productHero) && (
-          <div className="card p-4 md:p-5">
-            {banner ? (
-              <TrackLink
-                type="offer"
-                siteId={siteId}
-                offerId={offer.id}
-                href={ctaHref}
-                where="offer-detail.hero"
-                newTab
-                className="block"
+          {shortCopy && (
+            <p className="mt-2 text-sm leading-relaxed text-gray-700">
+              {shortCopy}
+            </p>
+          )}
+
+          {affiliateHref && (
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a
+                href={affiliateHref}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="inline-flex items-center justify-center rounded-full bg-gray-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800"
               >
-                <img
-                  src={banner.img}
-                  alt={offer.title}
-                  width={banner.w}
-                  height={banner.h}
-                  className="img-soft mx-auto h-auto max-h-72 w-full object-contain md:max-h-80"
-                />
-              </TrackLink>
-            ) : (
-              <img
-                src={productHero!}
-                alt={offer.title}
-                className="img-soft mx-auto h-auto max-h-72 w-full object-contain md:max-h-80"
-              />
-            )}
-            <p className="mt-2 text-center text-[11px] text-gray-400">
-              画像クリックで公式サイト（外部）に移動します。
+                公式サイトで詳しく見る
+              </a>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 詳細エリア */}
+      <section className="mt-6 grid gap-5 md:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)]">
+        <div className="space-y-4">
+          <div className="rounded-2xl bg-white p-4 text-sm text-gray-700 shadow-soft">
+            <h2 className="text-sm font-semibold text-gray-900">
+              サービスの雰囲気まとめ
+            </h2>
+            <p className="mt-2 leading-relaxed">
+              {overview ||
+                shortCopy ||
+                "公式サイトの情報をもとに、中立的な立場でサービス内容を整理しています。料金やキャンペーン内容は変わることがあるため、最終的には公式サイトで最新情報をご確認ください。"}
             </p>
           </div>
-        )}
+        </div>
 
-        {/* 右側：料金・最低期間・CTA */}
         <aside className="space-y-4">
-          {(hasPriceInfo || hasMinTermInfo || ui?.isPriceDynamic) && (
-            <div className="card border-emerald-50 bg-white/90 p-4 text-sm text-gray-700">
-              {ui?.priceLabel && (
-                <div className="font-semibold">{ui.priceLabel}</div>
-              )}
-              {ui?.minTermLabel && (
-                <div className="text-xs text-gray-600">{ui.minTermLabel}</div>
-              )}
-
-              {/* フォールバック（従来フィールド） */}
-              {!ui?.priceLabel && typeof offer.priceMonthly === "number" && (
-                <div className="mt-1">
-                  月額目安：¥{offer.priceMonthly.toLocaleString()}〜
-                </div>
-              )}
-              {!ui?.priceLabel &&
-                !offer.priceMonthly &&
-                typeof offer.priceRange === "number" && (
-                  <div className="mt-1">
-                    目安価格：¥{offer.priceRange.toLocaleString()}〜
-                  </div>
-                )}
-              {!ui?.minTermLabel && typeof offer.minTermMonths === "number" && (
-                <div className="mt-1">
-                  最低利用期間：{offer.minTermMonths}ヶ月〜
-                </div>
-              )}
-
-              {ui?.isPriceDynamic && (
-                <div className="mt-2 text-xs text-gray-500">
-                  ※ 料金は時期や商品により変動する場合があります。
-                  最新の料金は公式サイトをご確認ください。
-                </div>
-              )}
-            </div>
-          )}
-
-          {(offer.tags?.length || offer.notes?.length) && (
-            <div className="flex flex-wrap gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-xs">
-              {(offer.tags?.length ? offer.tags : offer.notes ?? [])
-                ?.slice(0, 4)
-                .map((t) => (
-                  <span
-                    key={t}
-                    className="inline-flex items-center rounded-full bg-white/70 px-2 py-0.5"
-                  >
-                    {t}
-                  </span>
-                ))}
-            </div>
-          )}
-
-          {ctaHref && (
-            <div>
-              <TrackLink
-                type="offer"
-                siteId={siteId}
-                offerId={offer.id}
-                href={ctaHref}
-                where="offer-detail.cta"
-                newTab
-                className="btn btn-brand w-full justify-center md:w-auto"
-              >
-                {textCreative?.label ?? "公式で詳しく見る"}
-              </TrackLink>
-              <p className="mt-1 text-[11px] text-gray-400">
-                ※ A8.net 経由で公式サイトに遷移します。
+          {affiliateHref && (
+            <div className="rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-900 shadow-soft">
+              <p className="mb-3 leading-relaxed">
+                「もう少し詳しく見てみたいな」と感じたら、公式サイトでプランや料金をチェックしてみてください。
               </p>
+              <a
+                href={affiliateHref}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="inline-flex w-full items-center justify-center rounded-full bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-800"
+              >
+                公式サイトへ進む
+              </a>
             </div>
           )}
         </aside>
       </section>
 
-      {/* こんな方におすすめ */}
-      {recommendBullets.length > 0 && (
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold">こんな方におすすめです</h2>
-          <ul className="space-y-1 list-disc pl-5 text-sm text-gray-700">
-            {recommendBullets.map((b) => (
-              <li key={b}>{b}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* 概要テキスト */}
-      {offer.description && (
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold">サービスの概要</h2>
-          <p className="leading-7 whitespace-pre-wrap text-gray-700">
-            {offer.description}
-          </p>
-        </section>
-      )}
-
-      {/* 補足（配送ポリシーなど） → 共通セクション */}
-      <OfferDetailSections ui={ui} />
-
-      {/* 梱包の補足など（shipping/promotion） */}
-      {(offer.shipping?.policy || offer.promotion) && (
-        <section className="card bg-white p-4 text-sm text-gray-700 space-y-1">
-          {offer.shipping?.policy && <div>配送：{offer.shipping.policy}</div>}
-          {offer.promotion?.couponCode && (
-            <div>クーポン：{offer.promotion.couponCode}</div>
-          )}
-          {offer.promotion?.validUntil && (
-            <div>有効期限：{offer.promotion.validUntil}</div>
-          )}
-        </section>
-      )}
-
-      {/* FAQ（notes） */}
-      <FaqList items={offer.notes} />
-
-      {/* 類似サービス（同タグ） */}
-      <RelatedByTags
-        title="他のレンタルサービスも比較"
-        items={related.map((r) => ({ ...r, href: `/offers/${r.id}` }))}
-      />
+      <section className="mt-8 text-sm text-gray-600">
+        <p>
+          他のサービスとも比べてみたいときは、{" "}
+          <Link href="/offers" className="underline">
+            サービス比較ページ
+          </Link>{" "}
+          に戻って、いくつか並べて眺めてみるのもおすすめです。
+        </p>
+      </section>
     </main>
   );
 }

@@ -17,6 +17,10 @@ import RelatedByTags from "@/components/blog/RelatedByTags";
 import TrackBlog from "@/components/analytics/TrackBlog";
 import CtaLink from "@/components/analytics/CtaLink";
 import RelatedDiscoverSection from "@/components/blog/RelatedDiscoverSection";
+import {
+  fetchOfferCompanyProfile,
+  type OfferCompanyProfile,
+} from "@/lib/firebase/offers";
 
 export const revalidate = 3600;
 export const dynamic = "force-dynamic";
@@ -118,6 +122,23 @@ export default async function BlogDetail({
     tags: (blog as unknown as { tags?: string[] }).tags ?? [],
     limit: 3,
   });
+
+  // 🔹 offerId があれば、会社プロフィールを取得
+  const offerId =
+    (blog as unknown as { offerId?: string | null }).offerId ?? null;
+
+  let companyProfile: OfferCompanyProfile | null = null;
+  if (offerId) {
+    companyProfile = await fetchOfferCompanyProfile(offerId);
+  }
+
+  const hasCompanyProfile =
+    companyProfile !== null &&
+    ((companyProfile.strengths && companyProfile.strengths.length > 0) ||
+      (companyProfile.weaknesses && companyProfile.weaknesses.length > 0) ||
+      (companyProfile.targetUsers && companyProfile.targetUsers.length > 0) ||
+      (companyProfile.importantNotes &&
+        companyProfile.importantNotes.length > 0));
 
   return (
     <main className="container-kariraku py-10">
@@ -277,6 +298,37 @@ export default async function BlogDetail({
               ))}
             </ul>
           </aside>
+        )}
+
+        {/* 🔹 企業プロフィールのチラ見せ */}
+        {hasCompanyProfile && companyProfile && (
+          <section className="mt-6 rounded-2xl border border-emerald-50 bg-emerald-50/40 p-4 text-sm text-gray-800 shadow-soft">
+            <h2 className="mb-2 text-xs font-semibold text-emerald-800">
+              このサービスのポイント、そっとまとめると…
+            </h2>
+            <ul className="space-y-1 list-disc pl-5">
+              {companyProfile.strengths
+                ?.slice(0, 2)
+                .map((s: string, index: number) => (
+                  <li key={`strength-${index}`}>{s}</li>
+                ))}
+              {companyProfile.weaknesses
+                ?.slice(0, 1)
+                .map((w: string, index: number) => (
+                  <li key={`weak-${index}`}>注意：{w}</li>
+                ))}
+            </ul>
+            {offerId && (
+              <div className="mt-2 text-right">
+                <Link
+                  href={`/offers/${encodeURIComponent(offerId)}`}
+                  className="text-xs text-emerald-800 underline"
+                >
+                  もっと詳しくみる →
+                </Link>
+              </div>
+            )}
+          </section>
         )}
 
         {/* ---- 本文（⭐ painId と siteId を渡す） ---- */}

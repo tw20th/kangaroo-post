@@ -1,0 +1,242 @@
+{
+  "program": {
+    "advertiserInfo": {
+      "companyName": "株式会社ロア・インターナショナル",
+      "officialName": "株式会社ロア・インターナショナル",
+      "type": "gadget-ec",
+      "founded": "",
+      "headquarters": "〒160-0022 東京都新宿区新宿6-27-45 THE KINDAI 20 SHINJUKU 3F",
+      "capital": "1億円",
+      "employees": "",
+      "businessAreas": [
+        "モバイルアクセサリー・ガジェットの企画・輸入・販売",
+        "スマートフォン・タブレット向けケース・フィルム・周辺機器の販売",
+        "モバイル・PC周辺機器ブランドの日本正規代理店事業"
+      ],
+      "strengths": [
+        "スマホケースからPCアクセサリ、生活ガジェットまで幅広く扱う専門EC",
+        "HACRAY・Hyper・INKO など人気ブランドの正規代理店として安心感がある",
+        "季節・トレンドに合わせた特集やセレクトで“ガジェット×ファッション”を楽しめる",
+        "複数ブランドの公式サイトを運営しており、商品情報やサポート体制が整っている"
+      ],
+      "officialUrls": {
+        "company": "http://www.roa-international.com",
+        "service": "https://www.mycaseshop.jp/",
+        "recruit": "",
+        "ir": ""
+      },
+      "socials": {
+        "x": "",
+        "instagram": "",
+        "youtube": ""
+      }
+    },
+    "programId": "s00000025594001",
+    "advertiser": "株式会社ロア・インターナショナル",
+    "category": ["スマホアクセサリ", "ガジェット", "EC"]
+  },
+
+  "offer": {
+    "id": "s00000025594001:mycaseshop",
+    "title": "iPhoneケース・スマホPCアクセサリやガジェットなら【MyCaseShop】",
+    "description": "スマホケース・モバイルバッテリー・ワイヤレス充電器・PCアクセサリ・温活グッズなどを扱う、モバイルファッション＆ガジェットのセレクトECサイト。デザイン性と実用性を両立したアイテムが揃います。",
+    "planType": "oneoff",
+    "landingUrl": "https://www.mycaseshop.jp/",
+    "affiliateUrl": "https://px.a8.net/svt/ejp?a8mat=45II8Y+84BX4A+5HHG+5YJRM",
+    "images": [],
+
+    "badges": [
+      "スマホケース専門セレクトショップ",
+      "モバイルバッテリー・PCアクセサリ多数",
+      "温活・生活ガジェットも取り扱い",
+      "3,980円(税込)以上で送料無料",
+      "豊富な決済方法に対応"
+    ],
+    "tags": [
+      "スマホケース",
+      "iPhoneケース",
+      "モバイルバッテリー",
+      "ワイヤレス充電",
+      "PCアクセサリ",
+      "温活グッズ",
+      "ガジェット",
+      "モバイルアクセサリ"
+    ],
+
+    "siteIds": ["workiroom"],
+
+    "vertical": "gadget",
+
+    "profile": {
+      "companyType": "gadget",
+      "targetUsers": [
+        "デザインと機能性の両方にこだわりたいスマホユーザー",
+        "リモートワーク・在宅勤務でPC周辺機器を整えたい人",
+        "冷え対策など“温活ガジェット”に興味がある人",
+        "推し活・撮影・動画視聴など、日常をちょっと快適にしたいガジェット好き"
+      ],
+      "strengths": [
+        "スマホケース・PCアクセサリ・生活ガジェットまで、モバイル周りをまとめて揃えやすい",
+        "モバイルファッションを意識したセレクトで、見た目と使いやすさを両立したアイテムが多い",
+        "3,980円(税込)以上で送料0円で、日用品感覚で複数アイテムをまとめ買いしやすい",
+        "クレジットカード・Amazon Pay・PayPay・LINE Pay・コンビニ決済など、支払い方法が豊富"
+      ],
+      "weaknesses": [
+        "3,980円(税込)未満の購入では送料が発生する",
+        "お客様都合の返品は送料・手数料が自己負担となる",
+        "ネコポス・大型宅配便利用時は、代金引換など一部の支払い方法が使えない"
+      ],
+      "importantNotes": [
+        "コンビニ決済・銀行振込は前払いで、注文確認メール発信日から7日以内の支払いが必要",
+        "代引きは宅配便のみ利用可能で、ネコポス・大型宅配便では利用できない",
+        "3,980円(税込)以上の購入で送料無料（一部大型宅配便を除く）。通常送料は全国一律440円(税込)",
+        "離島・一部地域では追加送料が発生する場合がある",
+        "返品は商品到着後7日以内・未使用の場合に限り受付。お客様都合の返品は送料・手数料が自己負担",
+        "初期不良や配送事故など不良品の場合は、商品到着後14日以内であれば交換対応（送料は店舗負担）"
+      ]
+    },
+
+    "extras": {
+      "pricing": {
+        "plan": "oneoff",
+        "monthlyPriceFrom": null,
+        "shortBase": null,
+        "extendPerDayExample": null,
+        "priceIsDynamic": true,
+        "priceLastChecked": 0
+      },
+
+      "ui": {
+        "priceLabel": "商品ごとに異なる（3,980円(税込)以上で送料無料）",
+        "minTermLabel": "",
+        "isPriceDynamic": true,
+        "compareHighlight": "スマホケースから温活グッズまで、デザイン性の高いガジェットをまとめて探せるECサイト"
+      },
+
+      "payment": {
+        "methods": [
+          "クレジットカード",
+          "Amazon Pay",
+          "PayPay",
+          "LINE Pay",
+          "キャリア決済",
+          "コンビニ決済（前払い）",
+          "銀行振込（前払い）",
+          "代金引換"
+        ],
+        "cardBrands": [
+          "VISA",
+          "MasterCard",
+          "JCB",
+          "AMERICAN EXPRESS",
+          "Diners Club"
+        ],
+        "threeDSecure": false,
+        "notes": [
+          "クレジットカード払いは一括払いのみ利用可能",
+          "コンビニ決済・銀行振込は前払いで、注文確認メール発信日から7日以内に支払いが必要",
+          "コンビニ決済の手数料260円(税込)はお客様負担",
+          "銀行振込の振込手数料はお客様負担",
+          "代金引換は宅配便のみ利用可能で、ネコポス・大型宅配便では利用不可"
+        ],
+        "timing": {
+          "prepaid": "コンビニ決済・銀行振込は入金確認後の発送",
+          "card": "注文確定時に決済",
+          "cod": "商品受け取り時に配送員へ支払い"
+        },
+        "billingFailure": "支払い期限超過や決済エラー時は注文キャンセルとなる場合があります"
+      },
+
+      "shipping": {
+        "carrier": "佐川急便 / ヤマト運輸",
+        "roundTripFree": false,
+        "baseShippingYen": 440,
+        "freeThresholdYen": 3980,
+        "exceptions": {
+          "離島・一部地域": "追加送料が発生する場合あり"
+        },
+        "returnLabelIncluded": false,
+        "returnMethods": [
+          "宅配便（佐川急便・ヤマト運輸）",
+          "ネコポス（対象商品のみ）"
+        ],
+        "packagingNote": "ネコポス利用時はポスト投函となり、ポストに入らない場合は持ち戻りとなる"
+      },
+
+      "warranty": {
+        "normalWearFree": true,
+        "repairCapYen": null,
+        "lostTheftMax": null,
+        "notes": [
+          "商品到着後7日以内・未使用の場合に限り、お客様都合での返品が可能（送料・手数料はお客様負担）",
+          "配送事故や誤配送など不良品の場合は、商品到着後14日以内であれば交換対応（送料は店舗負担）",
+          "一度使用された商品やお客様による破損がある場合は返品・交換不可"
+        ]
+      },
+
+      "policies": {
+        "disclosureRequired": true,
+        "prLabelRequired": true,
+        "listingAdsNG": false
+      },
+
+      "faqHints": [
+        "3,980円(税込)以上の購入で送料無料（通常送料は全国一律440円(税込)）",
+        "コンビニ決済・銀行振込は前払いで、注文確認メール発信日から7日以内の支払いが必要",
+        "ネコポスはポスト投函のため、代金引換・日時指定・ギフト包装は利用できない",
+        "お客様都合の返品は送料・手数料がお客様負担となる",
+        "初期不良・誤配送などの場合は、送料店舗負担で交換対応"
+      ]
+    },
+
+    "creatives": [
+      {
+        "materialId": "001",
+        "type": "text",
+        "label": "iPhoneケース・スマホPCアクセサリやガジェットなら【MyCaseShop】",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+84BX4A+5HHG+5YJRM"
+      },
+      {
+        "materialId": "002",
+        "type": "text",
+        "label": "【MyCaseShop】",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+84BX4A+5HHG+5YRHE"
+      },
+      {
+        "materialId": "003",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+84BX4A+5HHG+5YZ75",
+        "imgSrc": "https://www23.a8.net/svt/bgt?aid=251126242491&wid=004&eno=01&mid=s00000025594001003000&mc=1"
+      },
+      {
+        "materialId": "004",
+        "type": "banner",
+        "size": "100x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+84BX4A+5HHG+5Z6WX",
+        "imgSrc": "https://www23.a8.net/svt/bgt?aid=251126242491&wid=004&eno=01&mid=s00000025594001004000&mc=1"
+      },
+      {
+        "materialId": "005",
+        "type": "banner",
+        "size": "120x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+84BX4A+5HHG+5ZEMP",
+        "imgSrc": "https://www28.a8.net/svt/bgt?aid=251126242491&wid=004&eno=01&mid=s00000025594001005000&mc=1"
+      },
+      {
+        "materialId": "006",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+84BX4A+5HHG+5ZMCH",
+        "imgSrc": "https://www28.a8.net/svt/bgt?aid=251126242491&wid=004&eno=01&mid=s00000025594001006000&mc=1"
+      },
+      {
+        "materialId": "019",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+84BX4A+5HHG+62ENL",
+        "imgSrc": "https://www23.a8.net/svt/bgt?aid=251126242491&wid=004&eno=01&mid=s00000025594001019000&mc=1"
+      }
+    ]
+  }
+}

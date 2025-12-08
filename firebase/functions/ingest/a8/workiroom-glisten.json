@@ -1,0 +1,71 @@
+{
+  "program": {
+    "id": "s00000017444004",
+    "name": "Glisten（グリスン）",
+    "advertiserId": "glisten",
+    "advertiserName": "株式会社シェアコーポレーション",
+    "category": ["その他", "ファッション", "スマホアクセサリー"],
+    "mainA8mat": "45II8Y+8CO0CY+3QLK+NTJWY",
+    "serviceUrl": "https://glisten.site/"
+  },
+  "offer": {
+    "id": "workiroom-glisten",
+    "siteId": "workiroom",
+    "advertiserId": "glisten",
+    "programId": "s00000017444004",
+    "landingUrl": "https://glisten.site/",
+    "serviceName": "Glisten（グリスン）",
+    "serviceNameEn": "Glisten",
+    "catchCopy": "アートの感性とファッションの視点で、輝きを届けるブランド『Glisten』。厳選した上質なマテリアルから、華やかでスタイリッシュな逸品へ。新たな美学の世界観を。",
+    "category": ["スマホケース", "本革・高級ケース", "ファッション小物"],
+    "officialSiteUrl": "https://glisten.site/",
+    "a8Links": {
+      "main": {
+        "label": "アートの感性とファッションの視点で、輝きを届けるブランド『Glisten』。",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8CO0CY+3QLK+NTJWY"
+      },
+      "brandName": {
+        "label": "Glisten（グリスン）",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8CO0CY+3QLK+NTRMQ"
+      },
+      "banner300x250": {
+        "label": "300x250バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8CO0CY+3QLK+NTZCH"
+      },
+      "banner100x60": {
+        "label": "100x60バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+8CO0CY+3QLK+NU729"
+      }
+    },
+    "feeModel": {
+      "type": "purchase",
+      "rewardNote": "成果報酬：購入額の5%以上（詳細はA8管理画面を参照）"
+    },
+    "company": {
+      "name": "株式会社シェアコーポレーション",
+      "brandOperator": "有限会社ヴェールポイント",
+      "address": "〒114-0014 東京都北区田端2-6-14 2F",
+      "supportEmail": "support(a)glisten.site",
+      "invoiceNumber": "T8011501012129",
+      "business": ["革小物・スマホケースの企画・販売", "オンラインストア運営"]
+    },
+    "serviceOverview": {
+      "description": "アートのような色彩とテクスチャにこだわったスマホ・iPhoneケースを中心としたレザーブランド。上質なマテリアルと日本国内での製造・検品にこだわり、ファッションアイテムとして楽しめるケースを展開。",
+      "features": [
+        "独自のカラーリングとテクスチャで、他にはない存在感のあるデザイン",
+        "カードポケット・スタンド機能など、日常使いしやすいダイアリータイプ中心",
+        "iPhoneをはじめ、主要機種に幅広く対応"
+      ]
+    },
+    "recommendedFor": [
+      "「人とかぶらない、おしゃれなスマホケース」を探している人",
+      "上質なレザーやマテリアルにこだわりたい人",
+      "ビジネスシーンでも使える、落ち着いたデザインのケースがほしい人"
+    ],
+    "notes": [
+      "送料・配送条件や返品ポリシーは公式サイトの特商法表記に準拠。",
+      "カラー展開が多いので、記事側では「カラー別」「テクスチャ別」の紹介が相性良い。",
+      "ギフト需要（誕生日・記念日）も強いので、プレゼント訴求の記事も作りやすい。"
+    ]
+  }
+}

@@ -1,3 +1,4 @@
+// firebase/functions/src/jobs/content/scheduledDiscoverDaily.ts
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
 import * as functions from "firebase-functions";
@@ -38,6 +39,98 @@ type ResolvedProfile = {
   tone: string;
   topic: string;
 };
+
+type OfferLite = {
+  id: string;
+  title: string;
+  affiliateUrl: string;
+  highlightLabel?: string;
+  targetUsers: string[];
+  strengths: string[];
+};
+
+async function pickPrimaryOfferForSite(
+  siteId: string,
+  logPrefix: string
+): Promise<OfferLite | null> {
+  const snap = await db
+    .collection("offers")
+    .where("siteIds", "array-contains", siteId)
+    .where("status", "==", "active")
+    .limit(1) // ← とりあえず1件だけ。順番はランダムでOK
+    .get();
+
+  if (snap.empty) {
+    console.warn(`[${logPrefix}] no offers for site`, { siteId });
+    return null;
+  }
+
+  const doc = snap.docs[0];
+  const data = doc.data() as {
+    title?: unknown;
+    affiliateUrl?: unknown;
+    highlightLabel?: unknown;
+    targetUsers?: unknown;
+    strengths?: unknown;
+  };
+
+  const title =
+    typeof data.title === "string" && data.title.trim().length > 0
+      ? data.title.trim()
+      : doc.id;
+
+  const affiliateUrl =
+    typeof data.affiliateUrl === "string" ? data.affiliateUrl : "";
+
+  if (!affiliateUrl) {
+    console.warn(`[${logPrefix}] offer missing affiliateUrl`, {
+      siteId,
+      id: doc.id,
+    });
+  }
+
+  const targetUsers =
+    Array.isArray(data.targetUsers) && data.targetUsers.length > 0
+      ? (data.targetUsers.filter(
+          (v): v is string => typeof v === "string" && v.trim().length > 0
+        ) as string[])
+      : [];
+
+  const strengths =
+    Array.isArray(data.strengths) && data.strengths.length > 0
+      ? (data.strengths.filter(
+          (v): v is string => typeof v === "string" && v.trim().length > 0
+        ) as string[])
+      : [];
+
+  const highlightLabel =
+    typeof data.highlightLabel === "string" && data.highlightLabel.trim()
+      ? data.highlightLabel.trim()
+      : undefined;
+
+  return {
+    id: doc.id,
+    title,
+    affiliateUrl,
+    highlightLabel,
+    targetUsers,
+    strengths,
+  };
+}
+
+function buildOfferVars(offer: OfferLite | null): Record<string, unknown> {
+  if (!offer) return {};
+  return {
+    offer: {
+      id: offer.id,
+      title: offer.title,
+      affiliateUrl: offer.affiliateUrl,
+      highlightLabel: offer.highlightLabel ?? "",
+      targetUsers: offer.targetUsers,
+      strengths: offer.strengths,
+    },
+  };
+}
 
 /* ================================
  * helpers
@@ -150,6 +243,10 @@ async function createDiscoverOnceForSite(siteId: string): Promise<void> {
   // 🔹 季節コンテキスト（Discover は常に受け取ってOK）
   const seasonal = getSeasonalContext();
 
+  // ★ Discover 用にもサイトごとのメインオファーを1件ピック
+  const offer = await pickPrimaryOfferForSite(siteId, "DiscoverDaily");
+  const offerVars = buildOfferVars(offer);
+
   // 🔹 siteKeywords(intent: "discover") から今日の1本を選ぶ
   const pickedKeyword = await pickBestKeywordForSite({
     siteId,
@@ -180,11 +277,13 @@ async function createDiscoverOnceForSite(siteId: string): Promise<void> {
 
   const templateName = "blogTemplate_discover.txt";
 
+  // Discover 用のサブキーワード（ひとまず primaryKeyword 1本を共有）
+  const subKeywords: string[] = [targetKeyword];
+
   const rawBlog = (await generateBlogContent({
     product: {
       name: targetKeyword,
       asin: `discover-${siteId}-${nowMs}`,
-      // Discover 用のベースタグ（+ 季節キーワード）
       tags: ["おすすめ", "暮らし", "discover", seasonal.keyword].filter(
         (t) => t && t.length > 0
       ),
@@ -195,21 +294,23 @@ async function createDiscoverOnceForSite(siteId: string): Promise<void> {
     pain,
     templateName,
     vars: {
+      intent: "discover",
       topic: targetKeyword,
-      // Discover 的には「比較URL」は必須じゃないが、テンプレ互換のために一応渡す
       compareUrl: siteId === "kariraku" ? "/compare" : "/blog",
       primaryKeyword: targetKeyword,
+      subKeywords,
 
-      // ★ サイト世界観プロファイルをテンプレに渡す
       siteTheme: profile.theme,
       siteReader: profile.reader,
       siteTone: profile.tone,
       siteTopic: profile.topic,
 
-      // ★ 季節コンテキストもテンプレに渡す（本文側で必要に応じて使う）
       seasonKeyword: seasonal.keyword,
       seasonLabel: seasonal.label,
       seasonDescription: seasonal.description,
+
+      // ★ ここで offer を渡す
+      ...offerVars,
     },
   })) as GeneratedBlog;
 
@@ -251,7 +352,7 @@ async function createDiscoverOnceForSite(siteId: string): Promise<void> {
     excerpt,
     tags,
     slug,
-    type: "discover", // ⭐️ Discover 記事としてマーク
+    type: "discover",
     status: "published",
     imageUrl,
     imageCredit,
@@ -261,6 +362,10 @@ async function createDiscoverOnceForSite(siteId: string): Promise<void> {
     publishedAt: nowTs,
     primaryKeyword: targetKeyword,
     primaryKeywordDocId: pickedKeyword.docId,
+
+    // ★ 追加
+    primaryOfferId: offer?.id ?? null,
+    offerIds: offer ? [offer.id] : [],
   });
 
   // 🔹 siteKeywords 側に利用履歴を反映

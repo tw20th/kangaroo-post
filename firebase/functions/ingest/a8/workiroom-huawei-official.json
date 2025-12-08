@@ -1,0 +1,180 @@
+{
+  "program": {
+    "advertiserInfo": {
+      "companyName": "ファーウェイジャパン（HUAWEI）",
+      "officialName": "華為技術日本株式会社（HUAWEI Japan）",
+      "type": "electronics-brand",
+      "headquarters": "東京都千代田区（日本法人） / 中国・深圳市（本社）",
+      "businessAreas": [
+        "スマートフォン・タブレットの製造・販売",
+        "スマートウォッチ・ウェアラブルデバイスの製造・販売",
+        "オーディオ製品（イヤホン・ヘッドホンなど）の製造・販売",
+        "ルーター・ネットワーク機器の製造・販売",
+        "クラウドサービス・モバイルサービスの提供"
+      ],
+      "officialUrls": {
+        "company": "https://consumer.huawei.com/jp/",
+        "store": "https://consumer.huawei.com/jp/offer/",
+        "support": "https://consumer.huawei.com/jp/support/"
+      }
+    },
+    "programId": "s00000021750001",
+    "advertiser": "ファーウェイジャパン（HUAWEI）",
+    "category": ["家電", "ガジェット", "ウェアラブル"]
+  },
+  "offer": {
+    "id": "s00000021750001:huawei-official-store",
+    "title": "HUAWEI公式 ONLINE STORE",
+    "description": "スマートウォッチ・イヤホン・タブレット・PCモニター・ルーターなど、HUAWEI公式サイト限定のキャンペーンや特典も利用できるオンラインストア。",
+    "planType": "normal",
+    "landingUrl": "https://consumer.huawei.com/jp/offer/",
+    "affiliateUrl": "https://px.a8.net/svt/ejp?a8mat=45II8Y+7WLB0Y+4NTO+5YRHE",
+    "images": [],
+    "badges": [
+      "公式オンラインストア",
+      "スマートウォッチ",
+      "ワイヤレスイヤホン",
+      "タブレット・PCモニター",
+      "ルーター・ネットワーク機器"
+    ],
+    "tags": [
+      "HUAWEI",
+      "スマートウォッチ",
+      "ウェアラブル",
+      "ワイヤレスイヤホン",
+      "タブレット",
+      "ルーター",
+      "ヘルスケア",
+      "スポーツセンサー",
+      "ガジェット"
+    ],
+    "siteIds": ["workiroom"],
+    "vertical": "gadget",
+    "profile": {
+      "companyType": "gadget",
+      "targetUsers": [
+        "スマートウォッチやヘルスケアガジェットで、運動・睡眠・健康管理をまとめて行いたい人",
+        "ワイヤレスイヤホンやタブレットなど、コスパの良い最新ガジェットを公式サイトで安心して買いたい人",
+        "ランニングフォーム計測など、スポーツデータをしっかり取りたいランナー・アクティブユーザー",
+        "HUAWEI製品をすでに使っていて、純正アクセサリーやサポートを重視したい人"
+      ],
+      "strengths": [
+        "スマートウォッチ・イヤホン・タブレット・ルーターなど、ガジェット周りを一式そろえられる広いラインナップ",
+        "公式サイトならではのキャンペーン・セール・セット割引が多く、安心して購入しやすい",
+        "HUAWEI Healthアプリなどと連携したヘルスケア・スポーツデータのエコシステムが強み",
+        "保証・サポート窓口が公式にまとまっており、問い合わせ・修理対応が取りやすい"
+      ],
+      "weaknesses": [
+        "一部製品はOSやスマホの組み合わせによって、利用できる機能に制限がある場合がある",
+        "海外モデルと比べると、日本で選べるカラーやバリエーションが限られる製品もある",
+        "ガジェット初心者には、ラインナップが多くどれを選べば良いか迷いやすい"
+      ],
+      "importantNotes": [
+        "標準配送は支払金額3,980円（税込）以上で送料無料、それ未満は送料550円（税込）",
+        "配送はヤマト運輸、出荷は平日のみで、在庫品は通常2営業日以内に発送される",
+        "返品は配達証明に署名した日から14日以内の申請が必要（カスタマーサービス経由）",
+        "梱包前であれば注文キャンセルが可能だが、出荷準備後はキャンセル不可のケースがある",
+        "日本国内のみ配送対応で、海外への発送は行っていない"
+      ]
+    },
+    "extras": {
+      "pricing": {
+        "plan": "normal",
+        "priceIsDynamic": true,
+        "priceNote": "スマートウォッチ・イヤホン・タブレットなど商品の種類が多く、価格はセール・キャンペーンにより変動"
+      },
+      "shipping": {
+        "carrier": "ヤマト運輸",
+        "roundTripFree": false,
+        "baseFeeYen": 550,
+        "freeShippingThresholdYen": 3980,
+        "notes": [
+          "標準配送で支払金額3,980円（税込）以上の注文は送料無料",
+          "3,980円（税込）未満の注文には一律550円（税込）の送料がかかる",
+          "発送後の配送状況はオンラインの注文履歴から追跡可能"
+        ]
+      },
+      "warranty": {
+        "notes": [
+          "製品ごとにメーカー保証が付き、詳細は各商品の保証規定・サポートページで確認",
+          "初期不良や配送中の破損があった場合は、カスタマーサービス経由で交換対応",
+          "返品・交換には、付属品一式を含めた状態での返送が必要になる場合がある"
+        ]
+      },
+      "policies": {
+        "returns": [
+          "返品の申し込みは商品到着から14日以内に可能（条件あり）",
+          "セット商品やギフト付き商品の一部のみ返品する場合は、返金額が調整されることがある"
+        ]
+      },
+      "faqHints": [
+        "注文履歴ページから配送状況の確認・キャンセル申請ができる",
+        "返品希望を連絡後、商品の返送にはさらに7日間の猶予がある",
+        "交換品の発送は、返品が倉庫へ到着後おおむね2営業日以内（在庫状況による）"
+      ]
+    },
+    "creatives": [
+      {
+        "materialId": "001",
+        "type": "text",
+        "label": "HUAWEI公式サイト",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+7WLB0Y+4NTO+5YJRM"
+      },
+      {
+        "materialId": "002",
+        "type": "text",
+        "label": "HUAWEI公式 ONLINE STORE",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+7WLB0Y+4NTO+5YRHE"
+      },
+      {
+        "materialId": "004",
+        "type": "banner",
+        "size": "468x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+7WLB0Y+4NTO+5Z6WX",
+        "imgSrc": "https://www29.a8.net/svt/bgt?aid=251126242478&wid=005&eno=01&mid=s00000021750001004000&mc=1"
+      },
+      {
+        "materialId": "006",
+        "type": "banner",
+        "size": "300x250",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+7WLB0Y+4NTO+5ZMCH",
+        "imgSrc": "https://www21.a8.net/svt/bgt?aid=251126242478&wid=005&eno=01&mid=s00000021750001006000&mc=1"
+      },
+      {
+        "materialId": "007",
+        "type": "banner",
+        "size": "120x60",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+7WLB0Y+4NTO+5ZU29",
+        "imgSrc": "https://www20.a8.net/svt/bgt?aid=251126242478&wid=005&eno=01&mid=s00000021750001007000&mc=1"
+      },
+      {
+        "materialId": "045",
+        "type": "banner",
+        "size": "320x50",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+7WLB0Y+4NTO+67Z9T",
+        "imgSrc": "https://www25.a8.net/svt/bgt?aid=251126242478&wid=005&eno=01&mid=s00000021750001045000&mc=1"
+      },
+      {
+        "materialId": "070",
+        "type": "banner",
+        "size": "656x308",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+7WLB0Y+4NTO+6DC69",
+        "imgSrc": "https://www23.a8.net/svt/bgt?aid=251126242478&wid=005&eno=01&mid=s00000021750001070000&mc=1"
+      },
+      {
+        "materialId": "081",
+        "type": "banner",
+        "size": "1500x360",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+7WLB0Y+4NTO+6FP1T",
+        "imgSrc": "https://www24.a8.net/svt/bgt?aid=251126242478&wid=005&eno=01&mid=s00000021750001081000&mc=1"
+      },
+      {
+        "materialId": "095",
+        "type": "banner",
+        "size": "1500x360",
+        "href": "https://px.a8.net/svt/ejp?a8mat=45II8Y+7WLB0Y+4NTO+6IP2P",
+        "imgSrc": "https://www29.a8.net/svt/bgt?aid=251126242478&wid=005&eno=01&mid=s00000021750001095000&mc=1"
+      }
+    ]
+  }
+}

@@ -7,6 +7,8 @@
     "dev:kariraku": "NEXT_PUBLIC_SITE_ID=kariraku DEFAULT_SITE_ID=kariraku next dev -p 3000",
     "dev:workiroom": "NEXT_PUBLIC_SITE_ID=workiroom DEFAULT_SITE_ID=workiroom next dev -p 3001",
     "dev:hadasmooth": "NEXT_PUBLIC_SITE_ID=hadasmooth DEFAULT_SITE_ID=hadasmooth next dev -p 3002",
+    "dev:weblabo": "NEXT_PUBLIC_SITE_ID=weblabo DEFAULT_SITE_ID=weblabo next dev -p 3002",
+    "dev:joblabo": "NEXT_PUBLIC_SITE_ID=joblabo DEFAULT_SITE_ID=joblabo next dev -p 3003",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

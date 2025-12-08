@@ -137,6 +137,15 @@ export default function OfferCompareTable({
           })}
         </tbody>
       </table>
+
+      {/* 👇 追加した注意書き＋内部リンク */}
+      <div className="px-3 pb-3 pt-1 text-[11px] text-gray-500 md:text-xs">
+        ※ 各サービスの詳しい条件は、それぞれの{" "}
+        <Link href="/offers" className="underline underline-offset-2">
+          解説ページ
+        </Link>{" "}
+        から確認できます。
+      </div>
     </div>
   );
 }

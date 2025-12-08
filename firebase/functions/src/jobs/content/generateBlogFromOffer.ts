@@ -1,13 +1,16 @@
 // firebase/functions/src/jobs/content/generateBlogFromOffer.ts
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/v2";
-import { a8BlogSlug } from "../../lib/slug/a8.js";
+import { serviceBlogSlug } from "../../lib/slug/a8.js";
 import { getSiteConfig } from "../../lib/sites/siteConfig.js";
 import { findUnsplashHero } from "../../services/unsplash/client.js";
 import { generateBlogContent } from "../../utils/generateBlogContent.js";
 import { stripPlaceholders } from "../../utils/markdown.js";
-import type { Firestore } from "firebase-admin/firestore";
 import { getSeasonalContext } from "../../utils/seasonalContext.js";
+import {
+  pickBestKeywordForSite,
+  type IntentId as KeywordIntentId,
+} from "../../lib/keywords/pickSiteKeyword.js";
 
 /* ========= Types ========= */
 type Creative =
@@ -36,6 +39,14 @@ type OfferDoc = {
   description?: string;
   category?: string[] | null;
   archived?: boolean;
+
+  // ★ ここを追加
+  profile?: {
+    companyType?: "living" | "gadget" | "trial";
+    // それ以外の任意フィールドも通す
+    [key: string]: unknown;
+  };
+
   extras?: {
     areas?: string[];
     fees?: Record<string, unknown>;
@@ -52,7 +63,6 @@ type OfferDoc = {
   updatedAt?: number;
   price?: number | null;
 };
-
 type ProgramDoc = {
   advertiser?: string;
   officialUrl?: string;
@@ -66,7 +76,7 @@ type ServiceLite = {
 };
 
 /* ========= Angle (variant) spec ========= */
-// 依存を増やさないため、このファイル内に軽量定義
+
 type VariantId =
   | "case-study"
   | "price-first"
@@ -159,7 +169,7 @@ function resolveTemplateNameForOffer(params: {
 }): string {
   const { intent, templateId } = params;
 
-  // 1) templateId が渡されていても「どの種類か」だけを見るイメージ
+  // 1) templateId の種類でざっくり振り分け
   if (templateId === "kariraku_compare") {
     return "blogTemplate_compare.txt";
   }
@@ -172,11 +182,9 @@ function resolveTemplateNameForOffer(params: {
 
   // 2) intent ごとのデフォルト
   if (intent === "compare") {
-    // 将来、オファー起点の比較記事を作るとき用
     return "blogTemplate_compare.txt";
   }
   if (intent === "guide") {
-    // 将来、オファー起点のガイド記事を作るとき用
     return "blogTemplate_painGuide.txt";
   }
 
@@ -194,6 +202,12 @@ async function pickLatestCompareSlug(
   db: Firestore,
   siteId: string
 ): Promise<string> {
+  // まずは固定 slug を見る（{siteId}-hikaku）
+  const fixed = `${siteId}-hikaku`;
+  const fixedSnap = await db.collection("blogs").doc(fixed).get();
+  if (fixedSnap.exists) return fixed;
+
+  // なければ従来どおり「最新 compare」を探す
   const snap = await db
     .collection("blogs")
     .where("siteId", "==", siteId)
@@ -201,6 +215,7 @@ async function pickLatestCompareSlug(
     .orderBy("updatedAt", "desc")
     .limit(1)
     .get();
+
   if (snap.empty) return "compare-latest";
   const v = String(snap.docs[0].get("slug") ?? "compare-latest");
   return v || "compare-latest";
@@ -383,7 +398,6 @@ function buildHighlightFromText(
 
   if (!base) return null;
 
-  // 1文目だけを拾う（。！？!? で区切る）
   const firstSentence = (base.split(/[。！？!?]/)[0] || base).trim();
   const limit = 26;
   return firstSentence.length > limit
@@ -392,17 +406,17 @@ function buildHighlightFromText(
 }
 
 /* ========= Main ========= */
+
 export async function generateBlogFromOffer(opts: {
   offerId: string;
   siteId: string;
-  keyword?: string; // 検索キーワード起点（任意）
+  keyword?: string;
   dryRun?: boolean;
   publish?: boolean;
-  // --- ↓ 追加: 多様化のためのメタ ---
   intent?: IntentId;
   templateId?: TemplateId;
   variantId?: VariantId;
-  modules?: string[]; // priceTable / compareTable / faq ... など
+  modules?: string[];
 }) {
   const {
     offerId,
@@ -418,10 +432,10 @@ export async function generateBlogFromOffer(opts: {
 
   const db = getFirestore();
 
-  // 季節・行事のコンテキスト（日本時間ベース）
+  // 季節・行事のコンテキスト（日本時間）
   const seasonal = getSeasonalContext();
 
-  // generateBlogFromOffer 内の最初の方（db/seasonal のすぐ後）に追加
+  // サイト表示名
   const siteCfg = await getSiteConfig(siteId).catch(() => null);
   const siteDisplay =
     typeof siteCfg?.displayName === "string" && siteCfg.displayName
@@ -437,6 +451,13 @@ export async function generateBlogFromOffer(opts: {
     .collection("programs")
     .doc(offer.programId)
     .get();
+  // 1-1) companyType（living / gadget / trial）を取得
+  const companyType =
+    offer.profile?.companyType === "living" ||
+    offer.profile?.companyType === "gadget" ||
+    offer.profile?.companyType === "trial"
+      ? offer.profile.companyType
+      : undefined;
   const program = (
     programSnap.exists ? (programSnap.data() as ProgramDoc) : {}
   ) as ProgramDoc;
@@ -501,9 +522,43 @@ export async function generateBlogFromOffer(opts: {
 
   // 4) 角度（variant）に応じてプロンプトへヒント注入
   const angle = angleNotes(variantId);
-  const targetKeyword = keyword.trim();
 
-  // persona/pain を variant と keyword で調整（テンプレが使わなくても安全）
+  // ★ ここから：キーワード決定ロジック
+  let targetKeyword = keyword.trim();
+
+  // keyword が未指定の場合、companyType に応じたプールから自動で1つ選ぶ
+  // 例:
+  //  - living → keywordPools.service_living
+  //  - gadget → keywordPools.service_gadget
+  //  - trial  → keywordPools.service_trial
+  if (!targetKeyword) {
+    let poolKeyPrefix: string | undefined;
+
+    if (intent === "service" && companyType) {
+      poolKeyPrefix = `service_${companyType}`; // sites/kariraku.json の keywordPools のキー
+    }
+
+    try {
+      const picked = await pickBestKeywordForSite({
+        siteId,
+        intent: intent as KeywordIntentId,
+        avoidHours: 12,
+        ...(poolKeyPrefix ? { poolKeyPrefix } : {}),
+      });
+
+      if (picked?.keyword) {
+        targetKeyword = picked.keyword.trim();
+      }
+    } catch (e) {
+      logger.error("pickBestKeywordForSite failed", {
+        siteId,
+        intent,
+        companyType,
+        error: (e as Error)?.message,
+      });
+    }
+  }
+
   const persona = targetKeyword
     ? "検索で比較や選び方を知りたい人（購入前）"
     : "買わずに短期で使いたい人（設置/回収も任せたい）";
@@ -541,8 +596,8 @@ export async function generateBlogFromOffer(opts: {
       targetKeyword,
       variantNote: angle.noteText,
       __angle_rules: angle.noteText,
-      __angle_modules: (opts.modules?.length
-        ? opts.modules
+      __angle_modules: (modulesInput?.length
+        ? modulesInput
         : ANGLES[variantId].modules
       ).join(","),
       __force_sections:
@@ -579,32 +634,57 @@ export async function generateBlogFromOffer(opts: {
     },
   });
 
-  // 6) slug（キーワードがあれば先頭に混ぜて重複を避ける）
+  // 6) slug（企業記事は offerId ベースの固定 slug）
   const now = Date.now();
-  const titleForSlug = targetKeyword
-    ? `${targetKeyword} ${genTitle || offer.title}`
-    : genTitle || offer.title;
-  const slug = a8BlogSlug(siteId, offerId, titleForSlug, now);
+  const slug = serviceBlogSlug(siteId, offerId);
 
-  const existing = await getFirestore().collection("blogs").doc(slug).get();
-  if (existing.exists) {
-    logger.info(`generateBlogFromOffer: already exists blogs/${slug}`);
-    return { slug, existed: true as const };
+  const blogRef = db.collection("blogs").doc(slug);
+  const existingSnap = await blogRef.get();
+
+  // 既存記事があれば createdAt / views / publishedAt を引き継ぐ
+  let createdAt = now;
+  let views = 0;
+  let publishedAt: number | undefined;
+
+  if (existingSnap.exists) {
+    const prevCreated = existingSnap.get("createdAt");
+    if (typeof prevCreated === "number") {
+      createdAt = prevCreated;
+    }
+    const prevViews = existingSnap.get("views");
+    if (typeof prevViews === "number" && prevViews >= 0) {
+      views = prevViews;
+    }
+    const prevPublished = existingSnap.get("publishedAt");
+    if (typeof prevPublished === "number") {
+      publishedAt = prevPublished;
+    }
+  }
+
+  if (publish && !publishedAt) {
+    publishedAt = now;
   }
 
   // 7) 画像
-  const preferUnsplash = Boolean(siteCfg?.images?.preferUnsplashHero) || false;
+  // service 記事は「企業の画像」を最優先にする
+  const preferUnsplash =
+    intent === "service"
+      ? false
+      : Boolean(siteCfg?.images?.preferUnsplashHero) || false;
 
   let imageUrl: string | null = null;
   let imageCredit: string | null = null;
   let imageCreditLink: string | null = null;
 
+  // offers 側の候補をできるだけ広く拾う
+  const bannerFromCreative =
+    (ctaBanner?.imgSrc && String(ctaBanner.imgSrc)) || null;
+
   const offerFallback =
-    offer.imageUrl ||
     offer.heroImage ||
-    ctaBanner?.imgSrc ||
-    offer.images?.[0] ||
-    null;
+    offer.imageUrl ||
+    bannerFromCreative ||
+    (offer.images?.[0] ?? null);
 
   async function tryUnsplashFirst(): Promise<boolean> {
     const query = [siteId, program.advertiser, offer.title, targetKeyword]
@@ -621,16 +701,20 @@ export async function generateBlogFromOffer(opts: {
   }
 
   if (preferUnsplash) {
+    // （今後 compare / guide 用で使う想定）
     const ok = await tryUnsplashFirst();
-    if (!ok) imageUrl = offerFallback;
+    if (!ok) {
+      imageUrl = offerFallback;
+    }
   } else {
+    // service 記事はまず企業画像 → なければ Unsplash
     imageUrl = offerFallback;
     if (!imageUrl) {
       await tryUnsplashFirst();
     }
   }
 
-  // 8) 保存
+  // 8) 保存用の整形（ここも途中までは元のまま）
   const cleanedContent = stripPlaceholders(content);
   const cleanedTags = sanitizeTags(
     (Array.isArray(tags) && tags.length ? tags : offer.tags) || [],
@@ -642,29 +726,26 @@ export async function generateBlogFromOffer(opts: {
     ].filter(Boolean) as string[]
   );
 
-  // タイトルに角度Prefixを付与（ある場合）
+  const anglePrefix = angle.h1Prefix ?? "";
   const finalTitle =
-    (angle.h1Prefix ? `${angle.h1Prefix}${genTitle || ""}` : genTitle) ||
+    (anglePrefix ? `${anglePrefix}${genTitle || ""}` : genTitle) ||
     `${offer.title}｜${program.advertiser ?? ""}`.replace(/｜$/, "");
 
-  // summary を先に決めておく
   const summaryText =
     excerpt ?? (offer.description ? offer.description.slice(0, 120) : null);
 
-  // summary / content / title から highlight を生成
   const highlight = buildHighlightFromText(
     summaryText,
     cleanedContent,
     finalTitle
   );
 
-  const doc = {
+  const baseDoc = {
     slug,
     siteId,
     title: finalTitle,
     summary: summaryText,
     content: cleanedContent,
-    // highlight（BlogCard から利用）
     highlight: highlight ?? null,
     imageUrl,
     imageCredit: imageCredit ?? null,
@@ -675,14 +756,12 @@ export async function generateBlogFromOffer(opts: {
     status: publish ? ("published" as const) : ("draft" as const),
     visibility: "public" as const,
     tags: cleanedTags,
-    createdAt: now,
+    createdAt, // ← ここで既存値 or now
     updatedAt: now,
-    ...(publish ? { publishedAt: now } : {}),
-    views: 0,
+    ...(publishedAt != null ? { publishedAt } : {}),
+    views, // ← ここも既存値 or 0
     type: "service" as const,
-    // --- 追加保存メタ ---
     intent,
-    templateId,
     variantId,
     modules:
       modulesInput && modulesInput.length
@@ -690,6 +769,12 @@ export async function generateBlogFromOffer(opts: {
         : ANGLES[variantId].modules,
     targetKeyword: targetKeyword || null,
   };
+
+  // templateId が undefined / null のときはフィールド自体を入れない
+  const doc = {
+    ...baseDoc,
+    ...(templateId != null ? { templateId } : {}),
+  } as const;
 
   if (dryRun) {
     logger.info(`[DRYRUN] blog slug=${slug}`, { doc });

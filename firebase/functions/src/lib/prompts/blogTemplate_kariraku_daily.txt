@@ -1,26 +1,47 @@
-// firebase/functions/src/lib/prompts/blogTemplate_kariraku_daily.txt
-# {{seasonKeyword}}に向けて。{{dailyThemeLabel}}を軽くする、いま家電レンタルで動いている“人気どころ”
+# {{seasonKeyword}}に向けて。{{dailyThemeLabel}}を少し軽くするために、いま家電レンタルで選ばれているところ
 
-> ※本ページは広告を含みます
+> ※本ページにはアフィリエイト広告を含みます。
 
-## 今日のワンポイント
-- {{seasonKeyword}} × {{dailyThemeLabel}} で悩みやすいシーンをイメージしながら、家電レンタルを選ぶ人が増えています。
+## 今日の小さなきっかけ
+
+- {{seasonKeyword}} の時期は、「{{dailyThemeLabel}}」まわりの小さなストレスが増えやすいタイミングです。
 - {{dailyThemeDescription}}
-- {{seasonKeyword}} × 家電レンタルでよく見られているのは **{{trendingCategoriesCsv}}** あたり。
+- ここでは、「買う前に一度レンタルで様子を見る」という選択肢を前提に、いまよく選ばれているカテゴリ（**{{trendingCategoriesCsv}}**）をベースに整理してみます。
 
-## いま選ぶなら、この3択（サクッと比較）
+## いま候補に入れやすい 3 社
+
+> 「まずはどこから見ればいいか」をざっくり掴むための、入口としての3社です。
+
 - **{{services.[0].name}}**：{{services.[0].oneLiner}}
-  - [詳しい評判](/offers/{{services.[0].offerId}}) / [公式で詳しく見る]({{services.[0].affiliateUrl}})
+  - [サービスの特徴を見る](/offers/{{services.[0].offerId}})
+  - [公式サイトで詳しく見る]({{services.[0].affiliateUrl}})
 - **{{services.[1].name}}**：{{services.[1].oneLiner}}
-  - [詳しい評判](/offers/{{services.[1].offerId}}) / [公式で詳しく見る]({{services.[1].affiliateUrl}})
+  - [サービスの特徴を見る](/offers/{{services.[1].offerId}})
+  - [公式サイトで詳しく見る]({{services.[1].affiliateUrl}})
 - **{{services.[2].name}}**：{{services.[2].oneLiner}}
-  - [詳しい評判](/offers/{{services.[2].offerId}}) / [公式で詳しく見る]({{services.[2].affiliateUrl}})
+  - [サービスの特徴を見る](/offers/{{services.[2].offerId}})
+  - [公式サイトで詳しく見る]({{services.[2].affiliateUrl}})
 
-> 迷ったら：**[3社比較で一気に判断](/blog/{{compareSlug}})**
+> 「どれが一番おトクか」よりも、  
+> 「自分の生活リズムに合いそうか」を基準に見てもらえると安心です。
 
-## 最近の動き（編集メモ）
+## 最近の動きメモ
+
+編集時点での、価格や在庫まわりのざっくりした動きを残しておきます。
+
 - {{priceDropsNote}}
 
+※ 実際の料金や在庫状況は、各社の公式サイト・申込画面で必ず確認してください。
+
+## もう少しじっくり比べたいときは
+
+> 「いきなり1社に決めるのが不安」というときは、  
+> いったん比較ページで全体像を眺めてから、気になるサービスを深掘りする流れがおすすめです。
+
+- 👉 **[3社比較で一気に整理する](/blog/{{compareSlug}})**
+
 ## 今日のまとめ
-- まずは比較記事で全体像をチェック → 気になった1社のレビューへ。
-- {{seasonKeyword}} × {{dailyThemeLabel}} の悩みが強い時期こそ、「買う前にレンタルで様子を見る」という選択肢を持っておくと気持ちがかなりラクになります。
+
+- {{seasonKeyword}} × {{dailyThemeLabel}} の時期は、「今だけ必要な家電」が増えがちです。
+- まずは比較記事で全体像をざっくり掴む → 気になった1社のレビューや公式サイトで「自分の暮らしに合いそうか」を確認する、くらいの軽さでOKです。
+- 「買う／レンタルしない」という選択も含めて、今の自分にしっくりくるラインを探してもらえたらうれしいです。

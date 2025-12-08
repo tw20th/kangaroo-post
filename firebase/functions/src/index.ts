@@ -70,7 +70,11 @@ export {
  * 月次比較記事（3社比較）
  * - scheduledMonthlyCompare: 毎月1日 04:00 に実行
  */
-export { scheduledMonthlyCompare } from "./jobs/content/scheduledMonthlyCompare.js";
+export {
+  scheduledMonthlyCompare,
+  runMonthlyCompareNow,
+} from "./jobs/content/scheduledMonthlyCompare.js";
+export { runGenerateBlogFromOfferOnce } from "./http/runGenerateBlogFromOfferOnce.js";
 
 export {
   scheduledDiscoverDaily,
@@ -93,12 +97,17 @@ export { scheduledRewriteLowScoreBlogs } from "./jobs/content/scheduledRewriteLo
 
 /* ========== SEO (GSC連携) ========== */
 // 毎夜 Pull → 翌朝 GSC 由来で新規/改稿
+export { scheduledAnalyzeTitlePatterns } from "./jobs/seo/scheduledAnalyzeTitlePatterns.js";
+
 export { scheduledPullGsc, runPullGscNow } from "./jobs/seo/pullGscQueries.js";
 export {
   generateFromGSC,
   runGenerateFromGscNow,
 } from "./jobs/seo/generateFromGSC.js";
 export { runUpdateBlogSeoNow } from "./jobs/seo/updateBlogSeoFromGSC.js";
-
+export {
+  scheduledSyncSiteKeywordsFromGSC,
+  runSyncSiteKeywordsFromGSCNow,
+} from "./jobs/seo/syncSiteKeywordsFromGSC.js";
 /* ========== スコア最適化アルゴリズム ========== */
 export { scheduledAggregateKeywordScores } from "./jobs/analytics/aggregateKeywordScores.js";

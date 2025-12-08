@@ -1,0 +1,95 @@
+{
+  "program": {
+    "id": "s00000012624009",
+    "name": "TVCMで話題のココナラ",
+    "advertiserId": "coconala",
+    "advertiserName": "株式会社ココナラ",
+    "category": ["総合", "Webサービス"],
+    "mainA8mat": "45K9KX+A8JEJU+2PEO+1HONMA",
+    "serviceUrl": "https://coconala.com/"
+  },
+  "offer": {
+    "id": "weblabo-coconala",
+    "siteId": "weblabo",
+    "advertiserId": "coconala",
+    "programId": "s00000012624009",
+    "serviceName": "ココナラ",
+    "landingUrl": "https://coconala.com/",
+    "serviceNameEn": "coconala",
+    "catchCopy": "TVCMで話題のスキルマーケット【ココナラ】",
+    "category": [
+      "スキルマーケット",
+      "クラウドソーシング",
+      "副業・在宅ワーク支援"
+    ],
+    "officialSiteUrl": "https://coconala.com/",
+    "a8Links": {
+      "main": {
+        "label": "TVCMで話題のココナラ",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45K9KX+A8JEJU+2PEO+1HONMA"
+      },
+      "mailTemplate": {
+        "label": "メール用紹介文",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45K9KX+A8JEJU+2PEO+1HLNLF"
+      },
+      "register": {
+        "label": "1分以内に完了！無料会員登録はこちら",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45K9KX+A8JEJU+2PEO+1HPQ76"
+      },
+      "searchService": {
+        "label": "サービスをさがす",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45K9KX+A8JEJU+2PEO+1HP31U"
+      },
+      "orderIllustration": {
+        "label": "ココナラでイラストを発注",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45K9KX+A8JEJU+2PEO+1HN5LU"
+      },
+      "orderDesign": {
+        "label": "ココナラでデザインを依頼する",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45K9KX+A8JEJU+2PEO+1HNDBM"
+      },
+      "bannerSample": {
+        "label": "234x60バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45K9KX+A8JEJU+2PEO+1HVQ8X"
+      }
+    },
+    "feeModel": {
+      "type": "signup-and-purchase",
+      "rewardNote": "新規会員登録100円 / 新規購入2,500円（詳細はA8管理画面の成果報酬額を参照）"
+    },
+    "company": {
+      "name": "株式会社ココナラ",
+      "nameEn": "coconala Inc.",
+      "address": "〒150-0031 東京都渋谷区桜丘町20−1 渋谷インフォスタワー6F",
+      "founded": "2012-01-04",
+      "capital": "1,244,957,450円",
+      "business": [
+        "スキルマーケット「ココナラ」の運営・開発",
+        "「ココナラ法律相談」の運営・開発",
+        "「ココナラプロ」「ココナラコンサル」「ココナラアシスト」「ココナラテック」の運営・開発"
+      ]
+    },
+    "serviceOverview": {
+      "description": "イラスト・ロゴ・Web制作・動画・マーケティング・相談など、個人のスキルをオンラインで売買できる日本最大級のスキルマーケット。",
+      "forBuyers": [
+        "ブログアイコンやSNSアイコン、ロゴ、LP・Webサイトのデザインを依頼できる",
+        "アフィリエイト記事作成やリライトなどのライティング業務を依頼できる",
+        "動画制作、プロフィールムービー、ナレーション、コンサルティングなど用途は多数"
+      ],
+      "forSellers": [
+        "自分のスキルや経験を「サービス」として出品し、副業やフリーランスとして収入化できる",
+        "単発案件から継続案件まで、在宅中心の柔軟な働き方が可能"
+      ]
+    },
+    "recommendedFor": [
+      "ブログ運営者やアフィリエイターで、デザインや記事制作を外注したい人",
+      "小規模事業者・個人事業主で、ロゴやサイト制作・LP制作をスポットで依頼したい人",
+      "副業としてスキルを活かして稼ぎたいクリエイター・ビジネスパーソン"
+    ],
+    "notes": [
+      "会員登録は無料。手数料体系や依頼の流れはココナラ公式サイトのガイドに準拠。",
+      "カテゴリが非常に多いため、記事側では「イラスト依頼」「ロゴ制作」「Web制作」など用途別の内部リンク設計が重要。",
+      "法人利用（請求書払い・チーム利用）のニーズもあるため、BtoB向け訴求記事も作成しやすい案件。"
+    ]
+  }
+}

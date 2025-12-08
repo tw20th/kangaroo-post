@@ -58,7 +58,7 @@
     "a8:sync:dry": "tsx src/scripts/tools/syncA8FromFiles.ts site=kariraku dir=ingest/a8 dry-run=true",
     "a8:sync:clean": "tsx src/scripts/tools/syncA8FromFiles.ts site=kariraku dir=ingest/a8 archive-missing=true",
     "normalizeA8": "node --loader ts-node/esm src/jobs/a8/runNormalizeA8Offers.ts",
-    "seed:siteKeywords": "node dist/scripts/seedSiteKeywords.js kariraku",
+    "seed:siteKeywords": "node --loader ts-node/esm src/scripts/seedSiteKeywords.ts",
     "offers:migrate:addCompanyId": "TS_NODE_PROJECT=tsconfig.scripts.json node --loader ts-node/esm src/scripts/migrate/addCompanyIdToOffers.ts"
   },
   "files": [

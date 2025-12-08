@@ -7,6 +7,7 @@ import { generateBlogContent } from "../../utils/generateBlogContent.js";
 import { findUnsplashHero } from "../../services/unsplash/client.js";
 import { pickBestKeywordForSite } from "../../lib/keywords/pickSiteKeyword.js";
 import { getBlogEnabledSiteIds } from "../../lib/sites/sites.js";
+import { getSeasonalContext } from "../../utils/seasonalContext.js";
 
 const REGION = process.env.FUNCTIONS_REGION || "asia-northeast1";
 const TZ = "Asia/Tokyo";
@@ -18,11 +19,17 @@ const db = getFirestore();
 
 type PainTopic = {
   id: string;
+  /** 記事のテーマとして使うラベル（見出しなど） */
   topic: string;
+  /** 元の painRules.label 相当（なければ topic） */
+  label: string;
   persona: string;
+  /** 説明的な悩みテキスト */
   pain: string;
   compareUrl: string;
   enabled?: boolean;
+  /** 関連キーワード（subKeywords 用） */
+  keywords: string[];
 };
 
 type GeneratedBlog = {
@@ -43,7 +50,100 @@ type RawPainRule = {
   pain?: string;
   compareUrl?: string;
   enabled?: boolean;
+  keywords?: unknown;
 };
+
+type OfferLite = {
+  id: string;
+  title: string;
+  affiliateUrl: string;
+  highlightLabel?: string;
+  targetUsers: string[];
+  strengths: string[];
+};
+
+async function pickPrimaryOfferForSite(
+  siteId: string,
+  logPrefix: string
+): Promise<OfferLite | null> {
+  const snap = await db
+    .collection("offers")
+    .where("siteIds", "array-contains", siteId)
+    .where("status", "==", "active")
+    .limit(1) // ← とりあえず1件だけ。順番はランダムでOK
+    .get();
+
+  if (snap.empty) {
+    console.warn(`[${logPrefix}] no offers for site`, { siteId });
+    return null;
+  }
+
+  const doc = snap.docs[0];
+  const data = doc.data() as {
+    title?: unknown;
+    affiliateUrl?: unknown;
+    highlightLabel?: unknown;
+    targetUsers?: unknown;
+    strengths?: unknown;
+  };
+
+  const title =
+    typeof data.title === "string" && data.title.trim().length > 0
+      ? data.title.trim()
+      : doc.id;
+
+  const affiliateUrl =
+    typeof data.affiliateUrl === "string" ? data.affiliateUrl : "";
+
+  if (!affiliateUrl) {
+    console.warn(`[${logPrefix}] offer missing affiliateUrl`, {
+      siteId,
+      id: doc.id,
+    });
+  }
+
+  const targetUsers =
+    Array.isArray(data.targetUsers) && data.targetUsers.length > 0
+      ? (data.targetUsers.filter(
+          (v): v is string => typeof v === "string" && v.trim().length > 0
+        ) as string[])
+      : [];
+
+  const strengths =
+    Array.isArray(data.strengths) && data.strengths.length > 0
+      ? (data.strengths.filter(
+          (v): v is string => typeof v === "string" && v.trim().length > 0
+        ) as string[])
+      : [];
+
+  const highlightLabel =
+    typeof data.highlightLabel === "string" && data.highlightLabel.trim()
+      ? data.highlightLabel.trim()
+      : undefined;
+
+  return {
+    id: doc.id,
+    title,
+    affiliateUrl,
+    highlightLabel,
+    targetUsers,
+    strengths,
+  };
+}
+
+function buildOfferVars(offer: OfferLite | null): Record<string, unknown> {
+  if (!offer) return {};
+  return {
+    offer: {
+      id: offer.id,
+      title: offer.title,
+      affiliateUrl: offer.affiliateUrl,
+      highlightLabel: offer.highlightLabel ?? "",
+      targetUsers: offer.targetUsers,
+      strengths: offer.strengths,
+    },
+  };
+}
 
 /* ================================
  * helpers
@@ -86,13 +186,24 @@ async function loadPainTopicsForSite(siteId: string): Promise<PainTopic[]> {
     .filter((r) => r && r.enabled !== false)
     .map((r, idx): PainTopic => {
       const topic = r.topic || r.label || "お悩みガイド";
+      const label = r.label || topic;
+
+      const keywordsRaw = r.keywords;
+      const keywords: string[] = Array.isArray(keywordsRaw)
+        ? (keywordsRaw as unknown[])
+            .map((k) => (typeof k === "string" ? k.trim() : ""))
+            .filter((k) => k.length > 0)
+        : [];
+
       return {
         id: r.id || `rule-${idx}`,
         topic,
+        label,
         persona: r.persona || defaultPersona,
         pain: r.pain || r.label || r.topic || defaultPain,
         compareUrl: r.compareUrl || defaultCompareUrl,
         enabled: r.enabled,
+        keywords,
       };
     });
 }
@@ -146,7 +257,11 @@ async function createGuideOnceForSite(siteId: string): Promise<void> {
     return;
   }
 
+  const seasonal = getSeasonalContext();
   const nowMs = Date.now();
+
+  const offer = await pickPrimaryOfferForSite(siteId, "GuideDaily");
+  const offerVars = buildOfferVars(offer);
 
   // 🔹 まず siteKeywords(intent: "guide") から今日の1本を選ぶ
   const pickedKeyword = await pickBestKeywordForSite({
@@ -184,17 +299,32 @@ async function createGuideOnceForSite(siteId: string): Promise<void> {
   // 🔗 比較リンク（サイトごとにざっくり出し分け）
   const compareUrl = siteId === "kariraku" ? "/compare" : "/blog";
 
+  // subKeywords: painRules.keywords があればそれを、なければ primaryKeyword を1つだけ
+  const subKeywords: string[] =
+    picked.keywords.length > 0 ? picked.keywords : [targetKeyword];
+
   const rawBlog = (await generateBlogContent({
     product: { name: picked.topic, asin: "none", tags: [] },
     siteId,
     siteName,
     persona: picked.persona,
     pain: picked.pain,
-    templateName: "blogTemplate_painGuide.txt", // ← ここを新しい汎用テンプレ名に
+    templateName: "blogTemplate_painGuide.txt",
     vars: {
+      intent: "guide",
       topic: picked.topic,
       compareUrl,
       primaryKeyword: targetKeyword,
+      seasonKeyword: seasonal.keyword,
+      pain: {
+        id: picked.id,
+        label: picked.label,
+        description: picked.pain,
+        keywords: picked.keywords,
+      },
+      subKeywords,
+      // ★ ここで offer 情報をテンプレに渡す
+      ...offerVars,
     },
   })) as GeneratedBlog;
 
@@ -224,7 +354,7 @@ async function createGuideOnceForSite(siteId: string): Promise<void> {
 
   await db.collection("blogs").add({
     siteId,
-    painId: picked.id, // どの悩みトピックから生まれた記事か
+    painId: picked.id,
     title,
     content,
     excerpt,
@@ -240,6 +370,10 @@ async function createGuideOnceForSite(siteId: string): Promise<void> {
     publishedAt: nowTs,
     primaryKeyword: targetKeyword,
     primaryKeywordDocId: pickedKeyword ? pickedKeyword.docId : null,
+
+    // ★ ここから追加
+    primaryOfferId: offer?.id ?? null,
+    offerIds: offer ? [offer.id] : [],
   });
 
   // 🔹 使ったキーワードがあれば、siteKeywords 側の統計も更新

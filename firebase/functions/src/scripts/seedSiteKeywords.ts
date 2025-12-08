@@ -10,6 +10,9 @@ import { getFirestore, Firestore } from "firebase-admin/firestore";
 // ★ Discover を追加
 export type IntentId = "service" | "compare" | "guide" | "discover";
 
+// レンタルタイプ：3タイプ分け
+type RentalType = "living" | "gadget" | "trial";
+
 interface KeywordPools {
   [poolKey: string]: string[];
 }
@@ -25,6 +28,16 @@ interface SiteJson {
   siteId: string;
   keywordPools?: KeywordPools;
   painRules?: PainRule[];
+
+  // ★ 3タイプ用キーワード
+  rentalTypeKeywords?: {
+    living?: string[];
+    gadget?: string[];
+    trial?: string[];
+  };
+
+  // ★ テーマキーワード → painRule.id[] のマッピング（pattern B）
+  painGroups?: Record<string, string[]>;
 }
 
 interface SiteKeywordDoc {
@@ -45,10 +58,13 @@ interface SiteKeywordDoc {
   updatedAt: number;
 
   // メタ（任意）
-  source?: "keywordPools" | "painRules";
+  source?: "keywordPools" | "painRules" | "rentalTypes";
   poolKey?: string | null;
   painRuleId?: string | null;
   lastBlogSlug?: string | null;
+
+  // ★ どのタイプ向けキーワードか
+  rentalType?: RentalType | null;
 }
 
 /* ========= Firebase init ========= */
@@ -143,12 +159,14 @@ async function upsertSiteKeyword(
     siteId: string;
     keyword: string;
     intent: IntentId;
-    source: "keywordPools" | "painRules";
+    source: "keywordPools" | "painRules" | "rentalTypes";
     poolKey?: string | null;
     painRuleId?: string | null;
+    rentalType?: RentalType | null;
   }
 ): Promise<void> {
-  const { siteId, keyword, intent, source, poolKey, painRuleId } = data;
+  const { siteId, keyword, intent, source, poolKey, painRuleId, rentalType } =
+    data;
   const now = Date.now();
 
   const keywordSlug = slugifyKeyword(keyword);
@@ -168,6 +186,7 @@ async function upsertSiteKeyword(
       source,
       poolKey: poolKey ?? existing.poolKey ?? null,
       painRuleId: painRuleId ?? existing.painRuleId ?? null,
+      rentalType: rentalType ?? existing.rentalType ?? null,
       updatedAt: now,
     };
 
@@ -198,6 +217,7 @@ async function upsertSiteKeyword(
     poolKey: poolKey ?? null,
     painRuleId: painRuleId ?? null,
     lastBlogSlug: null,
+    rentalType: rentalType ?? null,
   };
 
   await ref.set(doc, { merge: false });
@@ -215,12 +235,15 @@ export async function seedSiteKeywords(siteId: string): Promise<void> {
 
   const keywordPools = siteJson.keywordPools ?? {};
   const painRules = siteJson.painRules ?? [];
+  const rentalTypeKeywords = siteJson.rentalTypeKeywords ?? {};
 
   // eslint-disable-next-line no-console
   console.log(
     `[seedSiteKeywords] start for siteId=${siteId} (pools=${
       Object.keys(keywordPools).length
-    }, painRules=${painRules.length})`
+    }, painRules=${painRules.length}, rentalTypes=${
+      Object.keys(rentalTypeKeywords).length
+    })`
   );
 
   // 1) keywordPools から投入
@@ -239,6 +262,7 @@ export async function seedSiteKeywords(siteId: string): Promise<void> {
         source: "keywordPools",
         poolKey,
         painRuleId: null,
+        rentalType: null,
       });
     }
   }
@@ -260,6 +284,36 @@ export async function seedSiteKeywords(siteId: string): Promise<void> {
         source: "painRules",
         poolKey: null,
         painRuleId: rule.id,
+        rentalType: null,
+      });
+    }
+  }
+
+  // 3) rentalTypeKeywords から投入（intent はひとまず service としておく）
+  const entries: [RentalType, string[] | undefined][] = [
+    ["living", rentalTypeKeywords.living],
+    ["gadget", rentalTypeKeywords.gadget],
+    ["trial", rentalTypeKeywords.trial],
+  ];
+
+  for (const [rentalType, keywords] of entries) {
+    if (!keywords || keywords.length === 0) continue;
+
+    const intent: IntentId = "service";
+
+    for (const kw of keywords) {
+      const keyword = kw.trim();
+      if (!keyword) continue;
+
+      // eslint-disable-next-line no-await-in-loop
+      await upsertSiteKeyword(db, {
+        siteId,
+        keyword,
+        intent,
+        source: "rentalTypes",
+        poolKey: `rentalType:${rentalType}`,
+        painRuleId: null,
+        rentalType,
       });
     }
   }

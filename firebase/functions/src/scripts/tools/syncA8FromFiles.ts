@@ -21,6 +21,13 @@ type InFileProgram = {
   advertiserInfo?: Record<string, unknown>;
 };
 
+type OfferProfile = {
+  targetUsers?: string[];
+  strengths?: string[];
+  weaknesses?: string[];
+  importantNotes?: string[];
+};
+
 type InFileOffer = {
   id?: string;
   title: string;
@@ -35,6 +42,10 @@ type InFileOffer = {
   siteIds?: string[];
   extras?: Record<string, unknown>;
   creatives?: Creative[];
+
+  // ★ 追加：ジャンル・プロフィール系
+  vertical?: string;
+  profile?: OfferProfile;
 };
 
 type InFile = {
@@ -79,6 +90,7 @@ function saveState(st: State) {
     fs.writeFileSync(STATE_FILE, JSON.stringify(st, null, 2), "utf-8");
   } catch (e) {
     // 本番で稀に /tmp が無いケースに備えて noop（/tmp は基本存在）
+    // eslint-disable-next-line no-console
     console.error(`[syncA8] Failed to save state:`, e);
   }
 }
@@ -94,6 +106,15 @@ function toNumberOrUndef(v: unknown): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+// ---- debug logger ----
+const DEBUG = process.env.DEBUG_A8_SYNC === "1";
+
+function log(...args: unknown[]) {
+  if (!DEBUG) return;
+  // eslint-disable-next-line no-console
+  console.log("[syncA8]", ...args);
+}
+
 // ---- core ----
 async function upsert(siteId: string, data: InFile, dryRun: boolean) {
   const t = now();
@@ -107,8 +128,32 @@ async function upsert(siteId: string, data: InFile, dryRun: boolean) {
     data.program.programId ??
     `p_${hash(`${data.program.advertiser}:${data.offer.title}`)}`;
 
-  const dedupeKey = `${programId}:${ensureUrl(data.offer.landingUrl)}`;
+  // ★ ここで landingUrl / affiliateUrl を一度整理
+  if (!data.offer.landingUrl) {
+    throw new Error(
+      `[syncA8] Missing offer.landingUrl for "${data.program.advertiser}" / "${data.offer.title}"`
+    );
+  }
+
+  const landingUrl = ensureUrl(data.offer.landingUrl);
+
+  const affiliateUrlRaw = data.offer.affiliateUrl ?? data.offer.landingUrl;
+  const affiliateUrl = affiliateUrlRaw
+    ? ensureUrl(affiliateUrlRaw)
+    : landingUrl; // 念のため fallback
+
+  const dedupeKey = `${programId}:${landingUrl}`;
   const offerId = data.offer.id ?? `${programId}:${hash(dedupeKey)}`;
+
+  log("upsert start", {
+    siteId,
+    programId,
+    offerId,
+    advertiser: data.program.advertiser,
+    title: data.offer.title,
+    landingUrl,
+    affiliateUrl,
+  });
 
   const programDoc = {
     programId,
@@ -119,7 +164,6 @@ async function upsert(siteId: string, data: InFile, dryRun: boolean) {
     siteIdPrimary: siteId,
     updatedAt: t,
     createdAt: t,
-    // ★ 企業情報を Firestore にも保存
     advertiserInfo: data.program.advertiserInfo ?? null,
   };
 
@@ -131,8 +175,8 @@ async function upsert(siteId: string, data: InFile, dryRun: boolean) {
     title: data.offer.title,
     description: data.offer.description ?? "",
     planType: data.offer.planType ?? "subscription",
-    landingUrl: ensureUrl(data.offer.landingUrl),
-    affiliateUrl: ensureUrl(data.offer.affiliateUrl ?? data.offer.landingUrl),
+    landingUrl, // ★ 上で検証済み
+    affiliateUrl, // ★ 上で検証済み
     images: data.offer.images ?? [],
     badges: data.offer.badges ?? [],
     tags: data.offer.tags ?? [],
@@ -146,13 +190,22 @@ async function upsert(siteId: string, data: InFile, dryRun: boolean) {
     extras: data.offer.extras ?? {},
     updatedAt: t,
     createdAt: t,
+    vertical: data.offer.vertical ?? null,
+    profile: data.offer.profile ?? null,
   };
 
   if (price !== undefined) {
     offerDoc.price = price;
   }
 
+  log("upsert docs", {
+    programDocCategory: programDoc.category,
+    offerPrice: price ?? null,
+    offerTags: offerDoc.tags,
+  });
+
   if (dryRun) {
+    log("dryRun: skip Firestore write", { programId, offerId });
     return { programId, offerId, dryRun: true };
   }
 
@@ -161,6 +214,8 @@ async function upsert(siteId: string, data: InFile, dryRun: boolean) {
     .doc(programId)
     .set(programDoc, { merge: true });
   await db.collection("offers").doc(offerId).set(offerDoc, { merge: true });
+
+  log("upsert done", { programId, offerId });
 
   return { programId, offerId };
 }
@@ -176,6 +231,14 @@ export async function syncA8FromFiles(opts: SyncA8Options) {
     ? fs.readdirSync(dir).filter((f) => f.endsWith(".json"))
     : [];
 
+  log("start syncA8FromFiles", {
+    siteId,
+    dir,
+    filesCount: files.length,
+    dryRun,
+    archiveMissing,
+  });
+
   const state = loadState();
   const seenOfferIds = new Set<string>();
 
@@ -183,30 +246,54 @@ export async function syncA8FromFiles(opts: SyncA8Options) {
 
   for (const f of files) {
     const p = path.join(dir, f);
-    const raw = fs.readFileSync(p, "utf-8");
-    const h = hash(raw);
 
-    // 変更がないファイルはスキップ
-    if (state.files[p] === h) continue;
+    try {
+      const raw = fs.readFileSync(p, "utf-8");
+      const h = hash(raw);
+      const prevHash = state.files[p];
 
-    const data = JSON.parse(raw) as InFile;
+      if (prevHash === h) {
+        log("skip unchanged file", { file: p, hash: h });
+        continue;
+      }
 
-    const pid =
-      data.program.programId ??
-      `p_${hash(`${data.program.advertiser}:${data.offer.title}`)}`;
-    const oid =
-      data.offer.id ?? `${pid}:${hash(`${pid}:${data.offer.landingUrl}`)}`;
+      log("process file", { file: p, prevHash, newHash: h });
 
-    seenOfferIds.add(oid);
+      const data = JSON.parse(raw) as InFile;
 
-    await upsert(siteId, data, dryRun);
-    state.files[p] = h;
-    processed++;
+      const pid =
+        data.program.programId ??
+        `p_${hash(`${data.program.advertiser}:${data.offer.title}`)}`;
+      const oid =
+        data.offer.id ?? `${pid}:${hash(`${pid}:${data.offer.landingUrl}`)}`;
+
+      seenOfferIds.add(oid);
+
+      log("file summary", {
+        file: p,
+        programId: pid,
+        offerId: oid,
+        advertiser: data.program.advertiser,
+        title: data.offer.title,
+        landingUrl: data.offer.landingUrl,
+        hasProfile: !!data.offer.profile,
+      });
+
+      await upsert(siteId, data, dryRun);
+      state.files[p] = h;
+      processed++;
+    } catch (e: unknown) {
+      log("ERROR processing file", { file: p, error: String(e) });
+      // eslint-disable-next-line no-console
+      console.error(`[syncA8] Error processing file ${p}:`, e);
+    }
   }
 
   let archived = 0;
 
   if (archiveMissing && !dryRun) {
+    log("start archiveMissing check");
+
     const snap = await db
       .collection("offers")
       .where("siteIds", "array-contains", siteId)
@@ -221,6 +308,7 @@ export async function syncA8FromFiles(opts: SyncA8Options) {
           { merge: true }
         );
         archived++;
+        log("archived offer", { offerId: o.id });
       }
     }
   }
@@ -229,7 +317,11 @@ export async function syncA8FromFiles(opts: SyncA8Options) {
     saveState(state);
   }
 
-  return { processed, archived, files: files.length, dryRun };
+  const result = { processed, archived, files: files.length, dryRun };
+
+  log("syncA8FromFiles done", result);
+
+  return result;
 }
 
 /* ===== CLI 実行サポート =====
@@ -249,6 +341,7 @@ if (process.argv[1] && /syncA8FromFiles\.(ts|js)$/.test(process.argv[1])) {
       args.get("archiveMissing") === "true";
 
     if (!site) {
+      // eslint-disable-next-line no-console
       console.error("--site is required (e.g. site=kariraku)");
       process.exit(1);
     }
@@ -260,8 +353,11 @@ if (process.argv[1] && /syncA8FromFiles\.(ts|js)$/.test(process.argv[1])) {
       archiveMissing,
     });
 
+    // 最終結果は DEBUG の有無に関わらず出す
+    // eslint-disable-next-line no-console
     console.log(result);
   })().catch((e) => {
+    // eslint-disable-next-line no-console
     console.error(e);
     process.exit(1);
   });

@@ -59,6 +59,32 @@
       "在宅時間が増えたときに助かる家電"
     ]
   },
+  "rentalTypeKeywords": {
+    "living": [
+      "家電レンタル 一人暮らし セット",
+      "家具家電レンタル 一人暮らし",
+      "家電 レンタル 新生活 セット",
+      "冷蔵庫 洗濯機 ベッド セット レンタル",
+      "家電レンタル ファミリー セット",
+      "家電レンタル 一戸建て 建て替え 仮住まい"
+    ],
+    "gadget": [
+      "双眼鏡 レンタル ライブ",
+      "防振双眼鏡 レンタル 推し活",
+      "コンサート 双眼鏡 レンタル おすすめ",
+      "カメラ レンタル 旅行",
+      "Vlogカメラ レンタル 初心者",
+      "ビデオカメラ レンタル 卒業式"
+    ],
+    "trial": [
+      "家電 お試し レンタル",
+      "買うか迷う 家電 レンタル",
+      "高級家電 レンタル 試してから買う",
+      "オーブンレンジ レンタル 試してから購入",
+      "ビストロ オーブンレンジ お試し レンタル",
+      "パナソニック ビストロ レンタル"
+    ]
+  },
   "contentPlan": {
     "weekly": { "pillarIntent": "比較/選び方の柱記事を増やす" },
     "daily": { "enabled": true },
@@ -185,5 +211,25 @@
       ],
       "personas": ["ファミリー", "子育て世代", "介護中"]
     }
-  ]
+  ],
+  "painGroups": {
+    "家電レンタル 初心者 向け": [
+      "move-preparation",
+      "hitorigurashi-cost",
+      "dont-want-to-buy"
+    ],
+    "短期 レンタル 退去 まで": ["short-term-need", "temporary-family-stay"],
+    "冷蔵庫 サイズ 選び方 レンタル": ["small-room-space", "hitorigurashi-cost"],
+    "一人暮らし 買ってよかった家電": [
+      "small-room-space",
+      "dont-want-to-buy",
+      "eco-waste"
+    ],
+    "買うか迷う家電をレンタルで試す": ["dont-want-to-buy", "eco-waste"],
+    "部屋がせまくても置きやすい小さな家電": ["small-room-space"],
+    "在宅時間が増えたときに助かる家電": [
+      "year-end-cooking",
+      "guest-preparation"
+    ]
+  }
 }

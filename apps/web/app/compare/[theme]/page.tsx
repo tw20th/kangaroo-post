@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerSiteId } from "@/lib/site-server";
-import { fetchCollection } from "@/lib/firestore-rest";
+import { fetchCollection, fsRunQuery, fsDecode } from "@/lib/firestore-rest";
 import OfferCompareTable, {
   type OfferLite,
 } from "@/components/offers/OfferCompareTable";
@@ -31,6 +31,8 @@ type OfferDoc = {
   };
   priority?: number;
   updatedAt?: number;
+  // ★ 追加: 企業ひも付け
+  companyId?: string;
 };
 
 // 「/offers のチップで使っているラベル」 → 「どの tag で絞るか」

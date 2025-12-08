@@ -1,0 +1,78 @@
+{
+  "program": {
+    "id": "s00000026062003",
+    "name": "スマホケース・フィルム【レイ・アウト】",
+    "advertiserId": "rayout",
+    "advertiserName": "株式会社TFN",
+    "category": ["電話", "スマホアクセサリー"],
+    "mainA8mat": "45II8Y+80RC9E+5L3G+HVFKY",
+    "serviceUrl": "https://ray-out.co.jp/"
+  },
+  "offer": {
+    "id": "workiroom-rayout",
+    "siteId": "workiroom",
+    "advertiserId": "rayout",
+    "programId": "s00000026062003",
+    "landingUrl": "https://ray-out.co.jp/",
+    "serviceName": "レイ・アウト オンラインストア",
+    "serviceNameEn": "ray-out",
+    "catchCopy": "スマホアクセサリー専⾨店レイ・アウト。最新機種から旧機種まで、ケース・フィルムなど10,000点以上の豊富な品揃え。",
+    "category": ["スマホケース", "保護フィルム", "スマホアクセサリー全般"],
+    "officialSiteUrl": "https://ray-out.co.jp/",
+    "a8Links": {
+      "brandText": {
+        "label": "レイ・アウト",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+80RC9E+5L3G+HV7V6"
+      },
+      "brandBrackets": {
+        "label": "【レイ・アウト】",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+80RC9E+5L3G+HVFKY"
+      },
+      "banner300x250": {
+        "label": "300x250バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+80RC9E+5L3G+HVNAP"
+      },
+      "banner100x60": {
+        "label": "100x60バナー",
+        "url": "https://px.a8.net/svt/ejp?a8mat=45II8Y+80RC9E+5L3G+HVV0H"
+      }
+    },
+    "feeModel": {
+      "type": "purchase",
+      "rewardNote": "成果報酬：購入額の4.5%以上（詳細はA8管理画面を参照）"
+    },
+    "company": {
+      "name": "株式会社レイ・アウト",
+      "address": "〒104-0043 東京都中央区湊3丁目3番2号 前田セントラルビル2F",
+      "phone": "03-6733-1394",
+      "onlineStoreOperator": {
+        "name": "株式会社TFN",
+        "address": "〒103-0007 東京都中央区日本橋浜町1-2-1 日本橋浜町プレイス6F",
+        "phone": "03-6413-1051"
+      },
+      "business": [
+        "スマートフォン・タブレット向けアクセサリーの企画・製造・販売",
+        "パソコン周辺機器のOEM業務",
+        "オンラインストア運営"
+      ]
+    },
+    "serviceOverview": {
+      "description": "iPhone・Android各社の最新機種から旧機種まで幅広く対応したスマホケース・保護フィルム・アクセサリーを扱う専門店。定番のクリアケースからキャラクターコラボ、耐衝撃ケースまでラインナップが豊富。",
+      "features": [
+        "2,000円以上購入で送料無料、最短即日発送に対応（一部地域除く）",
+        "量販店でも取り扱いの多い定番ブランドのため、安心感が高い",
+        "オンライン限定商品やアウトレット品もあり、コスパ重視層にも向く"
+      ]
+    },
+    "recommendedFor": [
+      "機種が古く、家電量販店で対応ケースが見つかりづらい人",
+      "保護フィルムやケースをまとめ買いして送料を抑えたい人",
+      "キャリアショップや量販店でよく見かける安心ブランドをネットでそのまま買いたい人"
+    ],
+    "notes": [
+      "配送方法やネコポス利用時の破損・紛失リスク（保証なし）など、公式の注意事項を簡単にまとめた記事と相性が良い。",
+      "返品・交換条件（初期不良7日以内 / お客様都合は未開封のみなど）も比較表にしておくと親切。",
+      "機種別・シーン別（ビジネス用・アウトドア用など）のおすすめ記事が作りやすいブランド。"
+    ]
+  }
+}

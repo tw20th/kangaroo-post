@@ -510,8 +510,10 @@ export async function fetchBlogBySlug(slug: string) {
     relatedAsin: vStr(f, "relatedAsin") ?? null,
     imageCredit: vStr(f, "imageCredit") ?? null,
     imageCreditLink: vStr(f, "imageCreditLink") ?? null,
-    painId: vStr(f, "painId") ?? undefined, // ← ⭐ 追加（悩みトピックID）
+    painId: vStr(f, "painId") ?? undefined,
     tags: vStrArr(f, "tags") ?? [],
+    // ★ これを追加
+    offerId: vStr(f, "offerId") ?? null,
   };
 }
 
