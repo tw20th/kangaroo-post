@@ -1,46 +1,37 @@
 // apps/web/lib/firebaseAdmin.ts
 import {
   getApps,
-  getApp,
   initializeApp,
-  applicationDefault,
   cert,
-  App,
+  type ServiceAccount,
 } from "firebase-admin/app";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { getFirestore } from "firebase-admin/firestore";
 
-/**
- * Next.js (app router) の server 側でだけ import してください。
- * 環境変数は apps/web/.env.local に配置します。
- *
- * FIREBASE_PROJECT_ID=...
- * FIREBASE_CLIENT_EMAIL=...
- * FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
- */
-let _app: App | undefined;
+const projectId = process.env.FIREBASE_PROJECT_ID;
+const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
 
-export function adminApp(): App {
-  if (!_app) {
-    const projectId = process.env.FIREBASE_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    // GitHub Actions 等で \n がエスケープされている場合に復元
-    const privateKey = (process.env.FIREBASE_PRIVATE_KEY || "").replace(
-      /\\n/g,
-      "\n"
-    );
-
-    _app = getApps().length
-      ? getApp()
-      : initializeApp({
-          credential:
-            privateKey && clientEmail
-              ? cert({ projectId, clientEmail, privateKey })
-              : applicationDefault(),
-          projectId,
-        });
-  }
-  return _app!;
+// 環境変数チェック（必要ならあとでゆるめてもOK）
+if (!projectId || !clientEmail || !rawPrivateKey) {
+  throw new Error(
+    "Missing Firebase admin credentials (FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY)"
+  );
 }
 
-export const adminDb = () => getFirestore(adminApp());
-export { FieldValue };
+// GitHub Actions や .env で `\n` になっているのを復元
+const privateKey = rawPrivateKey.replace(/\\n/g, "\n");
+
+const serviceAccount: ServiceAccount = {
+  projectId,
+  clientEmail,
+  privateKey,
+};
+
+const app =
+  getApps().length > 0
+    ? getApps()[0]
+    : initializeApp({
+        credential: cert(serviceAccount),
+      });
+
+export const adminDb = getFirestore(app);

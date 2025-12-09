@@ -29,9 +29,8 @@ service cloud.firestore {
 
     // --- ブログ ---
     // 公開されたブログは一般読者が読める
-    // ゆずはは全書き込みOK
     match /blogs/{id} {
-      allow read: if resource.data.status == 'published' || isAdmin();
+      allow read: if true;
       allow write: if isAdmin();
     }
 

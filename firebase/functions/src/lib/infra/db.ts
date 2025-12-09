@@ -1,10 +1,16 @@
+// firebase/functions/src/lib/infra/db.ts（修正後）
+
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore, Firestore, Settings } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
-const PROJECT_ID = process.env.GCLOUD_PROJECT || "a8-affiliate-a2489";
+// ✅ ここを kangaroo-post 用に
+const PROJECT_ID = process.env.GCLOUD_PROJECT || "kangaroo-post";
+
+// ✅ Firebase コンソール > Storage のバケット名を確認して合わせる
+// 例: kangaroo-post.firebasestorage.app または kangaroo-post.appspot.com
 const BUCKET =
-  process.env.STORAGE_BUCKET || "a8-affiliate-a2489.firebasestorage.app";
+  process.env.STORAGE_BUCKET || "kangaroo-post.firebasestorage.app";
 
 if (getApps().length === 0) {
   initializeApp({

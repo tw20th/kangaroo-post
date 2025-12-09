@@ -54,59 +54,64 @@ async function loadSiteConfig(siteId: string): Promise<SiteConfigDoc> {
   );
   url.searchParams.set("key", apiKey);
 
-  const res = await fetch(url.toString(), { cache: "no-store" });
-  if (!res.ok) return fallbackConfig(siteId);
+  try {
+    const res = await fetch(url.toString(), { cache: "no-store" });
+    if (!res.ok) return fallbackConfig(siteId);
 
-  const json = (await res.json()) as
-    | { fields?: Record<string, unknown> }
-    | undefined;
+    const json = (await res.json()) as
+      | { fields?: Record<string, unknown> }
+      | undefined;
 
-  const rawFields = (json?.fields as Record<string, FirestoreField>) ?? {};
-  const f = json?.fields ?? {};
+    const rawFields = (json?.fields as Record<string, FirestoreField>) ?? {};
+    const f = json?.fields ?? {};
 
-  const getField = (k: string): FirestoreField | undefined => rawFields[k];
+    const getField = (k: string): FirestoreField | undefined => rawFields[k];
 
-  const str = (k: string): string | undefined =>
-    getField(k)?.stringValue ?? undefined;
+    const str = (k: string): string | undefined =>
+      getField(k)?.stringValue ?? undefined;
 
-  const arr = (k: string): string[] | undefined => {
-    const values = getField(k)?.arrayValue?.values;
-    if (!values || values.length === 0) return undefined;
-    return values.map((v) => v.stringValue ?? "").filter((s) => s.length > 0);
-  };
+    const arr = (k: string): string[] | undefined => {
+      const values = getField(k)?.arrayValue?.values;
+      if (!values || values.length === 0) return undefined;
+      return values.map((v) => v.stringValue ?? "").filter((s) => s.length > 0);
+    };
 
-  const brandFields = getField("brand")?.mapValue?.fields ?? {};
-  const bstr = (k: string): string | undefined =>
-    brandFields[k]?.stringValue ?? undefined;
+    const brandFields = getField("brand")?.mapValue?.fields ?? {};
+    const bstr = (k: string): string | undefined =>
+      brandFields[k]?.stringValue ?? undefined;
 
-  const hcFields =
-    getField("homeCopy")?.mapValue?.fields ??
-    ({} as Record<string, FirestoreField>);
+    const hcFields =
+      getField("homeCopy")?.mapValue?.fields ??
+      ({} as Record<string, FirestoreField>);
 
-  const cfg: SiteConfigDoc = {
-    siteId,
-    displayName: str("displayName") ?? "AffiScope",
-    brand: {
-      primary: bstr("primary"),
-      accent: bstr("accent"),
-      logoUrl: bstr("logoUrl"),
-    },
-    categoryPreset: arr("categoryPreset"),
-    homeCopy:
-      Object.keys(hcFields).length > 0
-        ? {
-            title: hcFields.title?.stringValue,
-            subtitle: hcFields.subtitle?.stringValue,
-            dataSourceLabel: hcFields.dataSourceLabel?.stringValue,
-            note: hcFields.note?.stringValue,
-            featuredTitle: hcFields.featuredTitle?.stringValue,
-            blogsTitle: hcFields.blogsTitle?.stringValue,
-          }
-        : undefined,
-    painRules: decodePainRules(f),
-  };
+    const cfg: SiteConfigDoc = {
+      siteId,
+      displayName: str("displayName") ?? "カンガルーポスト",
+      brand: {
+        primary: bstr("primary"),
+        accent: bstr("accent"),
+        logoUrl: bstr("logoUrl"),
+      },
+      categoryPreset: arr("categoryPreset"),
+      homeCopy:
+        Object.keys(hcFields).length > 0
+          ? {
+              title: hcFields.title?.stringValue,
+              subtitle: hcFields.subtitle?.stringValue,
+              dataSourceLabel: hcFields.dataSourceLabel?.stringValue,
+              note: hcFields.note?.stringValue,
+              featuredTitle: hcFields.featuredTitle?.stringValue,
+              blogsTitle: hcFields.blogsTitle?.stringValue,
+            }
+          : undefined,
+      painRules: decodePainRules(f),
+    };
 
-  return withDerivedCopy(cfg);
+    return withDerivedCopy(cfg);
+  } catch {
+    // 🔴 Firestore にアクセスできなくても、必ずローカルのデフォルトで動かす
+    return fallbackConfig(siteId);
+  }
 }
 
 /* ===== Firestore fallback ===== */
@@ -114,24 +119,24 @@ async function loadSiteConfig(siteId: string): Promise<SiteConfigDoc> {
 function fallbackConfig(siteId: string): SiteConfigDoc {
   const cfg: SiteConfigDoc = {
     siteId,
-    displayName: "AffiScope",
+    displayName: "カンガルーポスト",
     brand: { primary: "#16a34a", accent: "#0ea5e9", logoUrl: "" },
     categoryPreset: [],
     painRules: [
       {
-        id: "back_pain_long_sitting",
-        label: "腰痛で長時間座れない",
-        tags: ["腰痛対策", "姿勢改善"],
+        id: "update_is_hard",
+        label: "サイト更新がめんどう・続かない",
+        tags: ["サイト運営", "更新負担を減らす"],
       },
       {
-        id: "sweaty",
-        label: "蒸れて不快（夏でも快適に座りたい）",
-        tags: ["蒸れ対策", "メッシュ"],
+        id: "no_time",
+        label: "記事を書きたいけど時間がない",
+        tags: ["時間がない", "自動化したい"],
       },
       {
-        id: "best_value",
-        label: "コスパよく失敗したくない",
-        tags: ["コスパ重視"],
+        id: "want_result",
+        label: "ゆるく続けながら、ちゃんと成果もほしい",
+        tags: ["ゆるく続けたい", "成果を出したい"],
       },
     ],
   };
@@ -154,6 +159,17 @@ function withDerivedCopy(cfg: SiteConfigDoc): SiteConfigDoc {
       note: string;
     }
   > = {
+    // 🦘 カンガルーポスト（SaaS）用
+    "kangaroo-post": {
+      title: "記事づくりの負担を、そっと肩代わりする。",
+      subtitle:
+        "カンガルーポストは、サイト更新が苦手な人のための“おまかせ記事生成サービス”です。やさしい文章で、コツコツと記事を増やしていきます。",
+      featured: "まず知ってほしいこと",
+      blogs: "自動生成された記事一覧",
+      dataSource: "このサイトで自動生成された記事",
+      note: "内容はAIによる自動生成を含みますが、やさしく丁寧な文章になるよう設計しています。",
+    },
+    // 旧: kariraku
     kariraku: {
       title: "借りて、暮らしと引越しの負担を軽くする。",
       subtitle:
@@ -163,6 +179,7 @@ function withDerivedCopy(cfg: SiteConfigDoc): SiteConfigDoc {
       dataSource: "A8.net の提携サービス",
       note: "本ページは広告を含みます。",
     },
+    // 旧: workiroom
     workiroom: {
       title: "在宅ワークの悩みを、スマートに軽くする。",
       subtitle:
@@ -172,6 +189,7 @@ function withDerivedCopy(cfg: SiteConfigDoc): SiteConfigDoc {
       dataSource: "A8.net の提携ガジェット",
       note: "本ページは広告を含みます。",
     },
+    // デフォルト
     default: {
       title: "比較・最安情報をやさしく整理するメディア",
       subtitle:

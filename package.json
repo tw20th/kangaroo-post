@@ -1,5 +1,5 @@
 {
-  "name": "affiscope",
+  "name": "kangaroo-post",
   "private": true,
   "scripts": {
     "build": "pnpm -r --filter ./packages/shared-types run build && pnpm -C apps/web build && pnpm -C firebase/functions build",
