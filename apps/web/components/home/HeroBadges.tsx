@@ -1,3 +1,4 @@
+// apps/web/components/home/HeroBadges.tsx
 export default function HeroBadges({
   dataSourceLabel,
   note,
@@ -7,11 +8,17 @@ export default function HeroBadges({
 }) {
   return (
     <div className="mb-6 flex flex-wrap gap-2 text-xs opacity-80">
+      {dataSourceLabel && (
+        <span className="rounded-full border px-3 py-1">
+          データ元: {dataSourceLabel}
+        </span>
+      )}
+
       <span className="rounded-full border px-3 py-1">
-        データ元: {dataSourceLabel}
+        AIでやさしく自動生成
       </span>
-      <span className="rounded-full border px-3 py-1">毎日自動更新</span>
-      <span className="rounded-full border px-3 py-1">{note}</span>
+
+      {note && <span className="rounded-full border px-3 py-1">{note}</span>}
     </div>
   );
 }

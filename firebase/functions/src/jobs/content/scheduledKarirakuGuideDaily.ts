@@ -6,7 +6,6 @@ import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { generateBlogContent } from "../../utils/generateBlogContent.js";
 import { findUnsplashHero } from "../../services/unsplash/client.js";
 import { pickBestKeywordForSite } from "../../lib/keywords/pickSiteKeyword.js";
-import { getBlogEnabledSiteIds } from "../../lib/sites/sites.js";
 import { getSeasonalContext } from "../../utils/seasonalContext.js";
 
 const REGION = process.env.FUNCTIONS_REGION || "asia-northeast1";
@@ -407,36 +406,27 @@ async function createGuideOnceForSite(siteId: string): Promise<void> {
 // ===============================
 
 /**
- * 悩み解決ブログ（ガイド系、マルチサイト版）
- * - blogs: true の全サイトで 1 本ずつ生成
+ * 悩み解決ブログ（ガイド系、カンガルーポスト専用・シングルサイト版）
  */
 export const scheduledKarirakuGuideDaily = functions
   .region(REGION)
   .runWith({
-    timeoutSeconds: 300, // ★ 60秒 → 300秒 に延長（最大 540 まで可）
+    timeoutSeconds: 300,
   })
   .pubsub.schedule("0 7 * * *") // 毎朝 7:00 JST
   .timeZone(TZ)
   .onRun(async () => {
-    const siteIds = await getBlogEnabledSiteIds(db);
-    console.log("[GuideDaily] start scheduled run", { siteIds });
+    const siteId = "kangaroo-post";
 
-    if (!siteIds.length) {
-      console.warn("[GuideDaily] no blog-enabled sites");
-      return;
-    }
+    console.log("[GuideDaily] start scheduled run (single site)", { siteId });
 
-    for (const siteId of siteIds) {
-      console.log("[GuideDaily] start site", { siteId });
-      // eslint-disable-next-line no-await-in-loop
-      await createGuideOnceForSite(siteId);
-      console.log("[GuideDaily] done site", { siteId });
-    }
+    await createGuideOnceForSite(siteId);
+
+    console.log("[GuideDaily] done scheduled run", { siteId });
   });
 
 /**
- * 手動トリガー用 HTTP
- * - blogs: true の全サイトで 1 本ずつ生成
+ * 手動トリガー用 HTTP（カンガルーポスト専用）
  */
 export const runKarirakuGuideNow = functions
   .region(REGION)
@@ -445,18 +435,13 @@ export const runKarirakuGuideNow = functions
   })
   .https.onRequest(async (_req, res) => {
     try {
-      const siteIds = await getBlogEnabledSiteIds(db);
-      console.log("[GuideDaily] HTTP run", { siteIds });
+      const siteId = "kangaroo-post";
 
-      const results: { siteId: string }[] = [];
+      console.log("[GuideDaily] HTTP run (single site)", { siteId });
 
-      for (const siteId of siteIds) {
-        // eslint-disable-next-line no-await-in-loop
-        await createGuideOnceForSite(siteId);
-        results.push({ siteId });
-      }
+      await createGuideOnceForSite(siteId);
 
-      res.status(200).json({ ok: true, results });
+      res.status(200).json({ ok: true, siteId });
     } catch (e) {
       console.error("[GuideDaily] HTTP error", e);
       res.status(500).send("error");

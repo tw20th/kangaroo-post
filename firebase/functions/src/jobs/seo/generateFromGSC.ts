@@ -418,6 +418,11 @@ async function runOnceForSite(
 
 /* ====== exports ====== */
 /** 毎朝 07:30 JST：各サイトのGSC上位クエリから最大2件を自動更新/作成（比較表＋Unsplash画像） */
+/* ============================================================
+   GSC機能はMVPフェーズでは使用しないため、すべて停止中
+============================================================ */
+
+/*
 export const generateFromGSC = functions
   .runWith({ secrets: ["OPENAI_API_KEY", "UNSPLASH_ACCESS_KEY"] })
   .region(REGION)
@@ -436,7 +441,6 @@ export const generateFromGSC = functions
     return { results };
   });
 
-/** 手動実行（テスト用）: ?siteId=xxx&max=2&relaxed=1 */
 export const runGenerateFromGscNow = functions
   .runWith({ secrets: ["OPENAI_API_KEY", "UNSPLASH_ACCESS_KEY"] })
   .region(REGION)
@@ -460,3 +464,4 @@ export const runGenerateFromGscNow = functions
       res.status(500).json({ ok: false, error: e?.message || String(e) });
     }
   });
+*/

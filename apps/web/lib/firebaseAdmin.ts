@@ -5,7 +5,7 @@ import {
   cert,
   type ServiceAccount,
 } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -35,3 +35,6 @@ const app =
       });
 
 export const adminDb = getFirestore(app);
+
+// ★ Next.js 側から使えるように FieldValue も export
+export { FieldValue };

@@ -109,7 +109,6 @@ async function loadSiteConfig(siteId: string): Promise<SiteConfigDoc> {
 
     return withDerivedCopy(cfg);
   } catch {
-    // 🔴 Firestore にアクセスできなくても、必ずローカルのデフォルトで動かす
     return fallbackConfig(siteId);
   }
 }
@@ -311,11 +310,44 @@ type SiteUiConfig = {
 };
 
 function getSiteUiConfig(siteId: string): SiteUiConfig {
+  if (siteId === "kangaroo-post") {
+    return {
+      showOfferGallery: false,
+      heroCtaPrimary: {
+        href: "/dashboard",
+        label: "ダッシュボードをひらく",
+      },
+      heroCtaSecondary: {
+        href: "/blog",
+        label: "ブログを読む",
+      },
+      painHeading: "サイト更新がしんどいとき、こんな悩みはありませんか？",
+      painCtaLabel: "この悩みへのヒントを見る",
+      painItems: [
+        {
+          title: "記事を書きたいけれど、時間がとれない",
+          body: "本業や日々の業務が忙しくて、記事作成にまとまった時間を使えない…。そんなときに「とりあえず下書きまで」をおまかせできます。",
+          href: "/blog?type=guide",
+        },
+        {
+          title: "ネタはあるのに、文章にするのが苦手",
+          body: "伝えたいことはあるけれど、構成や言い回しを考えているうちに手が止まってしまう。やさしいトーンの記事テンプレに沿って、自動で文章化します。",
+          href: "/blog?type=discover",
+        },
+        {
+          title: "とりあえず月に数本だけでも続けたい",
+          body: "完璧な運用はむずかしくても、「月に数本だけ」更新を続けたい。そんな“ゆるく続ける”ための仕組みづくりをお手伝いします。",
+          href: "/blog?type=daily",
+        },
+      ],
+    };
+  }
+
   if (siteId === "kariraku") {
     return {
       showOfferGallery: true,
       heroCtaPrimary: {
-        href: "/offers?v=hero",
+        href: "/offers",
         label: "家電レンタルを比較する",
       },
       heroCtaSecondary: {
@@ -462,6 +494,8 @@ export default async function Page() {
       ? "暮らしに寄りそうおすすめ記事"
       : siteId === "workiroom"
       ? "在宅ワークのヒント・読みもの"
+      : siteId === "kangaroo-post"
+      ? "サイト運営のヒント・読みもの"
       : "おすすめの記事";
 
   return (

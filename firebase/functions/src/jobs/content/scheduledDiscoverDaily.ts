@@ -6,7 +6,6 @@ import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { generateBlogContent } from "../../utils/generateBlogContent.js";
 import { findUnsplashHero } from "../../services/unsplash/client.js";
 import { pickBestKeywordForSite } from "../../lib/keywords/pickSiteKeyword.js";
-import { getBlogEnabledSiteIds } from "../../lib/sites/sites.js";
 import {
   getSiteConfig,
   type SiteConfig,
@@ -188,6 +187,16 @@ function resolveProfile(
       topic:
         "肌の揺らぎの背景を生活習慣といっしょに見つめ直し、できることを静かに整理する",
     },
+    // 🦘 カンガルーポスト（SaaS）用のデフォルトプロファイル
+    "kangaroo-post": {
+      theme:
+        "サイト更新や記事作成が負担になりがちな人を、静かな自動投稿でそっと支える",
+      reader:
+        "自分のサイトやサービスはあるけれど、記事を書く時間や気力が続かず更新が止まりがちな人",
+      tone: "やわらかい, 落ち着いた, 寄り添う, 相手のペースを大事にする, 裏方的",
+      topic:
+        "『書かなきゃ』というプレッシャーをほどきながら、少しずつ記事が増えていくための考え方や小さな工夫を共有する",
+    },
   };
 
   const fallback: ResolvedProfile = defaults[siteId] ?? {
@@ -261,18 +270,25 @@ async function createDiscoverOnceForSite(siteId: string): Promise<void> {
 
   const nowMs = Date.now();
 
-  const targetKeyword =
-    pickedKeyword.keyword.trim() ||
-    (siteId === "kariraku"
+  // サイトごとのフォールバックキーワード
+  const fallbackKeyword =
+    siteId === "kariraku"
       ? "家電レンタル 買ってよかったもの"
-      : "おすすめ ガジェット");
+      : siteId === "kangaroo-post"
+      ? "ブログ 記事 書けない とき"
+      : "おすすめ ガジェット";
+
+  const targetKeyword = pickedKeyword.keyword.trim() || fallbackKeyword;
 
   // Discover は「生活 × ちょっとした便利さ」前提のペルソナ・ペインにする
   const persona = profile.reader;
 
+  // サイトごとの「いま抱えていそうなペイン」
   const pain =
     siteId === "kariraku"
       ? "買うかどうか悩む家電が多くて、まずは気軽に試したいと感じている"
+      : siteId === "kangaroo-post"
+      ? "自分のサイトがあるのに、記事を書く時間や気力が続かず、更新が止まりがちになってしまう"
       : "仕事や暮らしの中で、小さなストレスがじわじわ溜まってしまっている";
 
   const templateName = "blogTemplate_discover.txt";
@@ -280,13 +296,17 @@ async function createDiscoverOnceForSite(siteId: string): Promise<void> {
   // Discover 用のサブキーワード（ひとまず primaryKeyword 1本を共有）
   const subKeywords: string[] = [targetKeyword];
 
+  // サイトごとの基本タグ
+  const baseProductTags: string[] =
+    siteId === "kangaroo-post"
+      ? ["サイト運営", "記事作成", "続けやすさ", "カンガルーポスト"]
+      : ["おすすめ", "暮らし", "discover", seasonal.keyword];
+
   const rawBlog = (await generateBlogContent({
     product: {
       name: targetKeyword,
       asin: `discover-${siteId}-${nowMs}`,
-      tags: ["おすすめ", "暮らし", "discover", seasonal.keyword].filter(
-        (t) => t && t.length > 0
-      ),
+      tags: baseProductTags.filter((t) => t && t.length > 0),
     },
     siteId,
     siteName,
@@ -294,7 +314,9 @@ async function createDiscoverOnceForSite(siteId: string): Promise<void> {
     pain,
     templateName,
     vars: {
+      // Discover intent のマーカー
       intent: "discover",
+
       topic: targetKeyword,
       compareUrl: siteId === "kariraku" ? "/compare" : "/blog",
       primaryKeyword: targetKeyword,
@@ -321,10 +343,12 @@ async function createDiscoverOnceForSite(siteId: string): Promise<void> {
     rawBlog.excerpt !== null ? sanitizeText(rawBlog.excerpt) : null;
 
   // 🔹 タグ + 季節キーワードをマージ（重複は除く）
-  const baseTags = rawBlog.tags ?? [];
+  const mergedTagsSource = rawBlog.tags ?? [];
   const tags = Array.from(
     new Set(
-      [...baseTags, seasonal.keyword].filter((t) => t && t.trim().length > 0)
+      [...mergedTagsSource, seasonal.keyword].filter(
+        (t) => t && t.trim().length > 0
+      )
     )
   );
 
@@ -395,8 +419,7 @@ async function createDiscoverOnceForSite(siteId: string): Promise<void> {
  * ================================ */
 
 /**
- * Discover 向けおすすめ記事（マルチサイト版）
- * - blogs: true の全サイトで 1 本ずつ生成
+ * Discover 向けおすすめ記事（カンガルーポスト専用・シングルサイト版）
  */
 export const scheduledDiscoverDaily = functions
   .region(REGION)
@@ -406,22 +429,19 @@ export const scheduledDiscoverDaily = functions
   .pubsub.schedule("0 9 * * *") // 毎朝 09:00 JST
   .timeZone(TZ)
   .onRun(async () => {
-    const siteIds = await getBlogEnabledSiteIds(db);
-    console.log("[DiscoverDaily] start scheduled run", { siteIds });
+    const siteId = "kangaroo-post";
 
-    if (!siteIds.length) {
-      console.warn("[DiscoverDaily] no blog-enabled sites");
-      return;
-    }
+    console.log("[DiscoverDaily] start scheduled run (single site)", {
+      siteId,
+    });
 
-    for (const siteId of siteIds) {
-      // eslint-disable-next-line no-await-in-loop
-      await createDiscoverOnceForSite(siteId);
-    }
+    await createDiscoverOnceForSite(siteId);
+
+    console.log("[DiscoverDaily] done scheduled run", { siteId });
   });
 
 /**
- * 手動トリガー用 HTTP
+ * 手動トリガー用 HTTP（カンガルーポスト専用）
  */
 export const runDiscoverDailyNow = functions
   .region(REGION)
@@ -430,16 +450,13 @@ export const runDiscoverDailyNow = functions
   })
   .https.onRequest(async (_req, res) => {
     try {
-      const siteIds = await getBlogEnabledSiteIds(db);
-      const results: { siteId: string }[] = [];
+      const siteId = "kangaroo-post";
 
-      for (const siteId of siteIds) {
-        // eslint-disable-next-line no-await-in-loop
-        await createDiscoverOnceForSite(siteId);
-        results.push({ siteId });
-      }
+      console.log("[DiscoverDaily] HTTP run (single site)", { siteId });
 
-      res.status(200).json({ ok: true, results });
+      await createDiscoverOnceForSite(siteId);
+
+      res.status(200).json({ ok: true, siteId });
     } catch (e) {
       console.error("[DiscoverDaily] HTTP error", e);
       res.status(500).send("error");

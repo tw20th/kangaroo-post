@@ -1,10 +1,11 @@
+// apps/web/components/home/BlogsSection.tsx
 import Link from "next/link";
 
 export type BlogSummary = {
   slug: string;
   title: string;
-  summary?: string;
-  imageUrl?: string;
+  summary?: string | null;
+  imageUrl?: string | null;
   updatedAt: number;
 };
 
@@ -26,7 +27,7 @@ export default function BlogsSection({
 
       {items.length === 0 ? (
         <div className="rounded-lg border p-6 text-sm opacity-70">
-          公開済みのブログがありません。
+          公開済みの記事がまだありません。自動投稿の設定が完了すると、ここに記事が並びます。
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">

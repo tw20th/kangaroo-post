@@ -1,8 +1,7 @@
 // firebase/functions/src/scripts/seedSiteKeywords.ts
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
-import { getApps, initializeApp } from "firebase-admin/app";
+import { getApps, initializeApp, getApp, cert } from "firebase-admin/app";
 import { getFirestore, Firestore } from "firebase-admin/firestore";
 
 /* ========= Types ========= */
@@ -71,8 +70,30 @@ interface SiteKeywordDoc {
 
 function ensureFirestore(): Firestore {
   if (getApps().length === 0) {
-    initializeApp();
+    const projectId = process.env.FIREBASE_PROJECT_ID ?? "kangaroo-post";
+
+    if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      initializeApp({
+        projectId,
+        credential: cert({
+          projectId,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          // .env に "...\n..." 形式で入っている想定
+          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+        }),
+      });
+    } else {
+      // 最低限 projectId だけでも指定して初期化
+      initializeApp({ projectId });
+    }
+
+    // eslint-disable-next-line no-console
+    console.log(
+      "[seedSiteKeywords] initialized projectId=",
+      getApp().options.projectId
+    );
   }
+
   return getFirestore();
 }
 

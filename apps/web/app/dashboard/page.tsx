@@ -64,6 +64,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-3xl space-y-8 px-4 py-10">
+      {/* ヘッダー */}
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">
           カンガルーポスト ダッシュボード
@@ -72,6 +73,27 @@ export default async function DashboardPage() {
           サイト更新がしんどいときに、ここから記事づくりをおまかせできます。
         </p>
       </header>
+
+      {/* 📝 使い方ミニガイド */}
+      <section className="space-y-2 rounded-2xl border border-emerald-50 bg-emerald-50/40 p-4 text-sm text-gray-800 shadow-sm">
+        <div className="text-xs font-semibold text-emerald-800">
+          はじめての方へ：ミニガイド
+        </div>
+        <ol className="list-decimal space-y-1 pl-5">
+          <li>
+            上のフォームに「書きたいテーマ」や「今の悩み」を一文だけ入力します。
+          </li>
+          <li>
+            送信すると、その内容をもとに下書き記事が1本自動で作成されます。
+          </li>
+          <li>
+            下の「最近の下書き」から内容を確認し、必要ならタイトルや本文を手動で調整してから公開してください。
+          </li>
+        </ol>
+        <p className="pt-1 text-xs text-gray-600">
+          むずかしく考えず、「とりあえず1行だけ書いてみる」くらいの気持ちで使ってもらえる設計にしています。
+        </p>
+      </section>
 
       {/* 記事生成フォーム */}
       <section className="space-y-3 rounded-2xl border bg-white/70 p-4 shadow-sm">

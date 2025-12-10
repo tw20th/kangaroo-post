@@ -1,3 +1,4 @@
+// apps/web/components/common/SiteHeader.tsx
 import Link from "next/link";
 import { getSiteEntry } from "@/lib/site-server";
 
@@ -14,6 +15,12 @@ type SiteEntryLike = {
 
 function getNavItems(siteId: string): NavItem[] {
   switch (siteId) {
+    case "kangaroo-post":
+      return [
+        { href: "/blog", label: "ブログ" },
+        { href: "/dashboard", label: "ダッシュボード" },
+      ];
+
     case "kariraku":
       return [
         { href: "/offers", label: "家電レンタル" },

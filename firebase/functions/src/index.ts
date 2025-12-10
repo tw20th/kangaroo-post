@@ -102,19 +102,26 @@ export { debugBlogCtr } from "./http/debugBlogCtr.js";
 export { scheduledRewriteLowScoreBlogs } from "./jobs/content/scheduledRewriteLowScoreBlogs.js";
 
 /* ========== SEO (GSC連携) ========== */
-// 毎夜 Pull → 翌朝 GSC 由来で新規/改稿
-export { scheduledAnalyzeTitlePatterns } from "./jobs/seo/scheduledAnalyzeTitlePatterns.js";
 
-export { scheduledPullGsc, runPullGscNow } from "./jobs/seo/pullGscQueries.js";
-export {
-  generateFromGSC,
-  runGenerateFromGscNow,
-} from "./jobs/seo/generateFromGSC.js";
-export { runUpdateBlogSeoNow } from "./jobs/seo/updateBlogSeoFromGSC.js";
-export {
-  scheduledSyncSiteKeywordsFromGSC,
-  runSyncSiteKeywordsFromGSCNow,
-} from "./jobs/seo/syncSiteKeywordsFromGSC.js";
+// ▼ MVPフェーズでは GSC 全停止するため、すべて無効化
+// export { scheduledAnalyzeTitlePatterns } from "./jobs/seo/scheduledAnalyzeTitlePatterns.js";
+
+// export {
+//   scheduledPullGsc,
+//   runPullGscNow,
+// } from "./jobs/seo/pullGscQueries.js";
+
+// export {
+//   generateFromGSC,
+//   runGenerateFromGscNow,
+// } from "./jobs/seo/generateFromGSC.js";
+
+// export { runUpdateBlogSeoNow } from "./jobs/seo/updateBlogSeoFromGSC.js";
+
+// export {
+//   scheduledSyncSiteKeywordsFromGSC,
+//   runSyncSiteKeywordsFromGSCNow,
+// } from "./jobs/seo/syncSiteKeywordsFromGSC.js";
 
 /* ========== スコア最適化アルゴリズム ========== */
 export { scheduledAggregateKeywordScores } from "./jobs/analytics/aggregateKeywordScores.js";

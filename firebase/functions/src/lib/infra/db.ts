@@ -5,12 +5,13 @@ import { getFirestore, Firestore, Settings } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
 // ✅ ここを kangaroo-post 用に
-const PROJECT_ID = process.env.GCLOUD_PROJECT || "kangaroo-post";
+const PROJECT_ID =
+  process.env.GCLOUD_PROJECT ||
+  process.env.FIREBASE_PROJECT_ID || // .env から読めるように
+  "kangaroo-post"; // 最後のデフォルトも kangaroo-post に
 
-// ✅ Firebase コンソール > Storage のバケット名を確認して合わせる
-// 例: kangaroo-post.firebasestorage.app または kangaroo-post.appspot.com
 const BUCKET =
-  process.env.STORAGE_BUCKET || "kangaroo-post.firebasestorage.app";
+  process.env.STORAGE_BUCKET || `${PROJECT_ID}.firebasestorage.app`;
 
 if (getApps().length === 0) {
   initializeApp({

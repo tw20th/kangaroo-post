@@ -32,7 +32,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true }, { status: 200 });
     }
 
-    const db = adminDb();
+    // ★ adminDb は「関数」ではなく Firestore インスタンス
+    const db = adminDb;
+
     const payload = {
       type,
       siteId,
@@ -43,7 +45,7 @@ export async function POST(req: NextRequest) {
       ts: ts ?? Date.now(),
       createdAt: FieldValue.serverTimestamp(),
       ua: req.headers.get("user-agent") ?? null,
-      ip: (req as any).ip ?? null,
+      ip: (req as any).ip ?? null, // ここは既存のまま
       ref: req.headers.get("referer") ?? null,
     };
 
@@ -52,10 +54,12 @@ export async function POST(req: NextRequest) {
       .doc(siteId)
       .collection("clicks")
       .doc();
+
     const key = `${type}_${offerId ?? blogSlug ?? "unknown"}`;
     const aggRef = db.collection("stats").doc(`clicks_${key}`);
 
-    await db.runTransaction(async (tx) => {
+    // ★ tx に Transaction 型を付けて noImplicitAny を回避
+    await db.runTransaction(async (tx: FirebaseFirestore.Transaction) => {
       tx.set(write, payload);
       tx.set(
         aggRef,

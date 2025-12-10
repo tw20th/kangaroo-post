@@ -1,0 +1,170 @@
+{
+  "siteId": "kangaroo-post",
+  "displayName": "カンガルーポスト",
+  "domain": "kangaroo-post.com",
+
+  "blogEnabled": true,
+
+  "blogTemplates": {
+    "service": "kangaroo_service",
+    "guide": "kangaroo_guide",
+    "discover": "discover_kangaroo",
+    "navLabels": {
+      "offers": "サービス",
+      "blog": "読みもの"
+    }
+  },
+
+  "gsc": {
+    "propertyUrl": "sc-domain:kangaroo-post.com"
+  },
+
+  "keywordPools": {
+    "guide": [
+      "サイト更新が続かないときの考え方",
+      "ブログを書くのがしんどい人向けの始め方",
+      "文章が苦手でもブログを続けるコツ",
+      "忙しくても月1本だけ記事を出すやり方",
+      "社員にブログを書いてもらうときの声かけ"
+    ],
+    "service": [
+      "自動でブログ記事を作ってくれるサービス",
+      "中小企業向けのコンテンツ制作を楽にするツール",
+      "サイト更新を丸ごと任せたいときの選び方",
+      "自社サイトの集客を少しずつ増やす方法",
+      "AI で記事を作るサービスの比較ポイント"
+    ],
+    "discover": [
+      "更新が苦手でも続けられるブログとの付き合い方",
+      "忙しい人のためのゆるい情報発信スタイル",
+      "毎日じゃなくていいコンテンツ運用の考え方",
+      "AI と人の役割分担でラクに続ける記事作成",
+      "小さな会社がムリなく発信を続ける工夫",
+      "社員が疲れないブログ運用の仕組みづくり",
+      "頑張りすぎない SEO と Discover との付き合い方"
+    ]
+  },
+
+  "contentPlan": {
+    "weekly": { "pillarIntent": "やさしいガイド記事を少しずつ増やす" },
+    "daily": { "enabled": true },
+    "guide": { "enabled": true },
+    "service": { "enabled": false },
+    "monthlyCompare": { "enabled": false },
+    "discover": { "enabled": true }
+  },
+
+  "images": {
+    "preferUnsplashHero": true
+  },
+
+  "brand": {
+    "primary": "#16A34A",
+    "accent": "#0EA5E9",
+    "logoUrl": "/logos/kangaroo-post.svg",
+    "theme": "light"
+  },
+
+  "analytics": {
+    "ga4MeasurementId": "G-XXXXXXXX"
+  },
+
+  "categoryPreset": ["blog-automation"],
+
+  "features": {
+    "offers": false,
+    "products": false,
+    "blogs": true,
+    "ranking": false
+  },
+
+  "homeCopy": {
+    "title": "サイト更新がしんどい人の味方になる、記事生成サービス。",
+    "subtitle": "「書かなきゃ」と思う気持ちに、そっと寄り添いながら。忙しくても、文章が苦手でも、ゆるく続けられるブログ運用をいっしょにつくります。",
+    "featuredTitle": "おすすめの読みもの",
+    "blogsTitle": "新着ブログ",
+    "dataSourceLabel": "カンガルーポスト",
+    "note": "この記事は AI を活用して自動生成・半自動生成されたコンテンツを含みます。"
+  },
+
+  "seo": {
+    "metaTitle": "カンガルーポスト｜サイト更新が苦手な人のための自動記事生成サービス",
+    "metaDescription": "カンガルーポストは、サイト更新やブログ執筆が苦手な中小企業・個人事業主のための自動記事生成サービスです。やさしいトーンの記事を、あなたの代わりに少しずつ増やしていきます。",
+    "ogImage": "/og/kangaroo-post_og.png",
+    "keywords": [
+      "自動記事生成",
+      "ブログ更新 代行",
+      "中小企業 コンテンツ",
+      "AI 記事作成",
+      "サイト更新 苦手"
+    ]
+  },
+
+  "painRules": [
+    {
+      "id": "no-time-to-write",
+      "label": "書く時間がなくて、いつも後回しになる",
+      "keywords": [
+        "ブログ 書く時間 ない",
+        "サイト 更新 忙しい",
+        "コンテンツ 作成 時間 ない"
+      ],
+      "personas": ["中小企業の担当者", "一人で何役もこなしている人"]
+    },
+    {
+      "id": "writing-is-hard",
+      "label": "文章を書くこと自体がしんどい・苦手",
+      "keywords": [
+        "文章 苦手 ブログ",
+        "ブログ 何を書けばいいか わからない",
+        "記事 作成 ハードル 高い"
+      ],
+      "personas": ["経営者", "専門職だけど文章が苦手な人"]
+    },
+    {
+      "id": "cant-keep-up",
+      "label": "最初だけ頑張って、続かなくなってしまう",
+      "keywords": [
+        "ブログ 続かない",
+        "サイト 更新 三日坊主",
+        "情報発信 続ける コツ"
+      ],
+      "personas": ["マーケ担当", "個人事業主"]
+    },
+    {
+      "id": "dont-know-what-to-write",
+      "label": "そもそも何を書けばいいか分からない",
+      "keywords": [
+        "ブログ ネタ ない",
+        "会社 ブログ 何を書く",
+        "コンテンツ アイデア 出ない"
+      ],
+      "personas": ["中小企業の広報", "兼務でマーケを担当している人"]
+    }
+  ],
+  "profile": {
+    "theme": "サイトを育てることが苦手な人の味方でいたい",
+    "reader": "サイトやブログはあるけれど、更新が途切れがちで少し罪悪感を抱えている人",
+    "tone": "やさしく、落ち着いていて、相手のペースを大事にする",
+    "topic": "『ちゃんとやらなきゃ』のプレッシャーをほどきながら、ムリなく続けられるサイト運営の形をいっしょに探す",
+    "discover": {
+      "theme": "記事作成や更新のしんどさを、ちいさな気づきと仕組みで軽くする",
+      "reader": "記事を書きたい気持ちはあるけれど、仕事や生活のなかで後回しになりがちなサイト運営者",
+      "tone": "静かでやわらかく、安心して読める文章",
+      "topic": "更新が続かない理由を責めずに眺めながら、『こういうやり方でもいいかも』という選択肢をそっと増やしていく",
+      "tags": [
+        "サイト運営",
+        "記事作成",
+        "自動投稿",
+        "続けやすさ",
+        "カンガルーポスト"
+      ]
+    }
+  },
+
+  "painGroups": {
+    "サイト更新が続かない理由を整理する": ["no-time-to-write", "cant-keep-up"],
+    "文章が苦手な人でもできるやり方": ["writing-is-hard"],
+    "ブログのネタに困ったときに読む記事": ["dont-know-what-to-write"]
+  }
+}

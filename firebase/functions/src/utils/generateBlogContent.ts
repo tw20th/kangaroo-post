@@ -30,6 +30,14 @@ const DISCOVER_TAGS_BY_SITE: Record<string, string[]> = {
   kariraku: ["一人暮らし", "暮らしの工夫", "家電のある生活", "ミニコラム"],
   workiroom: ["在宅ワーク", "デスク環境", "働き方の工夫", "ミニコラム"],
   hadasmooth: ["肌のゆらぎ", "生活リズム", "やさしいケア", "ミニコラム"],
+  // 🦘 カンガルーポスト
+  "kangaroo-post": [
+    "サイト運営",
+    "記事作成",
+    "自動投稿",
+    "続けやすさ",
+    "ミニコラム",
+  ],
 };
 
 async function resolveDiscoverTags(siteId: string): Promise<string[]> {
@@ -510,14 +518,28 @@ export async function generateBlogContent(params: GenerateParams) {
 
   const markdownBody = mdFromJson || bodyMd || rawAll.trim();
 
+  /* Discover 用フラグ（テンプレ or vars.intent） */
+  const varsObj =
+    (params.vars as unknown as Record<string, unknown> | undefined) ??
+    undefined;
+  const isDiscoverIntent =
+    params.templateName === "blogTemplate_discover.txt" ||
+    (varsObj && varsObj["intent"] === "discover");
+
   /* 3. タイトル決定ロジック */
-  const fallbackTitle = `${params.product.name} 値下げ情報`;
-  let title = fallbackTitle;
+  // 🦘 Discover 向けのやさしい fallback タイトル
+  const defaultFallbackTitle = isDiscoverIntent
+    ? params.product.name && params.product.name.trim().length > 0
+      ? `${params.product.name}と暮らしのミニコラム`
+      : "今日のちいさなコラム"
+    : `${params.product.name} 値下げ情報`;
+
+  let title = defaultFallbackTitle;
 
   if (jsonParsed) {
-    title = pickBestTitleFromJson(jsonParsed, fallbackTitle);
+    title = pickBestTitleFromJson(jsonParsed, defaultFallbackTitle);
   } else if (headerMeta) {
-    title = pickBestTitleFromMeta(headerMeta, fallbackTitle);
+    title = pickBestTitleFromMeta(headerMeta, defaultFallbackTitle);
   }
 
   /* 4. 抜粋（excerpt） */
@@ -535,13 +557,6 @@ export async function generateBlogContent(params: GenerateParams) {
   }
 
   // Discover intent なら Discover タグをマージ
-  const varsObj =
-    (params.vars as unknown as Record<string, unknown> | undefined) ??
-    undefined;
-  const isDiscoverIntent =
-    params.templateName === "blogTemplate_discover.txt" ||
-    (varsObj && varsObj["intent"] === "discover");
-
   if (isDiscoverIntent) {
     const discoverTags = await resolveDiscoverTags(params.siteId);
     if (discoverTags.length > 0) {

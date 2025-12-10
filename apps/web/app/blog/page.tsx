@@ -45,17 +45,17 @@ const SORT_MODES: SortMode[] = ["popular", "new"]; // 表示順：人気順 → 
 function labelForType(t: BlogType): string {
   switch (t) {
     case "all":
-      return "通常記事（すべて）";
+      return "すべての記事";
     case "compare":
-      return "比較記事";
+      return "比較・まとめ記事";
     case "daily":
-      return "暮らしのアイデア";
+      return "日々のヒント";
     case "guide":
       return "お悩みガイド";
     case "service":
-      return "サービス紹介";
+      return "サービス・機能紹介";
     case "discover":
-      return "おすすめ・読みもの";
+      return "読みもの・コラム";
     default:
       return t;
   }
@@ -89,9 +89,9 @@ export async function generateMetadata({
   ).replace(/\/$/, "");
 
   return {
-    title: "ブログ｜値下げ情報・レビューまとめ",
+    title: "ブログ｜サイト運営のヒントとお知らせ",
     description:
-      "くらしのモヤモヤを少し軽くする Discover 記事と、家電レンタルサービスの比較・ガイド記事をまとめています。",
+      "サイト更新がしんどい人のための、やさしい記事のまとめです。カンガルーポストの使い方や、ゆるく続けるためのコツなどを掲載しています。",
     alternates: { canonical: `${base}/blog` },
     robots: {
       index: indexable,
@@ -228,8 +228,7 @@ export default async function BlogIndex({
       <header className="mt-3 mb-4">
         <h1 className="text-2xl font-bold tracking-tight">ブログ</h1>
         <p className="mt-1 text-sm text-gray-600">
-          くらしのモヤモヤを少し軽くする Discover
-          記事と、家電レンタルサービスの比較・ガイド記事をまとめています。
+          サイト更新がしんどいときのヒントや、カンガルーポストの使い方・考え方をまとめています。
         </p>
       </header>
 
@@ -318,10 +317,10 @@ export default async function BlogIndex({
 
       <div className="mt-8 space-y-1 text-sm text-gray-600">
         <div>
-          <Link href="/offers" className="underline">
-            家電レンタル特集
+          <Link href="/" className="underline">
+            カンガルーポストについて
           </Link>{" "}
-          もどうぞ。値下げやキャンペーンはブログでお知らせします。
+          もどうぞ。サービスのイメージや、自動生成される記事の雰囲気をご紹介しています。
         </div>
       </div>
     </main>

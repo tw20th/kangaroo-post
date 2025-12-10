@@ -1,11 +1,37 @@
 // firebase/functions/src/scripts/sites/pushSitesFromFiles.ts
-import { getApps, initializeApp } from "firebase-admin/app";
+import { getApps, initializeApp, getApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import fs from "node:fs";
 import path from "node:path";
 
-if (getApps().length === 0) initializeApp();
-const db = getFirestore();
+function initDb() {
+  if (getApps().length === 0) {
+    const projectId = process.env.FIREBASE_PROJECT_ID ?? "kangaroo-post";
+
+    if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      initializeApp({
+        projectId,
+        credential: cert({
+          projectId,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+        }),
+      });
+    } else {
+      initializeApp({ projectId });
+    }
+
+    // eslint-disable-next-line no-console
+    console.log(
+      "[pushSitesFromFiles] initialized projectId=",
+      getApp().options.projectId
+    );
+  }
+
+  return getFirestore();
+}
+
+const db = initDb();
 
 type SiteFile = {
   siteId: string;
@@ -73,14 +99,17 @@ async function main() {
     };
 
     await db.collection("sites").doc(docId).set(payload, { merge: true });
+    // eslint-disable-next-line no-console
     console.log(`upsert sites/${docId}`);
     writes++;
   }
 
+  // eslint-disable-next-line no-console
   console.log(`done. updated ${writes} site docs.`);
 }
 
 main().catch((e) => {
+  // eslint-disable-next-line no-console
   console.error(e);
   process.exit(1);
 });

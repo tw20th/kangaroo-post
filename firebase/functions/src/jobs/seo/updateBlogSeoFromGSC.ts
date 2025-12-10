@@ -117,7 +117,11 @@ async function updateAllSitesFromPageLatest(): Promise<UpdateResult> {
   return { results };
 }
 
-// 02:40 JST に定期実行
+/* ============================================================
+   GSCページ別クエリ更新処理はMVPでは不要のため停止
+============================================================ */
+
+/*
 export const scheduledUpdateBlogSeoFromGSC = functions
   .region(REGION)
   .runWith({ timeoutSeconds: 180, memory: "256MB" })
@@ -127,38 +131,22 @@ export const scheduledUpdateBlogSeoFromGSC = functions
     return updateAllSitesFromPageLatest();
   });
 
-// 共通: JSON を返す（void を返す）
-function sendJson(
-  res: functions.Response,
-  status: number,
-  body: unknown
-): void {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res
-    .status(status)
-    .set("Content-Type", "application/json; charset=utf-8")
-    .send(body == null ? "" : JSON.stringify(body));
-}
-
-// 手動実行（HTTP）
 export const runUpdateBlogSeoNow = functions
   .region(REGION)
-  .https.onRequest(
-    async (req: functions.https.Request, res: functions.Response) => {
-      if (req.method === "OPTIONS") {
-        sendJson(res, 204, null);
-        return;
-      }
-      try {
-        const out = await updateAllSitesFromPageLatest();
-        sendJson(res, 200, { ok: true, ...out });
-      } catch (e) {
-        const msg =
-          typeof e === "object" && e && "toString" in (e as any)
-            ? String(e)
-            : "unknown error";
-        sendJson(res, 500, { ok: false, error: msg });
-      }
+  .https.onRequest(async (req, res) => {
+    if (req.method === "OPTIONS") {
+      sendJson(res, 204, null);
+      return;
     }
-  );
+    try {
+      const out = await updateAllSitesFromPageLatest();
+      sendJson(res, 200, { ok: true, ...out });
+    } catch (e) {
+      const msg =
+        typeof e === "object" && e && "toString" in (e as any)
+          ? String(e)
+          : "unknown error";
+      sendJson(res, 500, { ok: false, error: msg });
+    }
+  });
+*/
