@@ -89,8 +89,8 @@ export async function POST(req: Request) {
 
     return res;
   } catch (e) {
+    console.error("[auth/session] Failed to create session:", e); // ←ここが重要（stack含む）
     const message = e instanceof Error ? e.message : String(e);
-    console.error("[auth/session] Failed to create session:", message);
     return NextResponse.json({ ok: false, error: message }, { status: 401 });
   }
 }
