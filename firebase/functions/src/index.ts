@@ -9,7 +9,8 @@
   } catch {}
 })();
 
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
+import type { Request, Response } from "express";
 import { getApps, initializeApp } from "firebase-admin/app";
 
 if (getApps().length === 0) {
@@ -18,10 +19,11 @@ if (getApps().length === 0) {
 
 const REGION = process.env.FUNCTIONS_REGION || "asia-northeast1";
 
-/* ========== Health ========== */
-export const health = functions.region(REGION).https.onRequest((_req, res) => {
-  res.status(200).send("ok");
-});
+export const health = functions
+  .region(REGION)
+  .https.onRequest((_req: Request, res: Response) => {
+    res.status(200).send("ok");
+  });
 
 /* ========== HTTP (A8 minimo) ========== */
 export { trackClick } from "./http/trackClick.js";
@@ -125,3 +127,7 @@ export { scheduledRewriteLowScoreBlogs } from "./jobs/content/scheduledRewriteLo
 
 /* ========== スコア最適化アルゴリズム ========== */
 export { scheduledAggregateKeywordScores } from "./jobs/analytics/aggregateKeywordScores.js";
+
+export * as workspaces from "./http/workspaces.js";
+
+export { getMyWorkspace } from "./http/workspaces.js";

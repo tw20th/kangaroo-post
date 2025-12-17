@@ -6,7 +6,7 @@ import { z } from "zod";
 import { fileURLToPath } from "node:url";
 import { getApps, initializeApp, applicationDefault } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import { logger } from "firebase-functions/v2";
+import { logger } from "firebase-functions/logger";
 
 /* ====== __dirname 対応 ====== */
 const __filename = fileURLToPath(import.meta.url);

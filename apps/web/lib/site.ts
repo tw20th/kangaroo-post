@@ -1,6 +1,6 @@
 // ★ next/headers を import しない（クライアントでも動く版）
 export const COOKIE_SITE_ID = "siteId";
-export const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || "affiscope";
+export const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || "kangaroo-post";
 
 function readCookie(name: string) {
   if (typeof document === "undefined") return "";

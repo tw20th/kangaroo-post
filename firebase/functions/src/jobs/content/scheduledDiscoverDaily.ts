@@ -1,7 +1,7 @@
 // firebase/functions/src/jobs/content/scheduledDiscoverDaily.ts
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { generateBlogContent } from "../../utils/generateBlogContent.js";
 import { findUnsplashHero } from "../../services/unsplash/client.js";

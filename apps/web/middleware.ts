@@ -53,7 +53,7 @@ export function middleware(req: NextRequest) {
   const h = HOST_TO_SITE[host];
 
   // ⭐ 優先順: ?site > host > cookie > default
-  let siteId = q || h || c || DEFAULT_SITE_ID;
+  let siteId = q || c || h || DEFAULT_SITE_ID;
   if (!ALLOWED.has(siteId)) siteId = DEFAULT_SITE_ID;
 
   const reqHeaders = new Headers(req.headers);

@@ -1,6 +1,6 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { getFirestore } from "firebase-admin/firestore";
-import { logger } from "firebase-functions/v2";
+import { logger } from "firebase-functions/logger";
 import { createHash } from "crypto";
 
 // 依存が無ければ、まずは超簡易CSVパーサ（カンマ区切り/ヘッダあり想定）

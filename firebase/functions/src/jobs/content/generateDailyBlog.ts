@@ -1,5 +1,5 @@
 import { getFirestore } from "firebase-admin/firestore";
-import { logger } from "firebase-functions/v2";
+import { logger } from "firebase-functions/logger";
 import { generateContentWithTemplate } from "../../utils/generateBlogContent.js";
 import { makeDailySlug } from "../../lib/slug/daily.js";
 import { pickDailyTheme, DailyTheme } from "../../utils/dailyThemes.js";

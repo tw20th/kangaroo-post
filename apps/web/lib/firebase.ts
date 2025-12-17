@@ -2,7 +2,7 @@
 // ※ サーバーから import されても絶対に例外を投げない実装に変更
 import type { Firestore, FirestoreDataConverter } from "firebase/firestore";
 import type { FirebaseApp } from "firebase/app";
-import type { Product } from "@affiscope/shared-types";
+import type { Product } from "@kangaroo-post/shared-types";
 
 let appSingleton: FirebaseApp | null = null;
 let dbSingleton: Firestore | null = null;

@@ -3,7 +3,7 @@ import type {
   FirestoreDataConverter,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
-import type { Product } from "@affiscope/shared-types";
+import type { Product } from "@kangaroo-post/shared-types";
 
 export const productConverter: FirestoreDataConverter<Product> = {
   toFirestore(p: Product) {

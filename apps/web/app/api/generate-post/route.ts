@@ -2,19 +2,68 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { adminDb } from "@/lib/firebaseAdmin";
+import { getOptionalUser } from "@/lib/auth/server";
+import { getServerSiteId } from "@/lib/site-server";
 
-const MODEL = "gpt-4o-mini"; // 必要に応じて変更OK
+const MODEL = "gpt-4o-mini";
+
+type GeneratePostBody = {
+  title?: string;
+  keyword?: string;
+  workspaceId?: string;
+};
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => ({} as unknown));
-    const title: string | undefined = body.title;
-    const keyword: string | undefined = body.keyword;
+    const user = await getOptionalUser();
+    if (!user) {
+      return NextResponse.json(
+        { ok: false, error: "ログインが必要です。" },
+        { status: 401 }
+      );
+    }
+
+    const body = (await req.json().catch(() => ({}))) as GeneratePostBody;
+
+    const title = body.title;
+    const keyword = body.keyword;
+    const workspaceId = body.workspaceId;
 
     if (!title && !keyword) {
       return NextResponse.json(
         { ok: false, error: "title か keyword のどちらかは必須です。" },
         { status: 400 }
+      );
+    }
+
+    if (!workspaceId) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Workspace が未設定です。先にサイト設定を保存してください。",
+        },
+        { status: 400 }
+      );
+    }
+
+    const siteId = getServerSiteId();
+
+    // ✅ Workspace 所有者チェック
+    const wsSnap = await adminDb
+      .collection("workspaces")
+      .doc(workspaceId)
+      .get();
+    if (!wsSnap.exists) {
+      return NextResponse.json(
+        { ok: false, error: "Workspace が見つかりません。" },
+        { status: 404 }
+      );
+    }
+    const ws = wsSnap.data() as { ownerUserId?: string; siteId?: string };
+    if (ws.ownerUserId !== user.uid || ws.siteId !== siteId) {
+      return NextResponse.json(
+        { ok: false, error: "この Workspace に対する権限がありません。" },
+        { status: 403 }
       );
     }
 
@@ -27,7 +76,6 @@ export async function POST(req: Request) {
     }
 
     const openai = new OpenAI({ apiKey });
-
     const topic = title ?? keyword ?? "ブログ記事";
 
     const prompt = `
@@ -67,7 +115,6 @@ export async function POST(req: Request) {
     });
 
     const content = completion.choices[0]?.message?.content?.trim() ?? "";
-
     if (!content) {
       return NextResponse.json(
         { ok: false, error: "記事生成に失敗しました。（contentが空です）" },
@@ -75,35 +122,35 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔖 とりあえず一意になる slug を作る（あとでちゃんとした slugify に変更可）
     const now = Date.now();
     const slug = `post-${now}`;
-
-    // MVP では siteId は仮で "kariraku" にしておく
-    const siteId = "kariraku";
-
-    const docRef = adminDb.collection("blogs").doc(slug);
-
     const nowDate = new Date();
+
     const payload = {
       slug,
       siteId,
+      workspaceId,
+      ownerUserId: user.uid,
       title: title ?? `自動生成記事 ${now}`,
       content,
-      status: "draft", // ⭐ 最初は下書き
+      status: "draft" as const,
       type: "normal",
       createdAt: nowDate,
       updatedAt: nowDate,
     };
 
-    await docRef.set(payload);
+    // ✅ ここが変更：blogs → posts
+    await adminDb.collection("posts").doc(slug).set(payload);
 
     return NextResponse.json({
       ok: true,
       slug,
       title: payload.title,
+      editUrl: `/dashboard/posts/${encodeURIComponent(slug)}`,
+      embedUrl: `/embed/${encodeURIComponent(workspaceId)}`,
     });
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error("generate-post error", err);
     return NextResponse.json(
       { ok: false, error: "サーバーエラーが発生しました。" },

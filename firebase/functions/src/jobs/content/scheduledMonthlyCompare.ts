@@ -1,7 +1,7 @@
 // firebase/functions/src/jobs/content/scheduledMonthlyCompare.ts
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getFirestore } from "firebase-admin/firestore";
-import { logger } from "firebase-functions/v2";
+import { logger } from "firebase-functions/logger";
 import { generateBlogContent } from "../../utils/generateBlogContent.js";
 import { pickBestKeywordForSite } from "../../lib/keywords/pickSiteKeyword.js";
 import { getBlogEnabledSiteIds } from "../../lib/sites/sites.js";

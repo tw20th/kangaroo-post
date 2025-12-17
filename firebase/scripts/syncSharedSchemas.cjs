@@ -24,7 +24,7 @@ function copyDir(src, dest) {
 
   // npm から参照される package.json（file: 依存で拾わせる）
   const pkg = {
-    name: "@affiscope/shared-schemas",
+    name: "@kangaroo-post/shared-schemas",
     version: "0.0.0-local",
     main: "dist/index.cjs",
     module: "dist/index.js",

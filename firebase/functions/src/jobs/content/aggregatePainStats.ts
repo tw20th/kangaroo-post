@@ -1,5 +1,5 @@
 // firebase/functions/src/jobs/content/aggregatePainStats.ts
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 const REGION = process.env.FUNCTIONS_REGION || "asia-northeast1";

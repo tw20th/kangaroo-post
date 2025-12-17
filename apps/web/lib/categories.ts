@@ -7,7 +7,7 @@ import {
   orderBy,
   limit,
 } from "firebase/firestore";
-import type { Category } from "@affiscope/shared-types";
+import type { Category } from "@kangaroo-post/shared-types";
 
 export async function fetchCategoryBySlug(
   db: Firestore,

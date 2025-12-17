@@ -79,3 +79,34 @@ export const ProductSchema = z.object({
 });
 
 export type ProductParsed = z.infer<typeof ProductSchema>;
+
+export const WorkspaceSchema = z.object({
+  ownerUserId: z.string(),
+  siteName: z.string(),
+  topUrl: z.string().url(),
+
+  // 表示用ラベル & スラッグ
+  blogSectionLabel: z.string().default("ブログ"),
+  blogSectionSlug: z.string(),
+
+  // ウィジェット設定
+  widgetEnabled: z.boolean().default(true),
+  widgetLimit: z.number().int().min(1).max(20).default(3),
+
+  // 任意情報
+  industry: z.string().optional(),
+  keywordPreferences: z.string().optional(),
+
+  // WordPress 連携
+  wpUrl: z.string().url().optional(),
+  wpUser: z.string().optional(),
+  wpAppPassword: z.string().optional(),
+
+  status: z.enum(["active", "inactive"]).default("active"),
+
+  // 既存データにも対応できるよう optional にして fromDoc 側で補完
+  createdAt: z.number().optional(),
+  updatedAt: z.number().optional(),
+});
+
+export type WorkspaceParsed = z.infer<typeof WorkspaceSchema>;

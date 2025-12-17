@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getFirestore } from "firebase-admin/firestore";
 import { getApps, initializeApp } from "firebase-admin/app";
 import OpenAI from "openai";

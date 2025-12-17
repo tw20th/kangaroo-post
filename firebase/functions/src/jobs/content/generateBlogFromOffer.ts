@@ -1,6 +1,6 @@
 // firebase/functions/src/jobs/content/generateBlogFromOffer.ts
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
-import { logger } from "firebase-functions/v2";
+import { logger } from "firebase-functions/logger";
 import { serviceBlogSlug } from "../../lib/slug/a8.js";
 import { getSiteConfig } from "../../lib/sites/siteConfig.js";
 import { findUnsplashHero } from "../../services/unsplash/client.js";

@@ -1,5 +1,5 @@
 // firebase/functions/src/jobs/seo/scheduledAnalyzeTitlePatterns.ts
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getFirestore } from "firebase-admin/firestore";
 import { getBlogEnabledSiteIds } from "../../lib/sites/sites.js";
 import { analyzeTitlesForSite } from "../../lib/seo/titlePatternsRunner.js";

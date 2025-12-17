@@ -103,3 +103,48 @@ export interface Improvement {
   suggestions: string[];
   createdAt: number;
 }
+
+export type WorkspaceStatus = "active" | "inactive";
+
+export interface Workspace {
+  /** Firestore docId */
+  id: string;
+
+  /** このワークスペースの持ち主（ユーザーID） */
+  ownerUserId: string;
+
+  /** サイト名（例：カンガルーポスト公式ブログ） */
+  siteName: string;
+
+  /** サイトのトップURL */
+  topUrl: string;
+
+  /** サイト側で表示するラベル（例：お知らせ / ブログ） */
+  blogSectionLabel: string;
+
+  /** ブログセクションのスラッグ（例：blog, news など） */
+  blogSectionSlug: string;
+
+  /** 埋め込みウィジェットを使うかどうか */
+  widgetEnabled: boolean;
+
+  /** ウィジェットで表示する記事数 */
+  widgetLimit: number;
+
+  /** 任意：業種など */
+  industry?: string;
+
+  /** 任意：キーワードの好み・メモ */
+  keywordPreferences?: string;
+
+  /** オプション：WordPress連携情報 */
+  wpUrl?: string;
+  wpUser?: string;
+  wpAppPassword?: string;
+
+  /** ステータス（有効 / 無効） */
+  status: WorkspaceStatus;
+
+  createdAt: number;
+  updatedAt: number;
+}

@@ -1,6 +1,6 @@
 // firebase/functions/src/http/runGenerateBlogFromOfferOnce.ts
-import * as functions from "firebase-functions";
-import { logger } from "firebase-functions/v2";
+import * as functions from "firebase-functions/v1";
+import * as logger from "firebase-functions/logger";
 import { generateBlogFromOffer } from "../jobs/content/generateBlogFromOffer.js";
 
 const REGION = "asia-northeast1";

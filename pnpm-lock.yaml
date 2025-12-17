@@ -33,9 +33,12 @@ importers:
 
   apps/web:
     dependencies:
-      '@affiscope/shared-schemas':
+      '@kangaroo-post/shared-schemas':
         specifier: workspace:^
         version: link:../../packages/shared-schemas
+      '@kangaroo-post/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       firebase:
         specifier: ^10.13.2
         version: 10.14.1
@@ -73,9 +76,6 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
     devDependencies:
-      '@affiscope/shared-types':
-        specifier: workspace:*
-        version: link:../../packages/shared-types
       '@types/node':
         specifier: ^20.19.16
         version: 20.19.24
@@ -106,24 +106,27 @@ importers:
 
   firebase/functions:
     dependencies:
-      '@affiscope/shared-schemas':
-        specifier: file:./shared-schemas
-        version: file:firebase/functions/shared-schemas
-      '@affiscope/shared-types':
-        specifier: file:./shared-types
-        version: file:firebase/functions/shared-types
       '@google-cloud/tasks':
         specifier: ^6.2.1
         version: 6.2.1
+      '@kangaroo-post/shared-schemas':
+        specifier: file:./shared-schemas
+        version: file:firebase/functions/shared-schemas
+      '@kangaroo-post/shared-types':
+        specifier: file:./shared-types
+        version: file:firebase/functions/shared-types
       aws4:
         specifier: ^1.12.0
         version: 1.13.2
+      express:
+        specifier: ^4.21.2
+        version: 4.21.2
       firebase-admin:
-        specifier: ^12.5.0
-        version: 12.7.0
+        specifier: ^13.6.0
+        version: 13.6.0
       firebase-functions:
-        specifier: ^5.1.0
-        version: 5.1.1(firebase-admin@12.7.0)
+        specifier: ^7.0.1
+        version: 7.0.1(firebase-admin@13.6.0)
       googleapis:
         specifier: ^164.1.0
         version: 164.1.0
@@ -146,6 +149,9 @@ importers:
       '@types/aws4':
         specifier: ^1.11.6
         version: 1.11.6
+      '@types/express':
+        specifier: ^4.17.25
+        version: 4.17.25
       '@types/node':
         specifier: ^20.19.17
         version: 20.19.24
@@ -206,12 +212,6 @@ importers:
         version: 5.9.3
 
 packages:
-
-  '@affiscope/shared-schemas@file:firebase/functions/shared-schemas':
-    resolution: {directory: firebase/functions/shared-schemas, type: directory}
-
-  '@affiscope/shared-types@file:firebase/functions/shared-types':
-    resolution: {directory: firebase/functions/shared-types, type: directory}
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -428,6 +428,9 @@ packages:
   '@firebase/app-check-interop-types@0.3.2':
     resolution: {integrity: sha512-LMs47Vinv2HBMZi49C09dJxp0QT5LwDzFaVGf/+ITHe3BlIhUiLNttkATSXplc89A2lAaeTqjgqVkiRfUGyQiQ==}
 
+  '@firebase/app-check-interop-types@0.3.3':
+    resolution: {integrity: sha512-gAlxfPLT2j8bTI/qfe3ahl2I2YcBQ8cFIBdhAQA4I2f3TndcO+22YizyGYuttLHPQEpWkhmpFW60VCFEPg4g5A==}
+
   '@firebase/app-check-types@0.5.2':
     resolution: {integrity: sha512-FSOEzTzL5bLUbD2co3Zut46iyPWML6xc4x+78TeaXMSuJap5QObfb+rVvZJtla3asN4RwU7elaQaduP+HFizDA==}
 
@@ -442,6 +445,9 @@ packages:
   '@firebase/app-types@0.9.2':
     resolution: {integrity: sha512-oMEZ1TDlBz479lmABwWsWjzHwheQKiAgnuKxE0pz0IXCVx7/rtlkx1fQ6GfgK24WCrxDKMplZrT50Kh04iMbXQ==}
 
+  '@firebase/app-types@0.9.3':
+    resolution: {integrity: sha512-kRVpIl4vVGJ4baogMDINbyrIOtOxqhkZQg4jTq3l8Lw6WSk0xfpEYzezFu+Kl4ve4fbPl79dvwRtaFqAC/ucCw==}
+
   '@firebase/app@0.10.13':
     resolution: {integrity: sha512-OZiDAEK/lDB6xy/XzYAyJJkaDqmQ+BCtOEPLqFvxWKUz5JbBmej7IiiRHdtiIOD/twW7O5AxVsfaaGA/V1bNsA==}
 
@@ -452,6 +458,9 @@ packages:
 
   '@firebase/auth-interop-types@0.2.3':
     resolution: {integrity: sha512-Fc9wuJGgxoxQeavybiuwgyi+0rssr76b+nHpj+eGhXFYAdudMWyfBHvFL/I5fEHniUM/UQdFzi9VXJK2iZF7FQ==}
+
+  '@firebase/auth-interop-types@0.2.4':
+    resolution: {integrity: sha512-JPgcXKCuO+CWqGDnigBtvo09HeBs5u/Ktc2GaFj2m01hLarbxthLNm7Fk8iOP1aqAtXV+fnnGj7U28xmk7IwVA==}
 
   '@firebase/auth-types@0.12.2':
     resolution: {integrity: sha512-qsEBaRMoGvHO10unlDJhaKSuPn4pyoTtlQuP1ghZfzB6rNQPuhp/N/DcFZxm9i4v0SogjCbf9reWupwIvfmH6w==}
@@ -471,6 +480,10 @@ packages:
   '@firebase/component@0.6.9':
     resolution: {integrity: sha512-gm8EUEJE/fEac86AvHn8Z/QW8BvR56TBw3hMW0O838J/1mThYQXAIQBgUv75EqlCZfdawpWLrKt1uXvp9ciK3Q==}
 
+  '@firebase/component@0.7.0':
+    resolution: {integrity: sha512-wR9En2A+WESUHexjmRHkqtaVH94WLNKt6rmeqZhSLBybg4Wyf0Umk04SZsS6sBq4102ZsDBFwoqMqJYj2IoDSg==}
+    engines: {node: '>=20.0.0'}
+
   '@firebase/data-connect@0.1.0':
     resolution: {integrity: sha512-vSe5s8dY13ilhLnfY0eYRmQsdTbH7PUFZtBbqU6JVX/j8Qp9A6G5gG6//ulbX9/1JFOF1IWNOne9c8S/DOCJaQ==}
     peerDependencies:
@@ -479,11 +492,22 @@ packages:
   '@firebase/database-compat@1.0.8':
     resolution: {integrity: sha512-OpeWZoPE3sGIRPBKYnW9wLad25RaWbGyk7fFQe4xnJQKRzlynWeFBSRRAoLE2Old01WXwskUiucNqUUVlFsceg==}
 
+  '@firebase/database-compat@2.1.0':
+    resolution: {integrity: sha512-8nYc43RqxScsePVd1qe1xxvWNf0OBnbwHxmXJ7MHSuuTVYFO3eLyLW3PiCKJ9fHnmIz4p4LbieXwz+qtr9PZDg==}
+    engines: {node: '>=20.0.0'}
+
+  '@firebase/database-types@1.0.16':
+    resolution: {integrity: sha512-xkQLQfU5De7+SPhEGAXFBnDryUWhhlFXelEg2YeZOQMCdoe7dL64DDAd77SQsR+6uoXIZY5MB4y/inCs4GTfcw==}
+
   '@firebase/database-types@1.0.5':
     resolution: {integrity: sha512-fTlqCNwFYyq/C6W7AJ5OCuq5CeZuBEsEwptnVxlNPkWCo5cTTyukzAHRSO/jaQcItz33FfYrrFk1SJofcu2AaQ==}
 
   '@firebase/database@1.0.8':
     resolution: {integrity: sha512-dzXALZeBI1U5TXt6619cv0+tgEhJiwlUtQ55WNZY7vGAjv7Q1QioV969iYwt1AQQ0ovHnEW0YW9TiBfefLvErg==}
+
+  '@firebase/database@1.1.0':
+    resolution: {integrity: sha512-gM6MJFae3pTyNLoc9VcJNuaUDej0ctdjn3cVtILo3D5lpp0dmUHHLFN/pUKe7ImyeB1KAvRlEYxvIHNF04Filg==}
+    engines: {node: '>=20.0.0'}
 
   '@firebase/firestore-compat@0.3.38':
     resolution: {integrity: sha512-GoS0bIMMkjpLni6StSwRJarpu2+S5m346Na7gr9YZ/BZ/W3/8iHGNr9PxC+f0rNZXqS4fGRn88pICjrZEgbkqQ==}
@@ -532,6 +556,10 @@ packages:
 
   '@firebase/logger@0.4.2':
     resolution: {integrity: sha512-Q1VuA5M1Gjqrwom6I6NUU4lQXdo9IAQieXlujeHZWvRt1b7qQ0KwBaNAjgxG27jgF9/mUwsNmO8ptBCGVYhB0A==}
+
+  '@firebase/logger@0.5.0':
+    resolution: {integrity: sha512-cGskaAvkrnh42b3BA3doDWeBmuHFO/Mx5A83rbRDYakPjO9bJtRL3dX7javzc2Rr/JHZf4HlterTW2lUkfeN4g==}
+    engines: {node: '>=20.0.0'}
 
   '@firebase/messaging-compat@0.2.12':
     resolution: {integrity: sha512-pKsiUVZrbmRgdImYqhBNZlkKJbqjlPkVdQRZGRbkTyX4OSGKR0F/oJeCt1a8jEg5UnBp4fdVwSWSp4DuCovvEQ==}
@@ -590,6 +618,10 @@ packages:
 
   '@firebase/util@1.10.0':
     resolution: {integrity: sha512-xKtx4A668icQqoANRxyDLBLz51TAbDP9KRfpbKGxiCAW346d0BeJe5vN6/hKxxmWwnZ0mautyv39JxviwwQMOQ==}
+
+  '@firebase/util@1.13.0':
+    resolution: {integrity: sha512-0AZUyYUfpMNcztR5l09izHwXkZpghLgCUaAGjtMwXnCg3bj4ml5VgiwqOMOxJ+Nw4qN/zJAaOQBcJ7KGkWStqQ==}
+    engines: {node: '>=20.0.0'}
 
   '@firebase/vertexai-preview@0.0.4':
     resolution: {integrity: sha512-EBSqyu9eg8frQlVU9/HjKtHN7odqbh9MtAcVz3WwHj4gLCLOoN9F/o+oxlq3CxvFrd3CNTZwu6d2mZtVlEInng==}
@@ -686,6 +718,12 @@ packages:
 
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
+
+  '@kangaroo-post/shared-schemas@file:firebase/functions/shared-schemas':
+    resolution: {directory: firebase/functions/shared-schemas, type: directory}
+
+  '@kangaroo-post/shared-types@file:firebase/functions/shared-types':
+    resolution: {directory: firebase/functions/shared-types, type: directory}
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -972,14 +1010,8 @@ packages:
   '@types/express-serve-static-core@4.19.7':
     resolution: {integrity: sha512-FvPtiIf1LfhzsaIXhv/PHan/2FeQBbtBDtfX2QfvPxdUelMDEckK08SM6nqo1MIZY3RUlfA+HV8+hFUSio78qg==}
 
-  '@types/express-serve-static-core@5.1.0':
-    resolution: {integrity: sha512-jnHMsrd0Mwa9Cf4IdOzbz543y4XJepXrbia2T4b6+spXC2We3t1y6K44D3mR8XMFSXMCf3/l7rCgddfx7UNVBA==}
-
   '@types/express@4.17.25':
     resolution: {integrity: sha512-dVd04UKsfpINUnK0yBoYHDF3xu7xVH4BuDotC/xGuycx4CgbP48X/KF/586bcObxT0HENHXEU8Nqtu6NR+eKhw==}
-
-  '@types/express@4.17.3':
-    resolution: {integrity: sha512-I8cGRJj3pyOLs/HndoP+25vOqhqWkAZsWMEmq1qXy/b/M3ppufecUwaK2/TVDVxcV61/iSdhykUjQQ2DLSrTdg==}
 
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
@@ -1037,9 +1069,6 @@ packages:
 
   '@types/serve-static@1.15.10':
     resolution: {integrity: sha512-tRs1dB+g8Itk72rlSI2ZrW6vZg0YrLI81iQSTkMmOqnqCaNr/8Ek4VwWcN5vZgCYWbg/JJSGBlUaYGAOP73qBw==}
-
-  '@types/serve-static@2.2.0':
-    resolution: {integrity: sha512-8mam4H1NHLtu7nmtalF7eyBH14QyOASmcxHhSfEoRyr0nP/YdoesEtU+uSRvMe96TW/HPTtkoKqQLl53N7UXMQ==}
 
   '@types/tough-cookie@4.0.5':
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
@@ -1991,12 +2020,16 @@ packages:
     resolution: {integrity: sha512-raFIrOyTqREbyXsNkSHyciQLfv8AUZazehPaQS1lZBSCDYW74FYXU0nQZa3qHI4K+hawohlDbywZ4+qce9YNxA==}
     engines: {node: '>=14'}
 
-  firebase-functions@5.1.1:
-    resolution: {integrity: sha512-KkyKZE98Leg/C73oRyuUYox04PQeeBThdygMfeX+7t1cmKWYKa/ZieYa89U8GHgED+0mF7m7wfNZOfbURYxIKg==}
-    engines: {node: '>=14.10.0'}
+  firebase-admin@13.6.0:
+    resolution: {integrity: sha512-GdPA/t0+Cq8p1JnjFRBmxRxAGvF/kl2yfdhALl38PrRp325YxyQ5aNaHui0XmaKcKiGRFIJ/EgBNWFoDP0onjw==}
+    engines: {node: '>=18'}
+
+  firebase-functions@7.0.1:
+    resolution: {integrity: sha512-9hFqiCO4phVosFLMjXlqQvtKTS+g5xWHHt3qU94bIHhdFX3RvQFiRvBTFgy+e9jBcrauEqCt5pqPe9em0AgPDQ==}
+    engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
-      firebase-admin: ^11.10.0 || ^12.0.0
+      firebase-admin: ^11.10.0 || ^12.0.0 || ^13.0.0
 
   firebase@10.14.1:
     resolution: {integrity: sha512-0KZxU+Ela9rUCULqFsUUOYYkjh7OM1EWdIfG6///MtXd0t2/uUIf0iNV5i0KariMhRQ5jve/OY985nrAXFaZeQ==}
@@ -3746,6 +3779,10 @@ packages:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
     hasBin: true
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
@@ -3874,10 +3911,6 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
-
-  '@affiscope/shared-schemas@file:firebase/functions/shared-schemas': {}
-
-  '@affiscope/shared-types@file:firebase/functions/shared-types': {}
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -4040,6 +4073,8 @@ snapshots:
 
   '@firebase/app-check-interop-types@0.3.2': {}
 
+  '@firebase/app-check-interop-types@0.3.3': {}
+
   '@firebase/app-check-types@0.5.2': {}
 
   '@firebase/app-check@0.8.8(@firebase/app@0.10.13)':
@@ -4059,6 +4094,8 @@ snapshots:
       tslib: 2.8.1
 
   '@firebase/app-types@0.9.2': {}
+
+  '@firebase/app-types@0.9.3': {}
 
   '@firebase/app@0.10.13':
     dependencies:
@@ -4084,6 +4121,8 @@ snapshots:
 
   '@firebase/auth-interop-types@0.2.3': {}
 
+  '@firebase/auth-interop-types@0.2.4': {}
+
   '@firebase/auth-types@0.12.2(@firebase/app-types@0.9.2)(@firebase/util@1.10.0)':
     dependencies:
       '@firebase/app-types': 0.9.2
@@ -4101,6 +4140,11 @@ snapshots:
   '@firebase/component@0.6.9':
     dependencies:
       '@firebase/util': 1.10.0
+      tslib: 2.8.1
+
+  '@firebase/component@0.7.0':
+    dependencies:
+      '@firebase/util': 1.13.0
       tslib: 2.8.1
 
   '@firebase/data-connect@0.1.0(@firebase/app@0.10.13)':
@@ -4121,6 +4165,20 @@ snapshots:
       '@firebase/util': 1.10.0
       tslib: 2.8.1
 
+  '@firebase/database-compat@2.1.0':
+    dependencies:
+      '@firebase/component': 0.7.0
+      '@firebase/database': 1.1.0
+      '@firebase/database-types': 1.0.16
+      '@firebase/logger': 0.5.0
+      '@firebase/util': 1.13.0
+      tslib: 2.8.1
+
+  '@firebase/database-types@1.0.16':
+    dependencies:
+      '@firebase/app-types': 0.9.3
+      '@firebase/util': 1.13.0
+
   '@firebase/database-types@1.0.5':
     dependencies:
       '@firebase/app-types': 0.9.2
@@ -4133,6 +4191,16 @@ snapshots:
       '@firebase/component': 0.6.9
       '@firebase/logger': 0.4.2
       '@firebase/util': 1.10.0
+      faye-websocket: 0.11.4
+      tslib: 2.8.1
+
+  '@firebase/database@1.1.0':
+    dependencies:
+      '@firebase/app-check-interop-types': 0.3.3
+      '@firebase/auth-interop-types': 0.2.4
+      '@firebase/component': 0.7.0
+      '@firebase/logger': 0.5.0
+      '@firebase/util': 1.13.0
       faye-websocket: 0.11.4
       tslib: 2.8.1
 
@@ -4214,6 +4282,10 @@ snapshots:
       tslib: 2.8.1
 
   '@firebase/logger@0.4.2':
+    dependencies:
+      tslib: 2.8.1
+
+  '@firebase/logger@0.5.0':
     dependencies:
       tslib: 2.8.1
 
@@ -4311,6 +4383,10 @@ snapshots:
       undici: 6.19.7
 
   '@firebase/util@1.10.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@firebase/util@1.13.0':
     dependencies:
       tslib: 2.8.1
 
@@ -4449,6 +4525,12 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   '@js-sdsl/ordered-map@4.4.2': {}
+
+  '@kangaroo-post/shared-schemas@file:firebase/functions/shared-schemas':
+    dependencies:
+      zod: 4.1.12
+
+  '@kangaroo-post/shared-types@file:firebase/functions/shared-types': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -4657,13 +4739,6 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.7':
     dependencies:
-      '@types/node': 24.10.0
-      '@types/qs': 6.14.0
-      '@types/range-parser': 1.2.7
-      '@types/send': 1.2.1
-
-  '@types/express-serve-static-core@5.1.0':
-    dependencies:
       '@types/node': 20.19.24
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
@@ -4676,12 +4751,6 @@ snapshots:
       '@types/qs': 6.14.0
       '@types/serve-static': 1.15.10
 
-  '@types/express@4.17.3':
-    dependencies:
-      '@types/body-parser': 1.19.6
-      '@types/express-serve-static-core': 5.1.0
-      '@types/serve-static': 2.2.0
-
   '@types/hast@3.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -4693,7 +4762,7 @@ snapshots:
   '@types/jsonwebtoken@9.0.10':
     dependencies:
       '@types/ms': 2.1.0
-      '@types/node': 24.10.0
+      '@types/node': 20.19.24
 
   '@types/long@4.0.2':
     optional: true
@@ -4732,7 +4801,7 @@ snapshots:
   '@types/request@2.48.13':
     dependencies:
       '@types/caseless': 0.12.5
-      '@types/node': 24.10.0
+      '@types/node': 20.19.24
       '@types/tough-cookie': 4.0.5
       form-data: 2.5.5
     optional: true
@@ -4740,7 +4809,7 @@ snapshots:
   '@types/send@0.17.6':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 24.10.0
+      '@types/node': 20.19.24
 
   '@types/send@1.2.1':
     dependencies:
@@ -4749,13 +4818,8 @@ snapshots:
   '@types/serve-static@1.15.10':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 24.10.0
-      '@types/send': 0.17.6
-
-  '@types/serve-static@2.2.0':
-    dependencies:
-      '@types/http-errors': 2.0.5
       '@types/node': 20.19.24
+      '@types/send': 0.17.6
 
   '@types/tough-cookie@4.0.5':
     optional: true
@@ -5918,13 +5982,33 @@ snapshots:
       - encoding
       - supports-color
 
-  firebase-functions@5.1.1(firebase-admin@12.7.0):
+  firebase-admin@13.6.0:
+    dependencies:
+      '@fastify/busboy': 3.2.0
+      '@firebase/database-compat': 2.1.0
+      '@firebase/database-types': 1.0.16
+      '@types/node': 22.19.0
+      farmhash-modern: 1.1.0
+      fast-deep-equal: 3.1.3
+      google-auth-library: 9.15.1
+      jsonwebtoken: 9.0.2
+      jwks-rsa: 3.2.0
+      node-forge: 1.3.1
+      uuid: 11.1.0
+    optionalDependencies:
+      '@google-cloud/firestore': 7.11.6
+      '@google-cloud/storage': 7.17.3
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+
+  firebase-functions@7.0.1(firebase-admin@13.6.0):
     dependencies:
       '@types/cors': 2.8.19
-      '@types/express': 4.17.3
+      '@types/express': 4.17.25
       cors: 2.8.5
       express: 4.21.2
-      firebase-admin: 12.7.0
+      firebase-admin: 13.6.0
       protobufjs: 7.5.4
     transitivePeerDependencies:
       - supports-color
@@ -6037,7 +6121,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
-    optional: true
 
   gaxios@7.1.3:
     dependencies:
@@ -6056,7 +6139,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
-    optional: true
 
   gcp-metadata@8.1.2:
     dependencies:
@@ -6194,7 +6276,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
-    optional: true
 
   google-gax@4.6.1:
     dependencies:
@@ -6231,8 +6312,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  google-logging-utils@0.0.2:
-    optional: true
+  google-logging-utils@0.0.2: {}
 
   google-logging-utils@1.1.2: {}
 
@@ -6266,7 +6346,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
-    optional: true
 
   gtoken@8.0.0:
     dependencies:
@@ -6513,8 +6592,7 @@ snapshots:
     dependencies:
       call-bound: 1.0.4
 
-  is-stream@2.0.1:
-    optional: true
+  is-stream@2.0.1: {}
 
   is-string@1.1.1:
     dependencies:
@@ -7186,7 +7264,6 @@ snapshots:
   node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
-    optional: true
 
   node-fetch@3.3.2:
     dependencies:
@@ -8057,8 +8134,7 @@ snapshots:
 
   toidentifier@1.0.1: {}
 
-  tr46@0.0.3:
-    optional: true
+  tr46@0.0.3: {}
 
   tr46@1.0.1:
     dependencies:
@@ -8276,11 +8352,12 @@ snapshots:
 
   uuid@10.0.0: {}
 
+  uuid@11.1.0: {}
+
   uuid@8.3.2:
     optional: true
 
-  uuid@9.0.1:
-    optional: true
+  uuid@9.0.1: {}
 
   v8-compile-cache-lib@3.0.1: {}
 
@@ -8298,8 +8375,7 @@ snapshots:
 
   web-streams-polyfill@3.3.3: {}
 
-  webidl-conversions@3.0.1:
-    optional: true
+  webidl-conversions@3.0.1: {}
 
   webidl-conversions@4.0.2: {}
 
@@ -8315,7 +8391,6 @@ snapshots:
     dependencies:
       tr46: 0.0.3
       webidl-conversions: 3.0.1
-    optional: true
 
   whatwg-url@7.1.0:
     dependencies:

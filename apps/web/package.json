@@ -15,7 +15,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@affiscope/shared-schemas": "workspace:^",
+    "@kangaroo-post/shared-types": "workspace:*",
+    "@kangaroo-post/shared-schemas": "workspace:^",
     "firebase": "^10.13.2",
     "firebase-admin": "^12.5.0",
     "lucide-react": "^0.544.0",
@@ -30,7 +31,6 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
-    "@affiscope/shared-types": "workspace:*",
     "@types/node": "^20.19.16",
     "@types/react": "^18.3.5",
     "@typescript-eslint/parser": "^6.21.0",

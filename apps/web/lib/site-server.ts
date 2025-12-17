@@ -1,3 +1,4 @@
+//apps/web/lib/site-server.ts
 import "server-only";
 import { cookies, headers } from "next/headers";
 import { coerceSiteId, siteCatalog, type SiteEntry } from "./site-catalog";
@@ -9,37 +10,25 @@ export function getServerSiteId(): string {
   let host: string | undefined;
 
   try {
-    // middleware でセットした x-site-id を最優先で使う
     headerSiteId = headers().get("x-site-id")?.trim() || undefined;
-  } catch {
-    // outside request scope
-  }
+  } catch {}
 
   try {
     ck = cookies().get("siteId")?.value?.trim();
-  } catch {
-    // outside request scope
-  }
+  } catch {}
 
   try {
     host = headers().get("host") || undefined;
-  } catch {
-    // outside request scope
-  }
+  } catch {}
 
-  // デフォルトは middleware 側と揃えて kariraku に統一
   const def =
     process.env.NEXT_PUBLIC_SITE_ID ||
     process.env.DEFAULT_SITE_ID ||
     "kariraku";
 
-  // x-site-id があればそれを最優先で解釈
-  if (headerSiteId) {
-    return coerceSiteId(headerSiteId, host, def);
-  }
-
-  // なければ cookie / host / def から判定
-  return coerceSiteId(ck, host, def);
+  // ✅ middleware と同じ優先順に寄せる：header > host > cookie > default
+  // middleware は host を cookie より優先しているので合わせる
+  return coerceSiteId(headerSiteId ?? host ?? ck, host, def);
 }
 
 /** 現在のサイト設定（安全フォールバック付） */

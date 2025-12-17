@@ -1,5 +1,5 @@
 // apps/web/lib/queries.ts
-import type { Product } from "@affiscope/shared-types";
+import type { Product } from "@kangaroo-post/shared-types";
 import {
   fsGet,
   fsRunQuery,

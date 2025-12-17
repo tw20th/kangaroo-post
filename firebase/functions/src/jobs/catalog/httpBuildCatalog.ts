@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { buildCatalogFromRaw } from "./buildCatalogFromRaw.js";
 
 const REGION = "asia-northeast1";

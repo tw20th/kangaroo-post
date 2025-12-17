@@ -1,4 +1,4 @@
-// firebase/functions/src/lib/infra/db.ts（修正後）
+// firebase/functions/src/lib/infra/db.ts
 
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore, Firestore, Settings } from "firebase-admin/firestore";

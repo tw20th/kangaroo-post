@@ -1,5 +1,5 @@
 // firebase/functions/src/jobs/content/analyzeBlog.ts
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getFirestore } from "firebase-admin/firestore";
 import { analyzeSeo } from "../../lib/seo/analyzeSeo.js"; // ← alias = analyzeMarkdown
 

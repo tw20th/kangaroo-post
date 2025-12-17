@@ -11,16 +11,22 @@
   "hosting": {
     "public": "apps/web/out",
     "ignore": ["**/.*", "**/node_modules/**"],
-    "rewrites": [{ "source": "/trackClick", "function": "trackClick" }]
+    "rewrites": [
+      {
+        "source": "/trackClick",
+        "function": "trackClick"
+      }
+    ]
   },
   "firestore": {
     "rules": "firebase/firestore.rules",
     "indexes": "firebase/firestore.indexes.json"
   },
+
   "emulators": {
-    "functions": { "host": "127.0.0.1", "port": 5001 },
+    "auth": { "port": 9099 },
     "firestore": { "port": 8080 },
-    "storage": { "port": 9199 },
-    "ui": { "enabled": true }
+    "functions": { "port": 5001 },
+    "ui": { "enabled": true, "port": 4000 }
   }
 }

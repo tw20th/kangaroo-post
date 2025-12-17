@@ -1,19 +1,14 @@
-// firebase/functions/src/scripts/backfillBlogSiteId.ts
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
+import type { Request, Response } from "express";
 import { getFirestore } from "firebase-admin/firestore";
 
 const REGION = "asia-northeast1";
 const db = getFirestore();
 
-/**
- * blogs の siteId を、関連する products の siteId に合わせて補正するワンショットツール。
- * 叩き方:
- *   https://asia-northeast1-<project>.cloudfunctions.net/runBackfillBlogSiteId?key=<ADMIN_TASK_SECRET>&limit=200
- */
 export const runBackfillBlogSiteId = functions
   .region(REGION)
   .runWith({ secrets: ["ADMIN_TASK_SECRET"] })
-  .https.onRequest(async (req, res) => {
+  .https.onRequest(async (req: Request, res: Response) => {
     const key = String(req.query.key || "");
     if (key !== process.env.ADMIN_TASK_SECRET) {
       res.status(401).send("unauthorized");

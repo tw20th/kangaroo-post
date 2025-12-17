@@ -1,5 +1,5 @@
 // firebase/functions/src/jobs/publishBlog.ts
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getFirestore } from "firebase-admin/firestore";
 import fs from "node:fs";
 import path from "node:path";

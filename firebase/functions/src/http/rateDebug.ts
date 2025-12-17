@@ -1,5 +1,5 @@
 // firebase/functions/src/http/rateDebug.ts
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 

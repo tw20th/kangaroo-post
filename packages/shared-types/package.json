@@ -1,5 +1,5 @@
 {
-  "name": "@affiscope/shared-types",
+  "name": "@kangaroo-post/shared-types",
   "version": "0.0.2",
   "private": true,
   "types": "./dist/index.d.ts",

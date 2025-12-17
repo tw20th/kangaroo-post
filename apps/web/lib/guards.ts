@@ -1,5 +1,5 @@
 // apps/web/lib/guards.ts
-import type { Product } from "@affiscope/shared-types";
+import type { Product } from "@kangaroo-post/shared-types";
 
 export function assertProduct(x: unknown): asserts x is Product {
   if (typeof x !== "object" || x === null)

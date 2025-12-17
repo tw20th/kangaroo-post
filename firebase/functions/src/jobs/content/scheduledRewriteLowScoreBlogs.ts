@@ -1,5 +1,5 @@
 // firebase/functions/src/jobs/content/scheduledRewriteLowScoreBlogs.ts
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getFirestore } from "firebase-admin/firestore";
 import { generateBlogContent } from "../../utils/generateBlogContent.js";
 import { stripPlaceholders } from "../../utils/markdown.js";

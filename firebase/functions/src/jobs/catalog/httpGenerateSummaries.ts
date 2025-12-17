@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { generateCatalogSummariesOnce } from "./generateAiSummaries.js";
 export const runGenerateCatalogSummaries = functions
   .region("asia-northeast1")

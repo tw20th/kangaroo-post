@@ -1,6 +1,6 @@
 // firebase/functions/src/jobs/analytics/aggregateKeywordScores.ts
-import * as functions from "firebase-functions";
-import { logger } from "firebase-functions/v2";
+import * as functions from "firebase-functions/v1";
+import { logger } from "firebase-functions/logger";
 import { getFirestore } from "firebase-admin/firestore";
 
 const REGION = process.env.FUNCTIONS_REGION || "asia-northeast1";

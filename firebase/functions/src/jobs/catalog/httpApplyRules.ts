@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { applyCatalogRulesOnce } from "./applyRules.js";
 export const runApplyCatalogRules = functions
   .region("asia-northeast1")

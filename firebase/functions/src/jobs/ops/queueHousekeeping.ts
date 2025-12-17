@@ -1,5 +1,5 @@
 // firebase/functions/src/jobs/queueHousekeeping.ts
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getFirestore } from "firebase-admin/firestore";
 
 const REGION = "asia-northeast1";
