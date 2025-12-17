@@ -88,10 +88,9 @@ export async function POST(req: Request) {
     });
 
     return res;
-  } catch {
-    return NextResponse.json(
-      { ok: false, error: "Failed to create session" },
-      { status: 401 }
-    );
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    console.error("[auth/session] Failed to create session:", message);
+    return NextResponse.json({ ok: false, error: message }, { status: 401 });
   }
 }
