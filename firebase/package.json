@@ -1,5 +1,5 @@
 {
-  "name": "@affiscope/firebase-root",
+  "name": "@kangaroo-post/firebase-root",
   "private": true,
   "scripts": {
     "sync:types": "pnpm -C ../packages/shared-types run build && node scripts/syncSharedTypes.cjs",
@@ -8,9 +8,10 @@
     "deploy": "firebase deploy",
     "deploy:functions": "pnpm run predeploy:bundle-types && firebase deploy --only functions",
     "deploy:rules": "firebase deploy --only firestore:rules",
-    "deploy:indexes": "firebase deploy --only firestore:indexes"
+    "deploy:indexes": "firebase deploy --only firestore:indexes",
+    "emulators": "firebase emulators:start --import=./.emulators --export-on-exit"
   },
   "devDependencies": {
-    "firebase-tools": "^13.0.0"
+    "firebase-tools": "^13.35.1"
   }
 }

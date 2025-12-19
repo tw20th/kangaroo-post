@@ -9,28 +9,41 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
 
 /**
- * ✅ Next.js(API) 側の Admin SDK も Auth Emulator を見る
- * - firebase/functions/.env には書けない（firebase-tools 予約）
- * - でも apps/web 側の Node なら OK
- *
- * NOTE:
- *   Auth Emulator は "127.0.0.1:9099" の形式（プロトコルなし）を想定
+ * Admin SDK を Emulator に向ける
+ * - Admin SDK は connectFirestoreEmulator() が使えないので env で切り替える
+ * - initializeApp より前に env を確定させるのが重要
  */
-const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
+const useEmulator =
+  process.env.USE_FIREBASE_EMULATOR === "true" ||
+  process.env.NODE_ENV === "development";
+
 if (useEmulator) {
-  const host = process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST;
-  if (host) {
-    // "http://127.0.0.1:9099" みたいなのが来ても耐える
-    process.env.FIREBASE_AUTH_EMULATOR_HOST = host.replace(/^https?:\/\//, "");
+  // Auth emulator
+  const authHost =
+    process.env.FIREBASE_AUTH_EMULATOR_HOST ||
+    process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST;
+  if (authHost) {
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = authHost.replace(
+      /^https?:\/\//,
+      ""
+    );
   }
+
+  // Firestore emulator（これが無いのが今回の原因）
+  const fsHost =
+    process.env.FIRESTORE_EMULATOR_HOST ||
+    process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST;
+  if (fsHost) {
+    process.env.FIRESTORE_EMULATOR_HOST = fsHost.replace(/^https?:\/\//, "");
+  }
+
+  // project 保険（任意だけど入れておくと安定）
+  process.env.GCLOUD_PROJECT ||= "kangaroo-post";
 }
 
-const projectId =
-  process.env.FIREBASE_PROJECT_ID ?? process.env.FIREBASE_PROJECT_ID;
-const clientEmail =
-  process.env.FIREBASE_CLIENT_EMAIL ?? process.env.FIREBASE_CLIENT_EMAIL;
-const rawPrivateKey =
-  process.env.FIREBASE_PRIVATE_KEY ?? process.env.FIREBASE_PRIVATE_KEY;
+const projectId = process.env.FIREBASE_PROJECT_ID;
+const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
 
 if (!projectId || !clientEmail || !rawPrivateKey) {
   throw new Error(
@@ -39,7 +52,6 @@ if (!projectId || !clientEmail || !rawPrivateKey) {
 }
 
 const privateKey = rawPrivateKey.replace(/\\n/g, "\n");
-
 const serviceAccount: ServiceAccount = { projectId, clientEmail, privateKey };
 
 const app =

@@ -86,3 +86,5 @@ firebase/functions/gsc_sa.json
 .turbo/
 apps/**/.turbo/
 apps/**/.next/cache/
+
+firebase/.emulators/

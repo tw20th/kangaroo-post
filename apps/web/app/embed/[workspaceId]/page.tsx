@@ -5,12 +5,22 @@ export const dynamic = "force-dynamic";
 
 type Params = { workspaceId: string };
 
+function normalizeTopUrl(input: string): string {
+  const trimmed = input.trim();
+
+  // すでに http/https が付いているならそのまま
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+
+  // スキーム無しなら https を付ける
+  return `https://${trimmed}`;
+}
+
 function joinUrl(
   topUrl: string,
   blogSectionSlug: string,
   slug: string
 ): string {
-  const base = topUrl.replace(/\/+$/, "");
+  const base = normalizeTopUrl(topUrl).replace(/\/+$/, "");
   const section = blogSectionSlug.replace(/^\/+|\/+$/g, "");
   const s = slug.replace(/^\/+|\/+$/g, "");
   return `${base}/${section}/${s}`;
