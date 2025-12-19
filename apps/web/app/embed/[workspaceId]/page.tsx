@@ -1,30 +1,10 @@
-// apps/web/app/embed/[workspaceId]/page.tsx
+//apps/web/app/embed/[workspaceId]/page.tsx
 import { adminDb } from "@/lib/firebaseAdmin";
+import { getSiteConfig } from "@/lib/site-config";
 
 export const dynamic = "force-dynamic";
 
 type Params = { workspaceId: string };
-
-function normalizeTopUrl(input: string): string {
-  const trimmed = input.trim();
-
-  // すでに http/https が付いているならそのまま
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-
-  // スキーム無しなら https を付ける
-  return `https://${trimmed}`;
-}
-
-function joinUrl(
-  topUrl: string,
-  blogSectionSlug: string,
-  slug: string
-): string {
-  const base = normalizeTopUrl(topUrl).replace(/\/+$/, "");
-  const section = blogSectionSlug.replace(/^\/+|\/+$/g, "");
-  const s = slug.replace(/^\/+|\/+$/g, "");
-  return `${base}/${section}/${s}`;
-}
 
 type WsDoc = {
   siteName?: string;
@@ -44,6 +24,15 @@ type WsDoc = {
   };
 };
 
+type PostRow = {
+  slug?: string;
+  title?: string;
+
+  // ✅ 2パターンに対応（どっちでも拾う）
+  wpLink?: string;
+  wp?: { link?: string | null };
+};
+
 function pickWsValue(ws: WsDoc) {
   const cfg = ws.config ?? {};
   return {
@@ -58,6 +47,12 @@ function pickWsValue(ws: WsDoc) {
 
 export default async function EmbedPage({ params }: { params: Params }) {
   const workspaceId = decodeURIComponent(params.workspaceId);
+
+  const site = getSiteConfig();
+  const appOrigin = (site.urlOrigin || "https://www.kangaroo-post.com").replace(
+    /\/+$/,
+    ""
+  );
 
   const wsSnap = await adminDb.collection("workspaces").doc(workspaceId).get();
   if (!wsSnap.exists) {
@@ -91,18 +86,18 @@ export default async function EmbedPage({ params }: { params: Params }) {
     .get();
 
   const items = snap.docs.map((d) => {
-    const data = d.data() as { slug?: string; title?: string };
+    const data = d.data() as PostRow;
+    const wpLink =
+      (typeof data.wpLink === "string" ? data.wpLink : "") ||
+      (typeof data.wp?.link === "string" ? data.wp.link : "");
+
     return {
+      id: d.id,
       slug: data.slug ?? d.id,
       title: data.title ?? "(no title)",
+      wpLink: wpLink || "",
     };
   });
-
-  const canLink =
-    typeof picked.topUrl === "string" &&
-    picked.topUrl.length > 0 &&
-    typeof picked.blogSectionSlug === "string" &&
-    picked.blogSectionSlug.length > 0;
 
   return (
     <main style={{ padding: 12, fontFamily: "system-ui" }}>
@@ -115,39 +110,26 @@ export default async function EmbedPage({ params }: { params: Params }) {
       ) : (
         <ul style={{ margin: 0, paddingLeft: 16 }}>
           {items.map((p) => {
-            const href = canLink
-              ? joinUrl(
-                  picked.topUrl as string,
-                  picked.blogSectionSlug as string,
-                  p.slug
-                )
-              : null;
+            // ✅ WP連携済みならWPへ
+            // ✅ 未連携ならカンガルーポスト側の「個別記事embed」へ
+            const href = p.wpLink
+              ? p.wpLink
+              : `${appOrigin}/embed/post/${encodeURIComponent(p.id)}`;
 
             return (
-              <li key={p.slug} style={{ marginBottom: 6 }}>
-                {href ? (
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: 13, textDecoration: "underline" }}
-                  >
-                    {p.title}
-                  </a>
-                ) : (
-                  <span style={{ fontSize: 13 }}>{p.title}</span>
-                )}
+              <li key={p.id} style={{ marginBottom: 6 }}>
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 13, textDecoration: "underline" }}
+                >
+                  {p.title}
+                </a>
               </li>
             );
           })}
         </ul>
-      )}
-
-      {!canLink && (
-        <div style={{ marginTop: 10, fontSize: 11, opacity: 0.7 }}>
-          ※リンク先を有効にするには Workspace
-          の「トップURL」と「ブログのスラッグ」を設定してください。
-        </div>
       )}
     </main>
   );
