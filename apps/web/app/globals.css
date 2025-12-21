@@ -79,3 +79,31 @@ body {
 ::selection {
   background: rgba(16, 185, 129, 0.15);
 }
+
+/* ===== KP Embed Markdown Base ===== */
+.kp-prose {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #111827;
+}
+
+.kp-prose h1,
+.kp-prose h2,
+.kp-prose h3,
+.kp-prose h4 {
+  color: #0f172a;
+}
+
+.kp-prose p {
+  margin: 0.9rem 0;
+}
+
+.kp-prose a {
+  text-underline-offset: 3px;
+}
+
+.kp-prose pre,
+.kp-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}

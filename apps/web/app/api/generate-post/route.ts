@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { getOptionalUser } from "@/lib/auth/server";
 import { getServerSiteId } from "@/lib/site-server";
+import { normalizeBlogMarkdown } from "@/utils/markdown";
 
 const MODEL = "gpt-4o-mini";
 
@@ -24,10 +25,7 @@ export async function POST(req: Request) {
     }
 
     const body = (await req.json().catch(() => ({}))) as GeneratePostBody;
-
-    const title = body.title;
-    const keyword = body.keyword;
-    const workspaceId = body.workspaceId;
+    const { title, keyword, workspaceId } = body;
 
     if (!title && !keyword) {
       return NextResponse.json(
@@ -48,17 +46,19 @@ export async function POST(req: Request) {
 
     const siteId = getServerSiteId();
 
-    // ✅ Workspace 所有者チェック
+    // Workspace 所有者チェック
     const wsSnap = await adminDb
       .collection("workspaces")
       .doc(workspaceId)
       .get();
+
     if (!wsSnap.exists) {
       return NextResponse.json(
         { ok: false, error: "Workspace が見つかりません。" },
         { status: 404 }
       );
     }
+
     const ws = wsSnap.data() as { ownerUserId?: string; siteId?: string };
     if (ws.ownerUserId !== user.uid || ws.siteId !== siteId) {
       return NextResponse.json(
@@ -97,9 +97,9 @@ export async function POST(req: Request) {
   4. 具体的なステップ（見出しと箇条書きを交えて）
   5. まとめ（「できることから一つだけやってみましょう」で締める）
 
-- 絵文字は控えめに、ところどころでOK
 - 見出しには h2, h3 を使う
-- 3000〜4000文字くらいを目安に
+- 絵文字は控えめに
+- コードフェンス（\`\`\` や \`\`\`markdown）で全体を囲まないでください
 `;
 
     const completion = await openai.chat.completions.create({
@@ -114,7 +114,10 @@ export async function POST(req: Request) {
       temperature: 0.7,
     });
 
-    const content = completion.choices[0]?.message?.content?.trim() ?? "";
+    const rawContent = completion.choices[0]?.message?.content?.trim() ?? "";
+
+    const content = normalizeBlogMarkdown(rawContent);
+
     if (!content) {
       return NextResponse.json(
         { ok: false, error: "記事生成に失敗しました。（contentが空です）" },
@@ -122,35 +125,35 @@ export async function POST(req: Request) {
       );
     }
 
-    const now = Date.now();
-    const slug = `post-${now}`;
-    const nowDate = new Date();
+    const now = new Date();
+    const slug = `post-${Date.now()}`;
 
-    const payload = {
-      slug,
-      siteId,
-      workspaceId,
-      ownerUserId: user.uid,
-      title: title ?? `自動生成記事 ${now}`,
-      content,
-      status: "draft" as const,
-      type: "normal",
-      createdAt: nowDate,
-      updatedAt: nowDate,
-    };
-
-    // ✅ ここが変更：blogs → posts
-    await adminDb.collection("posts").doc(slug).set(payload);
+    await adminDb
+      .collection("posts")
+      .doc(slug)
+      .set({
+        slug,
+        siteId,
+        workspaceId,
+        ownerUserId: user.uid,
+        title: title ?? `自動生成記事`,
+        content,
+        status: "draft",
+        type: "normal",
+        generatedBy: "manual",
+        createdAt: now,
+        updatedAt: now,
+      });
 
     return NextResponse.json({
       ok: true,
       slug,
-      title: payload.title,
+      title: title ?? "自動生成記事",
       editUrl: `/dashboard/posts/${encodeURIComponent(slug)}`,
-      embedUrl: `/embed/${encodeURIComponent(workspaceId)}`,
+      embedUrl: `/embed/post/${encodeURIComponent(slug)}`,
+      listEmbedUrl: `/embed/${encodeURIComponent(workspaceId)}`,
     });
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error("generate-post error", err);
     return NextResponse.json(
       { ok: false, error: "サーバーエラーが発生しました。" },

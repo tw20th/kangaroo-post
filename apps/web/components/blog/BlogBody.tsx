@@ -1,11 +1,15 @@
 // apps/web/components/blog/BlogBody.tsx
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import rehypeExternalLinks from "rehype-external-links";
+import { normalizeBlogMarkdown } from "@/utils/markdown";
 
 function AffiliateCta({
   href,
@@ -34,7 +38,6 @@ function AffiliateCta({
   );
 }
 
-// 悩みボタン用（/pain/:id へ飛ばす）※既存のまま
 function PainLink({ tag, label }: { tag: string; label: string }) {
   const href = `/pain/${encodeURIComponent(tag)}`;
   return (
@@ -56,15 +59,28 @@ type Props = {
 
 const isA8 = (u?: string) => !!u && /(^|\/\/)px\.a8\.net/i.test(u);
 
+function childrenToPlainText(children: React.ReactNode): string {
+  const parts = React.Children.toArray(children).map((c) =>
+    typeof c === "string" ? c : ""
+  );
+  return parts.join("");
+}
+
+// ✅ code 用 props（hast 依存なし）
+type CodeProps = React.ComponentPropsWithoutRef<"code"> & {
+  inline?: boolean;
+  node?: unknown;
+};
+
 export default function BlogBody({ content, siteId, painId, slug }: Props) {
-  // ★ normalizeBlogMarkdown はここでは呼ばず、
-  //   /blog/[slug]/page.tsx から渡ってきた文字列をそのまま使う
-  const md = React.useMemo(() => content ?? "", [content]);
+  const md = React.useMemo(
+    () => normalizeBlogMarkdown(content ?? ""),
+    [content]
+  );
 
   const painTrackEndpoint =
     process.env.NEXT_PUBLIC_PAIN_TRACK_URL || "/trackPainClick";
 
-  /** `/compare` クリック時に painId を送る */
   const trackPainClick = React.useCallback(
     (href?: string) => {
       if (!painId || !siteId) return;
@@ -78,7 +94,9 @@ export default function BlogBody({ content, siteId, painId, slug }: Props) {
 
         if (typeof navigator !== "undefined" && "sendBeacon" in navigator) {
           const blob = new Blob([payload], { type: "application/json" });
-          (navigator as any).sendBeacon(painTrackEndpoint, blob);
+          (
+            navigator as unknown as { sendBeacon: (u: string, b: Blob) => void }
+          ).sendBeacon(painTrackEndpoint, blob);
         } else {
           fetch(painTrackEndpoint, {
             method: "POST",
@@ -88,44 +106,39 @@ export default function BlogBody({ content, siteId, painId, slug }: Props) {
           }).catch(() => {});
         }
       } catch {
-        // 計測なので失敗してもユーザーには黙っておく
+        // 計測なので失敗しても黙る
       }
     },
     [painId, siteId, slug, painTrackEndpoint]
   );
 
-  const components = {
-    a({ href, children, ...rest }: any) {
-      const url = href as string | undefined;
+  const components: Components = {
+    a({ href, children, ...rest }) {
+      const url = typeof href === "string" ? href : undefined;
       const isExternal = !!url && /^https?:\/\//i.test(url);
       const isA8Link = isA8(url);
 
-      // 比較ページへのリンクかどうか判定
       const isCompareLink =
         !!url &&
         (url === "/compare" ||
           url.startsWith("/compare?") ||
           url.endsWith("/compare/kaden-rental"));
 
-      const handleClick:
-        | React.MouseEventHandler<HTMLAnchorElement>
-        | undefined = isCompareLink
-        ? (e) => {
-            // 既存 onClick があれば先に呼ぶ
-            if (typeof (rest as any).onClick === "function") {
-              (rest as any).onClick(e);
+      const onClick = isCompareLink
+        ? (e: React.MouseEvent<HTMLAnchorElement>) => {
+            if (typeof rest.onClick === "function") {
+              rest.onClick(e);
             }
             trackPainClick(url);
           }
-        : (rest as any).onClick;
+        : rest.onClick;
 
       return (
         <a
           {...rest}
           href={url}
-          onClick={handleClick}
+          onClick={onClick}
           target={isExternal ? "_blank" : undefined}
-          // A8 のときだけ sponsored を付ける
           rel={
             isExternal
               ? `${
@@ -139,24 +152,29 @@ export default function BlogBody({ content, siteId, painId, slug }: Props) {
         </a>
       );
     },
-    img({ src, alt }: any) {
-      // A8の画像バナーは非表示
-      if (isA8(src)) return null;
+
+    img({ src, alt }) {
+      const s = typeof src === "string" ? src : undefined;
+      if (isA8(s)) return null;
+
       return (
         <img
-          src={src}
-          alt={alt ?? ""}
+          src={s}
+          alt={typeof alt === "string" ? alt : ""}
           className="rounded-xl mx-auto my-4 max-h-[420px] w-auto"
         />
       );
     },
-    ul(props: any) {
+
+    ul(props) {
       return <ul {...props} className="list-disc pl-6 space-y-1" />;
     },
-    ol(props: any) {
+
+    ol(props) {
       return <ol {...props} className="list-decimal pl-6 space-y-1" />;
     },
-    blockquote(props: any) {
+
+    blockquote(props) {
       return (
         <blockquote
           {...props}
@@ -164,31 +182,35 @@ export default function BlogBody({ content, siteId, painId, slug }: Props) {
         />
       );
     },
-    h2(props: any) {
+
+    h2(props) {
       return <h2 {...props} className="mt-10 mb-3 text-2xl font-bold" />;
     },
-    h3(props: any) {
+
+    h3(props) {
       return <h3 {...props} className="mt-8 mb-2 text-xl font-semibold" />;
     },
-    code({ inline, children, ...rest }: any) {
-      return inline ? (
-        <code {...rest} className="px-1 py-0.5 rounded bg-gray-100">
-          {children}
-        </code>
-      ) : (
+
+    // ✅ TS2339 回避済み
+    code({ inline, children, ...rest }: CodeProps) {
+      if (inline) {
+        return (
+          <code {...rest} className="px-1 py-0.5 rounded bg-gray-100">
+            {children}
+          </code>
+        );
+      }
+
+      return (
         <pre className="rounded-xl bg-gray-100 p-4 overflow-auto text-sm">
           <code {...rest}>{children}</code>
         </pre>
       );
     },
-    // :::cta[ラベル](URL) / :::pain[テキスト](tag)
-    p({ children }: any) {
-      const txt = Array.isArray(children)
-        ? children.join("")
-        : String(children ?? "");
-      const line = txt.trim();
 
-      // --- CTA ボタン ---
+    p({ children }) {
+      const line = childrenToPlainText(children).trim();
+
       const mCta = /^:::cta\[(.+?)\]\((https?:\/\/[^\s)]+|\/[^\s)]+)\)$/.exec(
         line
       );
@@ -209,9 +231,8 @@ export default function BlogBody({ content, siteId, painId, slug }: Props) {
           />
         );
       }
-      if (/^:::+\s*cta/i.test(line)) return null; // 残骸は非表示
+      if (/^:::+\s*cta/i.test(line)) return null;
 
-      // --- 悩みボタン ---
       const mPain = /^:::pain\[(.+?)\]\(([^)]+)\)$/.exec(line);
       if (mPain) {
         return <PainLink tag={mPain[2]} label={mPain[1]} />;
@@ -225,7 +246,7 @@ export default function BlogBody({ content, siteId, painId, slug }: Props) {
   return (
     <div className="prose prose-neutral max-w-none prose-img:rounded-xl prose-headings:scroll-mt-20">
       <ReactMarkdown
-        components={components as any}
+        components={components}
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[
           rehypeSlug,

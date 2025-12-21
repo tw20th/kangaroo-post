@@ -1,5 +1,6 @@
 // apps/web/app/embed/layout.tsx
 import type { Metadata } from "next";
+import AutoHeight from "./_components/AutoHeight";
 
 export const metadata: Metadata = {
   robots: "noindex, nofollow",
@@ -21,6 +22,9 @@ export default function EmbedLayout({
             "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         }}
       >
+        {/* ✅ 親(WordPress)へ高さを通知 */}
+        <AutoHeight />
+
         <main
           style={{
             maxWidth: 760,

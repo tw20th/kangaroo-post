@@ -41,6 +41,11 @@ export { trackPainClick } from "./http/trackPainClick.js";
 /* ========== Schedules: Posting / Analyze / Rewrite ========== */
 
 /**
+ * Workspaceごとの週1自動投稿（カンガルーポスト本命）
+ */
+export { scheduledWeeklyWorkspacePosts } from "./jobs/content/scheduledWeeklyWorkspacePosts.js";
+
+/**
  * A8オファー起点の記事（今回は停止）
  */
 // export {

@@ -1,3 +1,4 @@
+//apps/web/components/dashboard/GeneratePostForm.tsx
 "use client";
 
 import { useEffect, useState } from "react";
