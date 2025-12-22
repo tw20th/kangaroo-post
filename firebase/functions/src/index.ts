@@ -1,17 +1,12 @@
 // firebase/functions/src/index.ts
 
-/* env (local only) */
-(async () => {
-  try {
-    if (process.env.FUNCTIONS_EMULATOR || !process.env.K_SERVICE) {
-      await import("dotenv/config");
-    }
-  } catch {}
-})();
-
 import * as functions from "firebase-functions/v1";
 import type { Request, Response } from "express";
 import { getApps, initializeApp } from "firebase-admin/app";
+import { requireLocalSafetyMode } from "./lib/infra/safety.js";
+
+// ✅ Emulator安全スイッチ（LOCAL_SAFETY_MODE=true が無いと起動させない）
+requireLocalSafetyMode();
 
 if (getApps().length === 0) {
   initializeApp();
@@ -134,5 +129,7 @@ export { scheduledRewriteLowScoreBlogs } from "./jobs/content/scheduledRewriteLo
 export { scheduledAggregateKeywordScores } from "./jobs/analytics/aggregateKeywordScores.js";
 
 export * as workspaces from "./http/workspaces.js";
-
 export { getMyWorkspace } from "./http/workspaces.js";
+
+console.log("LOCAL_SAFETY_MODE =", process.env.LOCAL_SAFETY_MODE);
+console.log("IS_EMULATOR =", process.env.FIREBASE_EMULATOR_HUB !== undefined);

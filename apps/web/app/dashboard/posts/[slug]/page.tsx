@@ -1,4 +1,3 @@
-//apps/web/app/dashboard/posts/[slug]/page.tsx
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { adminDb } from "@/lib/firebaseAdmin";
@@ -16,13 +15,13 @@ type PostDoc = {
   slug: string;
   title?: string;
   content?: string;
-  status?: string;
+  status?: "draft" | "published" | string;
   wpLink?: string;
   wp?: { link?: string | null };
 };
 
-function buildIframe(src: string, height = 900) {
-  return `<iframe src="${src}" style="width:100%;border:0;display:block;height:${height}px;" loading="lazy"></iframe>`;
+function normalizeOrigin(origin: string): string {
+  return origin.replace(/\/+$/, "");
 }
 
 export default async function DashboardPostPage({
@@ -45,22 +44,26 @@ export default async function DashboardPostPage({
   const title = data.title ?? "(no title)";
   const content = data.content ?? "";
   const status = data.status ?? "draft";
+  const isPublished = status === "published";
 
   const site = getSiteConfig();
-  const origin = (site.urlOrigin || "https://www.kangaroo-post.com").replace(
-    /\/+$/,
-    ""
+  const origin = normalizeOrigin(
+    site.urlOrigin ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      "https://www.kangaroo-post.com"
   );
 
   const embedPostUrl = `${origin}/embed/post/${encodeURIComponent(slug)}`;
-  const embedPostIframe = buildIframe(embedPostUrl, 1100);
+  const iframeCode = `<iframe src="${embedPostUrl}" style="width:100%;border:0;" loading="lazy"></iframe>`;
 
   const wpLink =
-    (typeof data.wpLink === "string" ? data.wpLink : "") ||
-    (typeof data.wp?.link === "string" ? data.wp.link : "");
+    (typeof data.wpLink === "string" && data.wpLink) ||
+    (typeof data.wp?.link === "string" && data.wp.link) ||
+    null;
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 px-4 py-10">
+    <main className="mx-auto max-w-3xl space-y-8 px-4 py-10">
+      {/* 戻る */}
       <div className="flex items-center justify-between">
         <Link
           href="/dashboard"
@@ -74,13 +77,17 @@ export default async function DashboardPostPage({
         </span>
       </div>
 
+      {/* ヘッダー */}
       <header className="space-y-1">
         <h1 className="text-xl font-semibold">{title}</h1>
         <p className="text-xs text-gray-500">
-          タイトル・本文を編集して保存できます。
+          {isPublished
+            ? "公開済みの記事です。内容の修正もできます。"
+            : "まずは内容を整えて、公開してみましょう。"}
         </p>
       </header>
 
+      {/* 編集フォーム（常に主役） */}
       <BlogEditorForm
         slug={slug}
         initialTitle={title}
@@ -88,50 +95,66 @@ export default async function DashboardPostPage({
         initialStatus={status}
       />
 
-      <section className="rounded-2xl border bg-white/70 p-4 shadow-sm">
-        <div className="text-sm font-semibold">埋め込み（個別記事）</div>
-        <p className="mt-2 text-xs text-gray-600">
-          WordPress
-          の固定ページなどに貼り付けてください（公開済み記事のみ表示されます）。
-        </p>
-
-        <div className="mt-3 space-y-2">
-          <div className="text-xs font-semibold text-gray-700">URL</div>
-          <pre className="whitespace-pre-wrap break-words rounded-md bg-gray-50 p-3 text-xs">
-            {embedPostUrl}
-          </pre>
-
-          <div className="text-xs font-semibold text-gray-700">
-            iframeコード（推奨）
+      {/* 公開後だけ：次の一手 */}
+      {isPublished && (
+        <section className="space-y-3 rounded-2xl border bg-white/70 p-4 shadow-sm">
+          <div className="text-sm font-semibold">
+            公開しました 🎉 次に、サイトに表示してみましょう
           </div>
-          <pre className="whitespace-pre-wrap break-words rounded-md bg-gray-50 p-3 text-xs">
-            {embedPostIframe}
-          </pre>
 
-          {wpLink ? (
-            <>
-              <div className="text-xs font-semibold text-gray-700">
-                WordPress公開URL（連携済み）
-              </div>
-              <pre className="whitespace-pre-wrap break-words rounded-md bg-gray-50 p-3 text-xs">
-                {wpLink}
-              </pre>
-            </>
-          ) : (
-            <p className="text-xs text-gray-500">
-              ※
-              WordPress連携で投稿すると、ここにWPのURLが表示されます（一覧→WP記事が成立）。
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-gray-700">
+              表示用リンク
+            </div>
+            <textarea
+              readOnly
+              className="w-full rounded-lg border bg-white px-2 py-2 font-mono text-[11px]"
+              rows={2}
+              value={embedPostUrl}
+            />
+            <p className="text-[11px] text-gray-500">
+              まずはリンクを貼るだけでもOKです。
             </p>
-          )}
-        </div>
-      </section>
+          </div>
 
-      <section className="rounded-2xl border bg-white/70 p-4 shadow-sm">
-        <div className="text-sm font-semibold">本文プレビュー（簡易）</div>
-        <pre className="mt-3 whitespace-pre-wrap break-words text-sm text-gray-800">
-          {content.length > 0 ? content : "（本文が空です）"}
-        </pre>
-      </section>
+          <details className="rounded-xl border bg-white p-3">
+            <summary className="cursor-pointer text-xs font-semibold text-gray-700">
+              高度な使い方：iframeで埋め込む
+            </summary>
+            <div className="mt-2 space-y-2">
+              <textarea
+                readOnly
+                className="w-full rounded-lg border bg-white px-2 py-2 font-mono text-[11px]"
+                rows={3}
+                value={iframeCode}
+              />
+            </div>
+          </details>
+
+          {wpLink && (
+            <div className="space-y-1">
+              <div className="text-xs font-semibold text-gray-700">
+                WordPress 公開URL
+              </div>
+              <a
+                href={wpLink}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-emerald-700 underline"
+              >
+                {wpLink}
+              </a>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 下書き時の補足 */}
+      {!isPublished && (
+        <section className="rounded-2xl border bg-white/60 p-4 text-xs text-gray-600">
+          公開すると、ここに「サイトに表示するためのリンク」が表示されます。
+        </section>
+      )}
     </main>
   );
 }

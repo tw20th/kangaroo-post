@@ -8,6 +8,7 @@ import BlogsSection, { type BlogSummary } from "@/components/home/BlogsSection";
 import OfferGallery from "@/components/offers/OfferGallery";
 import HeroBadges from "@/components/home/HeroBadges";
 import DiscoverCarousel from "@/components/home/DiscoverCarousel";
+import { getOptionalUser } from "@/lib/auth/server";
 
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
@@ -296,7 +297,7 @@ async function fetchDiscoverBlogs(
   }
 }
 
-/* ===== サイト別 UI 設定 ===== */
+/* ===== サイト別 UI 設定（既存） ===== */
 
 type PainCard = { title: string; body: string; href: string };
 
@@ -405,7 +406,6 @@ function getSiteUiConfig(siteId: string): SiteUiConfig {
     };
   }
 
-  // 汎用
   return {
     showOfferGallery: false,
     heroCtaPrimary: {
@@ -434,7 +434,7 @@ function getSiteUiConfig(siteId: string): SiteUiConfig {
   };
 }
 
-/* ===== 悩みカードコンポーネント ===== */
+/* ===== 悩みカードコンポーネント（既存） ===== */
 
 type PainScenarioCardsProps = {
   heading: string;
@@ -470,10 +470,161 @@ function PainScenarioCards({
   );
 }
 
-/* ===== ページ本体 ===== */
+/* ===== kangaroo-post 専用: シンプルトップ ===== */
 
-export default async function Page() {
-  const siteId = getServerSiteId();
+async function KangarooPostLanding() {
+  const user = await getOptionalUser();
+
+  // ログイン済みならダッシュボード、未ログインならログインへ
+  const primaryHref = user ? "/dashboard" : "/login";
+  const primaryLabel = user ? "ダッシュボードをひらく" : "ログインしてはじめる";
+
+  const howId = "how";
+  const sampleTitle = "更新が続かないときの、ムリしない整え方";
+
+  return (
+    <main className="mx-auto max-w-5xl space-y-12 px-4 py-12">
+      {/* Hero */}
+      <section className="space-y-5">
+        <div className="space-y-3">
+          <h1 className="text-3xl font-semibold leading-tight md:text-4xl">
+            更新、止まってませんか。
+          </h1>
+          <p className="max-w-2xl text-sm leading-relaxed text-gray-600 md:text-base">
+            カンガルーポストは、あなたの代わりに「今日も1記事」を積み重ねます。
+            <br />
+            下書きで保存して、公開はあなたのタイミングでOKです。
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={primaryHref}
+            className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+          >
+            {primaryLabel}
+            <span className="ml-1">→</span>
+          </Link>
+          <a
+            href={`#${howId}`}
+            className="rounded-full border bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-50"
+          >
+            仕組みを見る
+            <span className="ml-1">→</span>
+          </a>
+        </div>
+
+        <p className="text-[11px] text-gray-500">
+          ※ 下書きで保存。公開しない限り、外には出ません。
+        </p>
+      </section>
+
+      {/* 体験タイムライン */}
+      <section id={howId} className="space-y-4">
+        <h2 className="text-base font-semibold md:text-lg">
+          今日は、ここまででOKです
+        </h2>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border bg-white/70 p-4 shadow-sm">
+            <div className="text-sm font-semibold">下書きが1本できる</div>
+            <p className="mt-1 text-xs leading-relaxed text-gray-600">
+              テーマを一言入れるだけ。まず“形”を作ります。
+            </p>
+          </div>
+
+          <div className="rounded-2xl border bg-white/70 p-4 shadow-sm">
+            <div className="text-sm font-semibold">
+              表示用リンクが更新される
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-gray-600">
+              あなたのサイト側は「貼るだけ」でOKです。
+            </p>
+          </div>
+
+          <div className="rounded-2xl border bg-white/70 p-4 shadow-sm">
+            <div className="text-sm font-semibold">公開はワンクリック</div>
+            <p className="mt-1 text-xs leading-relaxed text-gray-600">
+              急がせません。整ってからで大丈夫。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ライト体験（サンプル） */}
+      <section className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-base font-semibold md:text-lg">
+            今日のテーマ案（サンプル）
+          </h2>
+          <p className="text-xs text-gray-600">
+            “生成のすごさ”より、「続く形」に寄せています。
+          </p>
+        </div>
+
+        <div className="rounded-2xl border bg-white/70 p-5 shadow-sm">
+          <div className="text-sm font-semibold">{sampleTitle}</div>
+          <p className="mt-2 text-sm leading-relaxed text-gray-700">
+            完璧じゃなくていい。続く形に変えるだけで、サイトは育ちます。
+          </p>
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={primaryHref}
+              className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+            >
+              このテーマで下書きを作る
+              <span className="ml-1">→</span>
+            </Link>
+            <Link
+              href="/blog"
+              className="rounded-full border bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-50"
+            >
+              記事を見てみる
+              <span className="ml-1">→</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 安心ポイント */}
+      <section className="space-y-3">
+        <h2 className="text-base font-semibold md:text-lg">安心ポイント</h2>
+        <div className="space-y-2 rounded-2xl border bg-white/70 p-5 text-sm text-gray-700 shadow-sm">
+          <div>・下書き保存（公開しない限り外に出ません）</div>
+          <div>・リンクを貼るだけで表示できます（iframeは必要なら）</div>
+          <div>・設定はあとから変えられます</div>
+        </div>
+      </section>
+
+      {/* 最後のCTA */}
+      <section className="rounded-2xl border bg-white/70 p-6 shadow-sm">
+        <div className="space-y-2">
+          <div className="text-base font-semibold">
+            まずは中をのぞいてみてください。
+          </div>
+          <p className="text-xs text-gray-600">
+            まだ整備中でもOK。動くことが最優先です。
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <Link
+            href={primaryHref}
+            className="inline-flex items-center rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+          >
+            {primaryLabel}
+            <span className="ml-1">→</span>
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+/* ===== 既存トップ（他サイト維持） ===== */
+
+async function LegacyHomePage(siteId: string) {
   const site = await loadSiteConfig(siteId);
   const ui = getSiteUiConfig(siteId);
 
@@ -510,14 +661,12 @@ export default async function Page() {
         <HeroBadges dataSourceLabel={dataSourceLabel} note={note} />
       </header>
 
-      {/* 悩み → 提案ブロック */}
       <PainScenarioCards
         heading={ui.painHeading}
         ctaLabel={ui.painCtaLabel}
         items={ui.painItems}
       />
 
-      {/* ヒーロー CTA（最大2ボタン） */}
       {(ui.heroCtaPrimary || ui.heroCtaSecondary) && (
         <div className="mb-6 flex flex-wrap gap-3">
           {ui.heroCtaPrimary && (
@@ -535,7 +684,6 @@ export default async function Page() {
         </div>
       )}
 
-      {/* カリラクだけ：家電レンタル特集 */}
       {ui.showOfferGallery && (
         <section className="space-y-3">
           <div className="flex items-baseline justify-between">
@@ -548,13 +696,25 @@ export default async function Page() {
         </section>
       )}
 
-      {/* Discover 記事 */}
       {discoverBlogs.length > 0 && (
         <DiscoverCarousel title={discoverTitle} items={discoverBlogs} />
       )}
 
-      {/* 新着ブログ */}
       <BlogsSection title={blogsTitle} items={latestBlogs} />
     </main>
   );
+}
+
+/* ===== ページ本体 ===== */
+
+export default async function Page() {
+  const siteId = getServerSiteId();
+
+  // ✅ kangaroo-post だけトップをシンプルLPにする
+  if (siteId === "kangaroo-post") {
+    return <KangarooPostLanding />;
+  }
+
+  // それ以外は現状維持
+  return await LegacyHomePage(siteId);
 }

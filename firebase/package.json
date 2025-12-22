@@ -5,11 +5,18 @@
     "sync:types": "pnpm -C ../packages/shared-types run build && node scripts/syncSharedTypes.cjs",
     "sync:schemas": "pnpm -C ../packages/shared-schemas run build && node scripts/syncSharedSchemas.cjs",
     "predeploy:bundle-types": "pnpm run sync:types && pnpm run sync:schemas",
-    "deploy": "firebase deploy",
-    "deploy:functions": "pnpm run predeploy:bundle-types && firebase deploy --only functions",
-    "deploy:rules": "firebase deploy --only firestore:rules",
-    "deploy:indexes": "firebase deploy --only firestore:indexes",
-    "emulators": "firebase emulators:start --import=./.emulators --export-on-exit"
+    "deploy": "firebase deploy --project kangaroo-post",
+    "deploy:functions": "pnpm run predeploy:bundle-types && firebase deploy --only functions --project kangaroo-post",
+    "deploy:rules": "firebase deploy --only firestore:rules --project kangaroo-post",
+    "deploy:indexes": "firebase deploy --only firestore:indexes --project kangaroo-post",
+    "emulators:kill": "pkill -f \"firebase emulators\" || true; pkill -f \"Firestore Emulator\" || true",
+    "emulators:build": "pnpm -C functions build",
+    "emulators:start": "pnpm run emulators:build && firebase emulators:start --project kangaroo-post --only firestore,auth,functions --import ./.emulators --export-on-exit",
+    "emulators:start:pubsub": "pnpm run emulators:build && LOCAL_SAFETY_MODE=true firebase emulators:start --project kangaroo-post --only firestore,auth,functions,pubsub --import ./.emulators --export-on-exit",
+    "emulators": "pnpm run emulators:kill && pnpm run emulators:start",
+    "emulators:pubsub": "pnpm run emulators:kill && pnpm run emulators:start:pubsub",
+    "emulators:reset": "rm -rf ./.emulators && pnpm run emulators",
+    "emulators:reset:pubsub": "rm -rf ./.emulators && pnpm run emulators:pubsub"
   },
   "devDependencies": {
     "firebase-tools": "^13.35.1"

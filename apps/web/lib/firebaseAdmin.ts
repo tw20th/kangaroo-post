@@ -18,24 +18,30 @@ const useEmulator =
   process.env.NODE_ENV === "development";
 
 if (useEmulator) {
-  // Auth emulator
+  // Auth emulator（Admin Auth用）
   const authHost =
     process.env.FIREBASE_AUTH_EMULATOR_HOST ||
     process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST;
+
   if (authHost) {
     process.env.FIREBASE_AUTH_EMULATOR_HOST = authHost.replace(
       /^https?:\/\//,
       ""
     );
+  } else {
+    // ✅ ここは固定でOK（firebase.jsonに合わせる）
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
   }
 
-  // Firestore emulator（これが無いのが今回の原因）
+  // Firestore emulator（✅ envが無くても強制で向ける）
   const fsHost =
     process.env.FIRESTORE_EMULATOR_HOST ||
     process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST;
-  if (fsHost) {
-    process.env.FIRESTORE_EMULATOR_HOST = fsHost.replace(/^https?:\/\//, "");
-  }
+
+  process.env.FIRESTORE_EMULATOR_HOST = (fsHost ?? "127.0.0.1:8080").replace(
+    /^https?:\/\//,
+    ""
+  );
 
   // project 保険（任意だけど入れておくと安定）
   process.env.GCLOUD_PROJECT ||= "kangaroo-post";

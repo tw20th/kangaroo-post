@@ -6,8 +6,14 @@ import type { Workspace } from "@kangaroo-post/shared-types";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { upsertWorkspaceApi, fetchMyWorkspaceApi } from "@/lib/api/workspaces";
 
+/**
+ * variant:
+ * - onboarding: 初回用（サイト名・URLのみ）
+ * - settings: 通常設定（すべて表示）
+ */
 type Props = {
   initialWorkspaceId: string | null;
+  variant?: "onboarding" | "settings";
 };
 
 type FormState = {
@@ -52,7 +58,6 @@ function workspaceToFormState(workspace: Workspace | null): FormState {
     keywordPreferences: workspace.keywordPreferences ?? "",
     wpUrl: (workspace as unknown as { wpUrl?: string }).wpUrl ?? "",
     wpUser: (workspace as unknown as { wpUser?: string }).wpUser ?? "",
-    // ✅ パスワードは絶対に読み戻さない
     wpAppPassword: "",
   };
 }
@@ -75,11 +80,15 @@ function readWpPasswordSet(workspace: Workspace | null): boolean {
   return raw.wpAppPasswordSet === true;
 }
 
-export default function WorkspaceSettingsForm({ initialWorkspaceId }: Props) {
+export default function WorkspaceSettingsForm({
+  initialWorkspaceId,
+  variant = "settings",
+}: Props) {
+  const showOnlyBasics = variant === "onboarding";
+
   const [workspaceId, setWorkspaceId] = useState<string | null>(
     initialWorkspaceId
   );
-
   const [meLoading, setMeLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -101,7 +110,6 @@ export default function WorkspaceSettingsForm({ initialWorkspaceId }: Props) {
     if (didResolveMe.current) return;
 
     didResolveMe.current = true;
-
     let cancelled = false;
 
     (async () => {
@@ -163,33 +171,41 @@ export default function WorkspaceSettingsForm({ initialWorkspaceId }: Props) {
     setSavedMessage(null);
     setLocalError(null);
 
-    // ✅ 空文字は送らない（不要上書きを避ける）
     const wpAppPassword = form.wpAppPassword.trim();
+
+    // ✅ blogSectionSlug は API 側で必須（型的にも必須）なので、onboarding でも必ず送る
     const payload = {
       siteName: form.siteName,
       topUrl: form.topUrl,
-      blogSectionLabel: form.blogSectionLabel || undefined,
-      blogSectionSlug: form.blogSectionSlug,
-      widgetEnabled: form.widgetEnabled,
-      widgetLimit: form.widgetLimit,
-      industry: form.industry || undefined,
-      keywordPreferences: form.keywordPreferences || undefined,
-      wpUrl: form.wpUrl || undefined,
-      wpUser: form.wpUser || undefined,
-      // ✅ 入力がある時だけ送る（暗号化はサーバー側）
-      wpAppPassword: wpAppPassword.length > 0 ? wpAppPassword : undefined,
+
+      blogSectionSlug: form.blogSectionSlug || "blog",
+
+      // 以降は onboarding では送らない（上書き事故を防ぐ）
+      blogSectionLabel: showOnlyBasics
+        ? undefined
+        : form.blogSectionLabel || undefined,
+      widgetEnabled: showOnlyBasics ? undefined : form.widgetEnabled,
+      widgetLimit: showOnlyBasics ? undefined : form.widgetLimit,
+      industry: showOnlyBasics ? undefined : form.industry || undefined,
+      keywordPreferences: showOnlyBasics
+        ? undefined
+        : form.keywordPreferences || undefined,
+      wpUrl: showOnlyBasics ? undefined : form.wpUrl || undefined,
+      wpUser: showOnlyBasics ? undefined : form.wpUser || undefined,
+      wpAppPassword:
+        !showOnlyBasics && wpAppPassword.length > 0 ? wpAppPassword : undefined,
     };
 
     try {
       setSaving(true);
-
       const result = await upsertWorkspaceApi(payload);
       const newId = extractId(result);
       if (newId) setWorkspaceId(newId);
 
-      setSavedMessage("設定を保存しました。");
+      setSavedMessage(
+        showOnlyBasics ? "サイトを登録しました。" : "設定を保存しました。"
+      );
 
-      // ✅ pwは保存したら入力欄を空に戻す
       setForm((prev) => ({ ...prev, wpAppPassword: "" }));
 
       if (workspaceId) {
@@ -203,14 +219,16 @@ export default function WorkspaceSettingsForm({ initialWorkspaceId }: Props) {
     }
   };
 
-  const displayId = workspaceId;
-
   return (
-    <section className="space-y-3 rounded-2xl border bg-white/80 p-4 shadow-sm">
+    <section className="space-y-4 rounded-2xl border bg-white/80 p-6 shadow-sm">
       <header className="space-y-1">
-        <h2 className="text-base font-semibold">サイト設定（Workspace）</h2>
+        <h2 className="text-base font-semibold">
+          {showOnlyBasics ? "サイト登録" : "サイト設定（Workspace）"}
+        </h2>
         <p className="text-xs text-gray-600">
-          ここで入力した内容にもとづいて、記事のリンク先や埋め込みウィジェットを生成します。
+          {showOnlyBasics
+            ? "サイト名とURLを入れるだけでOKです（あとから変更できます）"
+            : "ここで入力した内容にもとづいて、記事のリンク先や埋め込みウィジェットを生成します。"}
         </p>
         {meLoading && (
           <p className="text-xs text-gray-500">
@@ -229,7 +247,7 @@ export default function WorkspaceSettingsForm({ initialWorkspaceId }: Props) {
         <p className="text-xs text-emerald-700">{savedMessage}</p>
       )}
 
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-6" onSubmit={handleSubmit}>
         {/* 基本情報 */}
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-gray-800">基本情報</h3>
@@ -257,139 +275,132 @@ export default function WorkspaceSettingsForm({ initialWorkspaceId }: Props) {
           </div>
         </div>
 
-        {/* ブログ表示設定 */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-800">
-            ブログ表示の設定
-          </h3>
-          <div className="grid gap-3 md:grid-cols-2">
-            <label className="flex flex-col gap-1 text-xs">
-              サイト上でのラベル
-              <input
-                className="rounded-lg border px-2 py-1 text-sm"
-                value={form.blogSectionLabel}
-                onChange={handleChange("blogSectionLabel")}
-                placeholder="例）ブログ / お知らせ"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs">
-              ブログのスラッグ
-              <input
-                className="rounded-lg border px-2 py-1 text-sm"
-                value={form.blogSectionSlug}
-                onChange={handleChange("blogSectionSlug")}
-                placeholder="例）blog"
-              />
-            </label>
-          </div>
+        {!showOnlyBasics && (
+          <>
+            {/* ブログ表示設定 */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-gray-800">
+                ブログ表示の設定
+              </h3>
+              <div className="grid gap-3 md:grid-cols-2">
+                <label className="flex flex-col gap-1 text-xs">
+                  サイト上でのラベル
+                  <input
+                    className="rounded-lg border px-2 py-1 text-sm"
+                    value={form.blogSectionLabel}
+                    onChange={handleChange("blogSectionLabel")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs">
+                  ブログのスラッグ
+                  <input
+                    className="rounded-lg border px-2 py-1 text-sm"
+                    value={form.blogSectionSlug}
+                    onChange={handleChange("blogSectionSlug")}
+                  />
+                </label>
+              </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs">
-            <label className="inline-flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded border"
-                checked={form.widgetEnabled}
-                onChange={handleCheckboxChange("widgetEnabled")}
-              />
-              サイトに埋め込みウィジェットを表示する
-            </label>
-            <label className="flex items-center gap-2">
-              <span>表示件数</span>
-              <input
-                type="number"
-                min={1}
-                max={20}
-                className="w-16 rounded-lg border px-2 py-1 text-sm"
-                value={form.widgetLimit}
-                onChange={handleChange("widgetLimit")}
-              />
-            </label>
-          </div>
-        </div>
+              <div className="flex flex-wrap items-center gap-4 text-xs">
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border"
+                    checked={form.widgetEnabled}
+                    onChange={handleCheckboxChange("widgetEnabled")}
+                  />
+                  サイトに埋め込みウィジェットを表示する
+                </label>
+                <label className="flex items-center gap-2">
+                  <span>表示件数</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    className="w-16 rounded-lg border px-2 py-1 text-sm"
+                    value={form.widgetLimit}
+                    onChange={handleChange("widgetLimit")}
+                  />
+                </label>
+              </div>
+            </div>
 
-        {/* 補足情報 */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-800">
-            サイトの雰囲気・キーワード
-          </h3>
-          <div className="grid gap-3 md:grid-cols-2">
-            <label className="flex flex-col gap-1 text-xs">
-              業種・ジャンル
-              <input
-                className="rounded-lg border px-2 py-1 text-sm"
-                value={form.industry}
-                onChange={handleChange("industry")}
-                placeholder="例）住宅リフォーム / コーチング など"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs">
-              好きなキーワード（任意）
-              <textarea
-                className="min-h-[60px] rounded-lg border px-2 py-1 text-sm"
-                value={form.keywordPreferences}
-                onChange={handleChange("keywordPreferences")}
-                placeholder="例）やさしい / 初心者向け / 無理しない など"
-              />
-            </label>
-          </div>
-        </div>
+            {/* 雰囲気・キーワード */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-gray-800">
+                サイトの雰囲気・キーワード
+              </h3>
+              <div className="grid gap-3 md:grid-cols-2">
+                <label className="flex flex-col gap-1 text-xs">
+                  業種・ジャンル
+                  <input
+                    className="rounded-lg border px-2 py-1 text-sm"
+                    value={form.industry}
+                    onChange={handleChange("industry")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs">
+                  好きなキーワード（任意）
+                  <textarea
+                    className="min-h-[60px] rounded-lg border px-2 py-1 text-sm"
+                    value={form.keywordPreferences}
+                    onChange={handleChange("keywordPreferences")}
+                  />
+                </label>
+              </div>
+            </div>
 
-        {/* WordPress 連携 */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-800">
-            WordPress 連携（あとででもOK）
-          </h3>
-          <div className="grid gap-3 md:grid-cols-3">
-            <label className="flex flex-col gap-1 text-xs">
-              WordPress の URL
-              <input
-                className="rounded-lg border px-2 py-1 text-sm"
-                value={form.wpUrl}
-                onChange={handleChange("wpUrl")}
-                placeholder="https://example.com"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs">
-              ユーザー名
-              <input
-                className="rounded-lg border px-2 py-1 text-sm"
-                value={form.wpUser}
-                onChange={handleChange("wpUser")}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs">
-              Application Password
-              <input
-                className="rounded-lg border px-2 py-1 text-sm"
-                value={form.wpAppPassword}
-                onChange={handleChange("wpAppPassword")}
-                placeholder={
-                  wpPasswordSet
-                    ? "保存済み（変更する場合は再入力）"
-                    : "未設定（必要になったら入力）"
-                }
-              />
-              <span className="text-[11px] text-gray-500">
-                {wpPasswordSet
-                  ? "※保存済みです。表示はしません。変更したい時だけ入力してください。"
-                  : "※まだ設定していません（後でOK）"}
-              </span>
-            </label>
-          </div>
-        </div>
+            {/* WordPress連携 */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-gray-800">
+                WordPress連携（あとででもOK）
+              </h3>
+              <div className="grid gap-3 md:grid-cols-3">
+                <label className="flex flex-col gap-1 text-xs">
+                  WordPressのURL
+                  <input
+                    className="rounded-lg border px-2 py-1 text-sm"
+                    value={form.wpUrl}
+                    onChange={handleChange("wpUrl")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs">
+                  ユーザー名
+                  <input
+                    className="rounded-lg border px-2 py-1 text-sm"
+                    value={form.wpUser}
+                    onChange={handleChange("wpUser")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs">
+                  Application Password
+                  <input
+                    className="rounded-lg border px-2 py-1 text-sm"
+                    value={form.wpAppPassword}
+                    onChange={handleChange("wpAppPassword")}
+                    placeholder={
+                      wpPasswordSet
+                        ? "保存済み（変更する場合は再入力）"
+                        : "未設定（必要になったら入力）"
+                    }
+                  />
+                </label>
+              </div>
+            </div>
+          </>
+        )}
 
-        <div className="flex items-center justify-between pt-2">
-          <div className="text-xs text-gray-500">
-            {displayId
-              ? `Workspace ID: ${displayId}`
-              : "まだ Workspace は作成されていません。保存すると新しく作成されます。"}
-          </div>
+        <div className="flex justify-end">
           <button
             type="submit"
             disabled={isBusy}
-            className="rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:bg-emerald-300"
+            className="rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:bg-emerald-300"
           >
-            {saving ? "保存中..." : "設定を保存する"}
+            {saving
+              ? "保存中..."
+              : showOnlyBasics
+              ? "登録してはじめる"
+              : "設定を保存する"}
           </button>
         </div>
       </form>

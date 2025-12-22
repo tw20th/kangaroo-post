@@ -6,6 +6,7 @@ import GeneratePostForm from "@/components/dashboard/GeneratePostForm";
 import WorkspaceSettingsForm from "@/components/dashboard/WorkspaceSettingsForm";
 import { getOptionalUser } from "@/lib/auth/server";
 import { getServerSiteId } from "@/lib/site-server";
+import { getSiteConfig } from "@/lib/site-config";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ async function getLatestPosts(params: {
   const limit = params.limit ?? 20;
 
   const snap = await adminDb
-    .collection("posts") // ✅ blogs → posts
+    .collection("posts")
     .where("ownerUserId", "==", params.ownerUserId)
     .where("siteId", "==", params.siteId)
     .orderBy("createdAt", "desc")
@@ -94,43 +95,63 @@ function normalizeOrigin(origin: string): string {
 function EmbedCodeBox({ workspaceId }: { workspaceId: string }) {
   const embedPath = buildEmbedPath(workspaceId);
 
-  const origin =
-    process.env.NEXT_PUBLIC_APP_URL &&
-    process.env.NEXT_PUBLIC_APP_URL.length > 0
-      ? normalizeOrigin(process.env.NEXT_PUBLIC_APP_URL)
-      : "";
+  const site = getSiteConfig();
+  const originRaw =
+    (site.urlOrigin && site.urlOrigin.length > 0
+      ? site.urlOrigin
+      : process.env.NEXT_PUBLIC_APP_URL) ?? "";
 
+  const origin = originRaw ? normalizeOrigin(originRaw) : "";
   const embedUrl = origin ? `${origin}${embedPath}` : embedPath;
 
-  const code = `<iframe src="${embedUrl}" style="width:100%;border:0;" loading="lazy"></iframe>`;
+  const iframeCode = `<iframe src="${embedUrl}" style="width:100%;border:0;" loading="lazy"></iframe>`;
 
   return (
-    <div className="space-y-2">
-      <p className="text-xs text-gray-600">
-        相手サイトに <span className="font-semibold">このコード</span>{" "}
-        を貼ると、 「公開済みの記事」が表示されます。
-      </p>
-
-      <div className="text-xs text-gray-500">Workspace ID: {workspaceId}</div>
-
-      <textarea
-        readOnly
-        className="w-full rounded-lg border bg-white px-2 py-2 font-mono text-[11px]"
-        rows={3}
-        value={code}
-      />
-
-      {!origin && (
-        <p className="text-[11px] text-amber-700">
-          ※ NEXT_PUBLIC_APP_URL
-          が未設定なので、いまは相対パスです。本番ではフルURL推奨です。
+    <div className="space-y-3">
+      <div className="space-y-1">
+        <div className="text-xs font-semibold text-gray-700">表示用リンク</div>
+        <textarea
+          readOnly
+          className="w-full rounded-lg border bg-white px-2 py-2 font-mono text-[11px]"
+          rows={2}
+          value={embedUrl}
+        />
+        <p className="text-[11px] text-gray-500">
+          まずは「リンク」を貼るだけでもOKです（iframeは必要になったら使えます）
         </p>
-      )}
+      </div>
+
+      <details className="rounded-xl border bg-white p-3">
+        <summary className="cursor-pointer text-xs font-semibold text-gray-700">
+          高度な使い方：iframeで埋め込む（推奨）
+        </summary>
+        <div className="mt-2 space-y-2">
+          <div className="text-[11px] text-gray-500">
+            ※ 固定ページやHTMLブロックに貼り付けてください
+          </div>
+          <textarea
+            readOnly
+            className="w-full rounded-lg border bg-white px-2 py-2 font-mono text-[11px]"
+            rows={3}
+            value={iframeCode}
+          />
+          {!origin && (
+            <p className="text-[11px] text-amber-700">
+              ※
+              URLのベースが未設定なので、相対パスです。本番ではフルURL推奨です。
+            </p>
+          )}
+        </div>
+      </details>
     </div>
   );
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: { seed?: string };
+}) {
   const user = await getOptionalUser();
   if (!user) redirect("/login");
 
@@ -147,24 +168,100 @@ export default async function DashboardPage() {
     limit: 20,
   });
 
+  // ✅ seed を取り出す（stringだけ採用）
+  const seed = typeof searchParams?.seed === "string" ? searchParams.seed : "";
+
+  const hasPosts = posts.length > 0;
+
+  // 状態①：未登録（workspaceId が null）
+  if (!initialWorkspaceId) {
+    return (
+      <main className="mx-auto max-w-3xl px-4 py-10">
+        <div className="mx-auto max-w-2xl space-y-6">
+          <header className="space-y-2">
+            <h1 className="text-xl font-semibold">ダッシュボード</h1>
+            <p className="text-sm text-gray-600">
+              まずは、あなたのサイトを登録しましょう。
+            </p>
+          </header>
+
+          <WorkspaceSettingsForm
+            initialWorkspaceId={null}
+            variant="onboarding"
+          />
+
+          <p className="text-[11px] text-gray-500">
+            ※ 登録が終わると、次に「テスト記事」を作れます。
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  // ✅ ここから先は workspaceId が必ず string
+  const workspaceId = initialWorkspaceId;
+
+  // 状態②：登録済み・記事なし
+  if (!hasPosts) {
+    return (
+      <main className="mx-auto max-w-3xl px-4 py-10">
+        <div className="space-y-6">
+          <header className="space-y-2">
+            <h1 className="text-xl font-semibold">ダッシュボード</h1>
+            <div className="rounded-2xl border bg-white/70 p-4 shadow-sm">
+              <div className="text-sm font-semibold">
+                サイト登録は完了しました 🎉
+              </div>
+              <p className="mt-1 text-xs text-gray-600">
+                次に、テスト用の記事を1本作ってみましょう。
+              </p>
+            </div>
+          </header>
+
+          <section className="space-y-3 rounded-2xl border bg-white/70 p-4 shadow-sm">
+            <h2 className="text-base font-semibold">テスト記事をつくる</h2>
+
+            {/* ✅ seed を渡す（ここが体験の肝） */}
+            <GeneratePostForm
+              workspaceId={workspaceId}
+              mode="test"
+              seed={seed}
+            />
+          </section>
+
+          <details className="rounded-2xl border bg-white/70 p-4 shadow-sm">
+            <summary className="cursor-pointer text-sm font-semibold text-gray-800">
+              詳細設定（あとでOK）
+            </summary>
+            <div className="mt-4">
+              <WorkspaceSettingsForm
+                initialWorkspaceId={workspaceId}
+                variant="settings"
+              />
+            </div>
+          </details>
+        </div>
+      </main>
+    );
+  }
+
+  // 状態③：記事あり（通常）
   return (
     <main className="mx-auto max-w-3xl space-y-8 px-4 py-10">
-      {/* ...上はそのまま... */}
+      <header className="space-y-2">
+        <h1 className="text-xl font-semibold">ダッシュボード</h1>
 
-      <WorkspaceSettingsForm initialWorkspaceId={initialWorkspaceId} />
+        <div className="rounded-2xl border bg-white/70 p-4 shadow-sm">
+          <div className="text-sm font-semibold">記事ができています ☀️</div>
+          <p className="mt-1 text-xs text-gray-600">
+            サイトに表示してみましょう（最初はリンクでもOKです）。
+          </p>
+        </div>
+      </header>
 
       <section className="space-y-2 rounded-2xl border bg-white/70 p-4 shadow-sm">
-        <h2 className="text-base font-semibold">
-          相手サイトに貼る埋め込みコード
-        </h2>
-
-        {!initialWorkspaceId ? (
-          <p className="text-xs text-gray-600">
-            先に「サイト設定（Workspace）」を保存すると、ここに埋め込みコードが表示されます。
-          </p>
-        ) : (
-          <EmbedCodeBox workspaceId={initialWorkspaceId} />
-        )}
+        <h2 className="text-base font-semibold">サイトに表示する</h2>
+        <EmbedCodeBox workspaceId={workspaceId} />
       </section>
 
       <section className="space-y-3 rounded-2xl border bg-white/70 p-4 shadow-sm">
@@ -172,60 +269,70 @@ export default async function DashboardPage() {
         <p className="text-xs text-gray-600">
           とりあえず「書きたいテーマ」や「悩み」を一文だけ入れてもOKです。
         </p>
-        <GeneratePostForm />
+
+        {/* ✅ seed を渡す（トップから来た時にそのまま書ける） */}
+        <GeneratePostForm workspaceId={workspaceId} mode="normal" seed={seed} />
       </section>
 
+      {/* 最近の下書き */}
       <section className="space-y-3">
         <h2 className="text-base font-semibold">最近の下書き</h2>
 
-        {posts.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            まだ下書きはありません。上のフォームから、最初の1本をつくってみましょう。
-          </p>
-        ) : (
-          <ul className="divide-y rounded-2xl border bg-white/70 text-sm shadow-sm">
-            {posts.map((p) => {
-              const isDraft = p.status === "draft";
+        <ul className="divide-y rounded-2xl border bg-white/70 text-sm shadow-sm">
+          {posts.map((p) => {
+            const isDraft = p.status === "draft";
 
-              return (
-                <li
-                  key={p.slug}
-                  className="flex items-center justify-between gap-3 px-4 py-3"
-                >
-                  <div className="min-w-0 space-y-1">
-                    <div className="truncate font-medium">{p.title}</div>
-                    <div className="text-xs text-gray-500">
-                      <span
-                        className={`mr-2 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] ${
-                          isDraft
-                            ? "bg-amber-50 text-amber-700"
-                            : "bg-emerald-50 text-emerald-700"
-                        }`}
-                      >
-                        {isDraft ? "下書き" : "公開済み"}
-                      </span>
-                      {new Date(p.createdAt).toLocaleString("ja-JP")}
-                    </div>
-                  </div>
-
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Link
-                      href={`/dashboard/posts/${encodeURIComponent(p.slug)}`}
-                      className="rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-gray-50"
+            return (
+              <li
+                key={p.slug}
+                className="flex items-center justify-between gap-3 px-4 py-3"
+              >
+                <div className="min-w-0 space-y-1">
+                  <div className="truncate font-medium">{p.title}</div>
+                  <div className="text-xs text-gray-500">
+                    <span
+                      className={`mr-2 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] ${
+                        isDraft
+                          ? "bg-amber-50 text-amber-700"
+                          : "bg-emerald-50 text-emerald-700"
+                      }`}
                     >
-                      編集
-                    </Link>
-
-                    <span className="hidden rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 md:inline">
-                      {p.slug}
+                      {isDraft ? "下書き" : "公開済み"}
                     </span>
+                    {new Date(p.createdAt).toLocaleString("ja-JP")}
                   </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <Link
+                    href={`/dashboard/posts/${encodeURIComponent(p.slug)}`}
+                    className="rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-gray-50"
+                  >
+                    編集
+                  </Link>
+
+                  <span className="hidden rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 md:inline">
+                    {p.slug}
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </section>
+
+      {/* 詳細設定 */}
+      <details className="rounded-2xl border bg-white/70 p-4 shadow-sm">
+        <summary className="cursor-pointer text-sm font-semibold text-gray-800">
+          詳細設定（あとでOK）
+        </summary>
+        <div className="mt-4">
+          <WorkspaceSettingsForm
+            initialWorkspaceId={workspaceId}
+            variant="settings"
+          />
+        </div>
+      </details>
     </main>
   );
 }
